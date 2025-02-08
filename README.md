@@ -1,1 +1,1 @@
-# csc13010-student-information-system
+# csc13010 - Student Information System Application
