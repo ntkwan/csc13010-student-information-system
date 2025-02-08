@@ -12,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { Role } from '../auth/enums/roles.enum';
 import { UpdateUsersDto } from './dtos/user-update.dto';
+import { Status } from './enums/student.enum';
 
 @Injectable()
 export class UserService {
@@ -30,12 +31,24 @@ export class UserService {
                 throw new BadRequestException('User not found');
             }
 
-            const newUser = {
-                email: user.email,
+            const userProfile = {
                 username: user.username,
+                fullname: user.fullname,
+                birthday: user.birthday
+                    ? user.birthday.toISOString().split('T')[0]
+                    : null,
+                gender: user.gender,
+                faculty: user.faculty,
+                classYear: user.classYear,
+                program: user.program,
+                address: user.address ? user.address : null,
+                email: user.email,
+                phone: user.phone ? user.phone : null,
+                status: user.status,
                 id: user.id,
+                role: user.role,
             };
-            return newUser;
+            return userProfile;
         } catch (error) {
             throw new InternalServerErrorException(
                 'Error getting profile',
@@ -121,18 +134,39 @@ export class UserService {
     }
 
     async create(userSignUpDto: UserSignUpDto): Promise<User> {
-        const { username, email, password, birthdate } = userSignUpDto;
+        const {
+            username,
+            fullname,
+            birthday,
+            gender,
+            faculty,
+            classYear,
+            program,
+            address,
+            email,
+            password,
+            phone,
+        } = userSignUpDto;
         const hashedPassword = await this.hashPassword(password);
 
         const user = await this.userModel.create({
             username: username,
             email: email,
             password: hashedPassword,
-            birthdate: new Date(birthdate),
+            birthday: new Date(birthday),
+            fullname: fullname,
+            gender: gender,
+            faculty: faculty,
+            classYear: classYear,
+            program: program,
+            address: address,
+            phone: phone,
+            status: Status.ACTIVE,
             otp: null,
             otpExpiry: null,
-            role: Role.USER,
+            role: Role.STUDENT,
         });
+
         if (!user) {
             throw new InternalServerErrorException(
                 'This email or username is already in use',
@@ -206,7 +240,12 @@ export class UserService {
                     email: this.configService.get('ADMIN_EMAIL'),
                     password: hashedPassword,
                     role: Role.ADMIN,
-                    birthdate: new Date(),
+                    birthday: new Date(),
+                    fullname: this.configService.get('ADMIN_FULLNAME'),
+                    address: 'address',
+                    phone: '0123456789',
+                    otp: null,
+                    otpExpiry: null,
                 });
 
                 console.log('Admin account created successfully', admin);

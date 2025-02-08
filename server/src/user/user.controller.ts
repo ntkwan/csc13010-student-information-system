@@ -64,7 +64,7 @@ export class UserController {
                 id: user._id,
                 email: user.email,
                 username: user.username,
-                birthdate: user.birthdate,
+                birthday: user.birthday,
                 role: user.role,
             })),
         );
@@ -91,7 +91,7 @@ export class UserController {
             id: user._id,
             username: user.username,
             email: user.email,
-            birthdate: user.birthdate,
+            birthday: user.birthday,
         }));
     }
 

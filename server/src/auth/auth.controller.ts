@@ -1,5 +1,4 @@
 import {
-    Body,
     Controller,
     HttpCode,
     Post,
@@ -21,9 +20,7 @@ import {
     ApiBearerAuth,
 } from '@nestjs/swagger';
 import { TokensEntity } from './entities/tokens.entity';
-import { CredEntity } from './entities/creds.entity';
 import { AuthLoginDto } from './dtos/auth-login.dto';
-import { AuthSignUpDto } from './dtos/auth-signup.dto';
 import {
     ForgotPasswordDto,
     ResetPasswordDto,
@@ -58,26 +55,6 @@ export class AuthController {
             accessToken,
             refreshToken,
             message: 'User has been signed in successfully',
-        });
-    }
-
-    @ApiOperation({ summary: 'Sign-up to login' })
-    @ApiBody({ type: AuthSignUpDto })
-    @ApiResponse({
-        status: 200,
-        description: 'Sign-up successful',
-        type: CredEntity,
-    })
-    @Post('sign-up')
-    @HttpCode(200)
-    async signUp(
-        @Body() req: AuthSignUpDto,
-        @Res() res: Response,
-    ): Promise<void> {
-        const newUser = await this.authService.signUp(req);
-        res.send({
-            newUser,
-            message: 'User has been created successfully',
         });
     }
 
@@ -157,10 +134,7 @@ export class AuthController {
         description: 'OTP verified successfully',
     })
     @HttpCode(200)
-    async verifyOtp(
-        @Request() req: any,
-        @Res() res: Response,
-    ): Promise<void> {
+    async verifyOtp(@Request() req: any, @Res() res: Response): Promise<void> {
         const email = req.body.email;
         const otp = req.body.otp;
         await this.authService.verifyOtp(email, otp);
@@ -216,7 +190,11 @@ export class AuthController {
         @Res() res: Response,
     ): Promise<void> {
         const role = req.body.role;
-        if (role !== Role.ADMIN && role !== Role.USER) {
+        if (
+            role !== Role.ADMIN &&
+            role !== Role.STUDENT &&
+            role !== Role.TEACHER
+        ) {
             res.send({
                 statusCode: 404,
                 message: 'Role is not valid',

@@ -30,19 +30,30 @@ export class AuthService {
                 throw new BadRequestException('Invalid credentials');
             }
 
-            const foundUser = await this.usersService.findByEmail(user.username || user.email);
+            const foundUser = await this.usersService.findByEmail(
+                user.username || user.email,
+            );
             if (!foundUser) {
                 throw new NotFoundException('User not found');
             }
 
-            const isValidPassword: boolean = await this.usersService.validatePassword(user.password, foundUser);
+            const isValidPassword: boolean =
+                await this.usersService.validatePassword(
+                    user.password,
+                    foundUser,
+                );
 
             if (!isValidPassword) {
                 throw new UnauthorizedException('Wrong password');
             }
 
-            if (foundUser.role === Role.USER) {
-                throw new UnauthorizedException('User has no permission to access this resource, this is for admins only');
+            if (
+                foundUser.role === Role.STUDENT ||
+                foundUser.role === Role.TEACHER
+            ) {
+                throw new UnauthorizedException(
+                    'User has no permission to access this resource, this is for admins only',
+                );
             }
 
             const payloadAccessToken = {
@@ -51,14 +62,13 @@ export class AuthService {
                 role: foundUser.role,
             };
 
-            const accessToken =
-                await this.jwtService.signAsync(
-                    payloadAccessToken,
-                    {
-                        secret: this.configService.get('AT_SECRET'),
-                        expiresIn: '1h',
-                    },
-                );
+            const accessToken = await this.jwtService.signAsync(
+                payloadAccessToken,
+                {
+                    secret: this.configService.get('AT_SECRET'),
+                    expiresIn: '1h',
+                },
+            );
 
             const payloadRefreshToken = {
                 sub: foundUser.id,
@@ -74,7 +84,10 @@ export class AuthService {
                 },
             );
 
-            await this.usersService.updateRefreshToken(foundUser.id, refreshToken);
+            await this.usersService.updateRefreshToken(
+                foundUser.id,
+                refreshToken,
+            );
             await this.usersService.updateOtp(foundUser.id, null, null);
 
             return {
@@ -92,7 +105,10 @@ export class AuthService {
             return newUser;
         } catch (error) {
             console.log(error.message);
-            throw new InternalServerErrorException('Error signing up', error.message);
+            throw new InternalServerErrorException(
+                'Error signing up',
+                error.message,
+            );
         }
     }
 
@@ -122,13 +138,10 @@ export class AuthService {
                 role: user.role,
             };
 
-            const newAT = await this.jwtService.signAsync(
-                payloadAccessToken,
-                {
-                    secret: this.configService.get('AT_SECRET'),
-                    expiresIn: '1h',
-                },
-            );
+            const newAT = await this.jwtService.signAsync(payloadAccessToken, {
+                secret: this.configService.get('AT_SECRET'),
+                expiresIn: '1h',
+            });
 
             const payloadRefreshToken = {
                 sub: user.id,
@@ -178,10 +191,11 @@ export class AuthService {
         }
     }
 
-
     async hashPassword(password: string): Promise<string> {
         try {
-            const salt: number = await bcrypt.genSalt(parseInt(this.configService.get('SALT'), 10));
+            const salt: number = await bcrypt.genSalt(
+                parseInt(this.configService.get('SALT'), 10),
+            );
 
             const hashedPassword: string = await bcrypt.hash(password, salt);
 
@@ -190,7 +204,6 @@ export class AuthService {
             throw new InternalServerErrorException(error.message);
         }
     }
-
 
     async verifyOtp(email: string, otp: string): Promise<void> {
         try {

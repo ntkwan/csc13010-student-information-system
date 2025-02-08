@@ -16,5 +16,5 @@ export class AuthSignUpDto {
 
     @ApiProperty()
     @IsDateString()
-    birthdate: string;
+    birthday: string;
 }
