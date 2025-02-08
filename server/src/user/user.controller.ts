@@ -8,6 +8,7 @@ import {
     Query,
     Post,
     Body,
+    Put,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ATAuthGuard } from '../auth/guards/at-auth.guard';
@@ -24,10 +25,38 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { User } from './entities/user.entity';
 import { UpdateResultDto, UpdateUsersDto } from './dtos/user-update.dto';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { UserSignUpDto } from './dtos/user-signup.dto';
 
 @Controller('users')
 export class UserController {
     constructor(private readonly userService: UserService) {}
+
+    @ApiOperation({ summary: 'Add a new student [ADMIN]' })
+    @ApiBearerAuth('access-token')
+    @Post('student')
+    @ApiBody({ type: UserSignUpDto })
+    @ApiResponse({
+        status: 201,
+        description: 'Student added successfully',
+        type: ProfileEntity,
+    })
+    @UseGuards(ATAuthGuard)
+    async addStudent(@Request() req: UserSignUpDto, @Res() res: Response) {
+        const newStudent = await this.userService.create(req);
+        res.status(201).send({
+            email: newStudent.email,
+            username: newStudent.username,
+            fullname: newStudent.fullname,
+            birthday: newStudent.birthday,
+            gender: newStudent.gender,
+            faculty: newStudent.faculty,
+            classYear: newStudent.classYear,
+            program: newStudent.program,
+            address: newStudent.address,
+            phone: newStudent.phone,
+            status: newStudent.status,
+        });
+    }
 
     @ApiOperation({ summary: 'Get profile with credentials [USER]' })
     @ApiBearerAuth('access-token')
@@ -99,7 +128,7 @@ export class UserController {
     @UseGuards(RolesGuard)
     @UseGuards(ATAuthGuard)
     @Roles(Role.ADMIN)
-    @Post()
+    @Put()
     @ApiOperation({
         summary: 'Update multiple user records [ADMIN]',
         description:
