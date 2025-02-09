@@ -13,17 +13,17 @@ export class UpdateUsersDto {
         minProperties: 1, // Swagger property to hint at least one field required
     })
     updates: Partial<{
-        username?: string;
-        email?: string;
+        username: string;
+        email: string;
         birthday?: Date;
-        fullname?: string;
-        gender?: Gender;
-        faculty?: Faculty;
-        classYear?: number;
-        program?: Program;
+        fullname: string;
+        gender: Gender;
+        faculty: Faculty;
+        classYear: number;
+        program: Program;
         address?: string;
-        phone?: string;
-        status?: Status;
+        phone: string;
+        status: Status;
     }>;
 }
 export class UpdateResultDto {

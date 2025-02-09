@@ -73,9 +73,7 @@ const UsersPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [editing, setEditing] = useState<{
-        [key: string]: { [key: string]: string };
-    }>({});
+    const [errorValidationMessage, setValidationErrorMessage] = useState('');
     const [user, setUser] = useState<{
         username: string;
         avatar: string;
@@ -102,14 +100,49 @@ const UsersPage = () => {
     const [editingRecord, setEditingRecord] = useState<any>(null);
     const [updatedRecord, setUpdatedRecord] = useState<any>(null);
     const [isEditDialogOpen, setEditDialogOpen] = useState(false);
+    const [emailError, setEmailError] = useState(false);
+    const [phoneError, setPhoneError] = useState(false);
+    const validateEmail = (email: any) => {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return emailRegex.test(email);
+    };
+
+    const validatePhone = (phone: any) => {
+        const phoneRegex = /^\d{10}$/; // For a 10-digit phone number
+        return phoneRegex.test(phone);
+    };
+
+    const handleValidation = (field: string, value: string) => {
+        if (field === 'email') {
+            setEmailError(!validateEmail(value));
+        }
+        if (field === 'phone') {
+            setPhoneError(!validatePhone(value));
+        }
+
+        setNewRecord((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
 
     const handleEditClick = (record: any) => {
         setUpdatedRecord({ ...record });
+        setValidationErrorMessage('');
+        setEmailError(false);
+        setPhoneError(false);
         setEditingRecord(record);
         setEditDialogOpen(true);
     };
 
     const handleInputChange = (field: string, value: any) => {
+        if (field === 'email') {
+            setEmailError(!validateEmail(value));
+        }
+        if (field === 'phone') {
+            setPhoneError(!validatePhone(value));
+        }
+
         setUpdatedRecord((prev: any) => ({
             ...prev,
             [field]: value,
@@ -118,6 +151,16 @@ const UsersPage = () => {
 
     const handleSaveChanges = async () => {
         try {
+            if (
+                !validateEmail(newRecord.email) ||
+                !validatePhone(newRecord.phone)
+            ) {
+                setValidationErrorMessage(
+                    'Invalid email or phone number format',
+                );
+                return;
+            }
+
             const recordToUpdate = {
                 id: updatedRecord.id,
                 updates: {
@@ -309,7 +352,18 @@ const UsersPage = () => {
     };
 
     const handleAddNewRecord = async () => {
+        setValidationErrorMessage('');
         try {
+            if (
+                !validateEmail(newRecord.email) ||
+                !validatePhone(newRecord.phone)
+            ) {
+                setValidationErrorMessage(
+                    'Invalid email or phone number format',
+                );
+                return;
+            }
+
             await axios.post(
                 `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/user`,
                 newRecord,
@@ -319,6 +373,7 @@ const UsersPage = () => {
                     },
                 },
             );
+
             setNewRecord({
                 username: '',
                 fullname: '',
@@ -633,6 +688,64 @@ const UsersPage = () => {
                                                 />
                                             </LocalizationProvider>
                                         );
+                                    } else if (field === 'email') {
+                                        return (
+                                            <TextField
+                                                margin="dense"
+                                                fullWidth
+                                                key={field}
+                                                label={
+                                                    field
+                                                        .charAt(0)
+                                                        .toUpperCase() +
+                                                    field.slice(1)
+                                                }
+                                                value={
+                                                    updatedRecord[field] || ''
+                                                }
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        'email',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                error={emailError}
+                                                helperText={
+                                                    emailError
+                                                        ? 'Invalid email format'
+                                                        : ''
+                                                }
+                                            />
+                                        );
+                                    } else if (field === 'phone') {
+                                        return (
+                                            <TextField
+                                                fullWidth
+                                                key={field}
+                                                margin="dense"
+                                                label={
+                                                    field
+                                                        .charAt(0)
+                                                        .toUpperCase() +
+                                                    field.slice(1)
+                                                }
+                                                value={
+                                                    updatedRecord[field] || ''
+                                                }
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        'phone',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                error={phoneError}
+                                                helperText={
+                                                    phoneError
+                                                        ? 'Phone number must be 10 digits'
+                                                        : ''
+                                                }
+                                            />
+                                        );
                                     } else if (
                                         [
                                             'gender',
@@ -737,6 +850,24 @@ const UsersPage = () => {
                                     }
                                 })}
                             </DialogContent>
+
+                            <Box
+                                display="flex"
+                                justifyContent="center"
+                                alignItems="center"
+                                marginTop="30px"
+                            >
+                                {errorValidationMessage && (
+                                    <Typography
+                                        color="error"
+                                        variant="body2"
+                                        sx={{ marginBottom: 2 }}
+                                    >
+                                        {errorValidationMessage}
+                                    </Typography>
+                                )}
+                            </Box>
+
                             <DialogActions>
                                 <Button
                                     onClick={() => setEditDialogOpen(false)}
@@ -915,7 +1046,47 @@ const UsersPage = () => {
                                                 })()}
                                             </TableCell>
                                             <TableCell>
-                                                {field === 'birthday' ? (
+                                                {field === 'email' ? (
+                                                    <TextField
+                                                        fullWidth
+                                                        value={
+                                                            newRecord.email ||
+                                                            ''
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleValidation(
+                                                                'email',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        error={emailError}
+                                                        helperText={
+                                                            emailError
+                                                                ? 'Invalid email format'
+                                                                : ''
+                                                        }
+                                                    />
+                                                ) : field === 'phone' ? (
+                                                    <TextField
+                                                        fullWidth
+                                                        value={
+                                                            newRecord.phone ||
+                                                            ''
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleValidation(
+                                                                'phone',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        error={phoneError}
+                                                        helperText={
+                                                            phoneError
+                                                                ? 'Phone number must be 10 digits'
+                                                                : ''
+                                                        }
+                                                    />
+                                                ) : field === 'birthday' ? (
                                                     <LocalizationProvider
                                                         dateAdapter={
                                                             AdapterDayjs
@@ -971,8 +1142,13 @@ const UsersPage = () => {
                                                             )
                                                         }
                                                     >
-                                                        {genderOptions.map(
-                                                            (option) => (
+                                                        {genderOptions
+                                                            .filter(
+                                                                (option) =>
+                                                                    option.value !==
+                                                                    'Unassigned',
+                                                            )
+                                                            .map((option) => (
                                                                 <MenuItem
                                                                     key={
                                                                         option.value
@@ -985,8 +1161,7 @@ const UsersPage = () => {
                                                                         option.label
                                                                     }
                                                                 </MenuItem>
-                                                            ),
-                                                        )}
+                                                            ))}
                                                     </TextField>
                                                 ) : field === 'faculty' ? (
                                                     <TextField
@@ -1007,8 +1182,13 @@ const UsersPage = () => {
                                                             )
                                                         }
                                                     >
-                                                        {facultyOptions.map(
-                                                            (option) => (
+                                                        {facultyOptions
+                                                            .filter(
+                                                                (option) =>
+                                                                    option.value !==
+                                                                    'Unassigned',
+                                                            )
+                                                            .map((option) => (
                                                                 <MenuItem
                                                                     key={
                                                                         option.value
@@ -1021,8 +1201,7 @@ const UsersPage = () => {
                                                                         option.label
                                                                     }
                                                                 </MenuItem>
-                                                            ),
-                                                        )}
+                                                            ))}
                                                     </TextField>
                                                 ) : field === 'classYear' ? (
                                                     <TextField
@@ -1043,8 +1222,13 @@ const UsersPage = () => {
                                                             )
                                                         }
                                                     >
-                                                        {classYearOptions.map(
-                                                            (option) => (
+                                                        {classYearOptions
+                                                            .filter(
+                                                                (option) =>
+                                                                    option.value !==
+                                                                    'Unassigned',
+                                                            )
+                                                            .map((option) => (
                                                                 <MenuItem
                                                                     key={
                                                                         option.value
@@ -1057,8 +1241,7 @@ const UsersPage = () => {
                                                                         option.label
                                                                     }
                                                                 </MenuItem>
-                                                            ),
-                                                        )}
+                                                            ))}
                                                     </TextField>
                                                 ) : field === 'program' ? (
                                                     <TextField
@@ -1079,27 +1262,33 @@ const UsersPage = () => {
                                                             )
                                                         }
                                                     >
-                                                        {programOptions.map(
-                                                            (option) => (
-                                                                console.log(
-                                                                    option.value,
+                                                        {programOptions
+                                                            .filter(
+                                                                (option) =>
+                                                                    option.value !==
+                                                                    'Unassigned',
+                                                            )
+                                                            .map(
+                                                                (option) => (
+                                                                    console.log(
+                                                                        option.value,
+                                                                    ),
+                                                                    (
+                                                                        <MenuItem
+                                                                            key={
+                                                                                option.value
+                                                                            }
+                                                                            value={
+                                                                                option.value
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                option.label
+                                                                            }
+                                                                        </MenuItem>
+                                                                    )
                                                                 ),
-                                                                (
-                                                                    <MenuItem
-                                                                        key={
-                                                                            option.value
-                                                                        }
-                                                                        value={
-                                                                            option.value
-                                                                        }
-                                                                    >
-                                                                        {
-                                                                            option.label
-                                                                        }
-                                                                    </MenuItem>
-                                                                )
-                                                            ),
-                                                        )}
+                                                            )}
                                                     </TextField>
                                                 ) : (
                                                     <TextField
@@ -1126,6 +1315,23 @@ const UsersPage = () => {
                                     ))}
                                 </TableBody>
                             </Table>
+
+                            <Box
+                                display="flex"
+                                justifyContent="center"
+                                alignItems="center"
+                                marginTop="30px"
+                            >
+                                {errorValidationMessage && (
+                                    <Typography
+                                        color="error"
+                                        variant="body2"
+                                        sx={{ marginBottom: 2 }}
+                                    >
+                                        {errorValidationMessage}
+                                    </Typography>
+                                )}
+                            </Box>
                             <Box
                                 display="flex"
                                 justifyContent="center"
@@ -1160,9 +1366,12 @@ const UsersPage = () => {
                         <Button
                             variant="contained"
                             color="primary"
-                            onClick={() =>
-                                setShowNewRecordForm(!showNewRecordForm)
-                            }
+                            onClick={() => {
+                                setShowNewRecordForm(!showNewRecordForm);
+                                setValidationErrorMessage('');
+                                setEmailError(false);
+                                setPhoneError(false);
+                            }}
                         >
                             Add New Record
                         </Button>
