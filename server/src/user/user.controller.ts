@@ -71,7 +71,7 @@ export class UserController {
     @UseGuards(ATAuthGuard)
     @Roles(Role.ADMIN)
     async deleteStudent(@Param('id') id: string, @Res() res: Response) {
-        await this.userService.removeById(id);
+        await this.userService.removeByStudentId(id);
         res.status(200).send({
             message: 'Student deleted successfully',
         });
@@ -151,7 +151,7 @@ export class UserController {
     @ApiOperation({
         summary: 'Update multiple user records [ADMIN]',
         description:
-            'Accepts a payload of multiple records to update. Each record must have a valid `id` and an `updates` object with at least one field to update. Throws an error if a record does not exist.',
+            'Accepts a payload of multiple records to update. Each record must have a valid `username` (Student ID) and an `updates` object with at least one field to update. Throws an error if a record does not exist.',
     })
     @ApiBody({
         type: [UpdateUsersDto],
@@ -161,13 +161,13 @@ export class UserController {
                 summary: 'Valid payload',
                 value: [
                     {
-                        id: '63f7c92e8b5e4a5d2c70f00e',
+                        username: '22127000',
                         updates: {
-                            username: 'new.username',
+                            fullname: 'new.fullname',
                         },
                     },
                     {
-                        id: '63f7c92e8b5e4a5d2c70f00f',
+                        username: '22127001',
                         updates: {
                             email: 'new.email@email.com',
                         },
@@ -203,6 +203,6 @@ export class UserController {
             }
         });
 
-        return await this.userService.updateMultipleUsers(users);
+        return await this.userService.updateMultipleUsersByStudentID(users);
     }
 }

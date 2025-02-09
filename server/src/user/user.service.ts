@@ -213,8 +213,10 @@ export class UserService {
         }
     }
 
-    async removeById(id: string): Promise<void> {
-        const result = await this.userModel.findByIdAndDelete(id).exec();
+    async removeByStudentId(id: string): Promise<void> {
+        const result = await this.userModel
+            .findOneAndDelete({ username: id })
+            .exec();
 
         if (!result) {
             throw new InternalServerErrorException(
@@ -289,25 +291,29 @@ export class UserService {
         }
     }
 
-    async updateMultipleUsers(records: UpdateUsersDto[]) {
+    async updateMultipleUsersByStudentID(records: UpdateUsersDto[]) {
         const results = [];
 
-        for (const { id, updates } of records) {
-            const user = await this.userModel.findById(id).exec();
+        for (const { username, updates } of records) {
+            const user = await this.userModel
+                .findOne({ username: username })
+                .exec();
             if (!user) {
-                throw new NotFoundException(`User with id ${id} not found`);
+                throw new NotFoundException(
+                    `Student with id ${username} not found`,
+                );
             }
 
             try {
                 Object.assign(user, updates);
                 await user.save();
                 results.push({
-                    id: user._id,
+                    username: user.username,
                     status: 'updated',
                 });
             } catch (error) {
                 results.push({
-                    id,
+                    username,
                     status: 'error',
                     message: error.message,
                 });
