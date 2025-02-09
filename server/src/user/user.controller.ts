@@ -44,8 +44,9 @@ export class UserController {
     })
     @UseGuards(ATAuthGuard)
     @Roles(Role.ADMIN)
-    async addStudent(@Request() req: UserSignUpDto, @Res() res: Response) {
-        const newStudent = await this.userService.create(req);
+    async addStudent(@Request() req: any, @Res() res: Response) {
+        console.log(req.body);
+        const newStudent = await this.userService.create(req.body);
         res.status(201).send({
             email: newStudent.email,
             username: newStudent.username,

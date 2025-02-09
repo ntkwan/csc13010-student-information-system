@@ -149,6 +149,7 @@ export class UserService {
         } = userSignUpDto;
         const hashedPassword = await this.hashPassword(password);
 
+        console.log('hi');
         const user = await this.userModel.create({
             username: username,
             email: email,

@@ -15,11 +15,43 @@ import {
     Avatar,
     Box,
     Typography,
+    MenuItem,
 } from '@mui/material';
 import { ExitToApp } from '@mui/icons-material';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import Head from 'next/head';
+
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import dayjs from 'dayjs';
+
+const facultyOptions = [
+    { value: 'Faculty of Law', label: 'Faculty of Law' },
+    {
+        value: 'Faculty of Business English',
+        label: 'Faculty of Business English',
+    },
+    { value: 'Faculty of Japanese', label: 'Faculty of Japanese' },
+    { value: 'Faculty of French', label: 'Faculty of French' },
+];
+
+const programOptions = [
+    { value: 'Formal Program', label: 'Formal Program' },
+    { value: 'High-Quality Program', label: 'High-Quality Program' },
+    { value: 'Advanced Program', label: 'Advanced Program' },
+];
+
+const classYearOptions = Array.from({ length: 2025 - 1990 + 1 }, (_, i) => ({
+    value: `${1990 + i}`,
+    label: `${1990 + i}`,
+}));
+
+const genderOptions = [
+    { value: 'Male', label: 'Male' },
+    { value: 'Female', label: 'Female' },
+];
 
 const UsersPage = () => {
     const router = useRouter();
@@ -35,6 +67,20 @@ const UsersPage = () => {
     } | null>(null);
     const [isSignOutVisible, setIsSignOutVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+    const [showNewRecordForm, setShowNewRecordForm] = useState(false);
+    const [newRecord, setNewRecord] = useState({
+        username: '',
+        fullname: '',
+        birthday: '',
+        gender: '',
+        faculty: '',
+        classYear: '',
+        program: '',
+        address: '',
+        email: '',
+        password: '',
+        phone: '',
+    });
 
     const defaultAvatar = 'https://robohash.org/mail@ashallendesign.co.uk';
 
@@ -156,8 +202,38 @@ const UsersPage = () => {
         }
     };
 
-    const handleHeaderClick = () => {
-        router.push('/');
+    const handleAddNewRecord = async () => {
+        try {
+            await axios.post(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/user`,
+                newRecord,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                },
+            );
+            setNewRecord({
+                username: '',
+                fullname: '',
+                birthday: '',
+                gender: '',
+                faculty: '',
+                classYear: '',
+                program: '',
+                address: '',
+                email: '',
+                password: '',
+                phone: '',
+            });
+            setShowNewRecordForm(false);
+            fetchAllProfiles();
+        } catch (error) {
+            console.error('Error adding new record:', error);
+            setErrorMessage(
+                'An error occurred while adding the record. Please try again.',
+            );
+        }
     };
 
     useEffect(() => {
@@ -227,11 +303,8 @@ const UsersPage = () => {
             >
                 <Typography
                     variant="h4"
-                    style={{
-                        cursor: 'pointer',
-                        userSelect: 'none', // Prevent text from being selected
-                    }}
-                    onClick={handleHeaderClick}
+                    style={{ cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() => router.push('/')}
                 >
                     {isLoggedIn ? 'User Management' : 'Welcome to Homepage'}
                 </Typography>
@@ -318,7 +391,7 @@ const UsersPage = () => {
                     >
                         <Box width="50%" minWidth="300px">
                             <TextField
-                                label="Search by username or email"
+                                label="Search by Student ID or full name"
                                 variant="outlined"
                                 fullWidth
                                 value={searchQuery}
@@ -347,6 +420,259 @@ const UsersPage = () => {
                         </Box>
                     </Box>
 
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => setShowNewRecordForm(!showNewRecordForm)}
+                        style={{ marginBottom: '20px' }}
+                    >
+                        {showNewRecordForm ? 'Cancel' : 'Add New Record'}
+                    </Button>
+
+                    {showNewRecordForm && (
+                        <TableContainer
+                            component={Paper}
+                            style={{
+                                marginBottom: '20px',
+                                width: '80%',
+                                margin: '0 auto',
+                            }}
+                        >
+                            <Table>
+                                <TableBody>
+                                    {Object.keys(newRecord).map((field) => (
+                                        <TableRow key={field}>
+                                            <TableCell
+                                                style={{ fontWeight: 'bold' }}
+                                            >
+                                                {field}
+                                            </TableCell>
+                                            <TableCell>
+                                                {field === 'birthday' ? (
+                                                    <LocalizationProvider
+                                                        dateAdapter={
+                                                            AdapterDayjs
+                                                        }
+                                                    >
+                                                        <DatePicker
+                                                            value={
+                                                                newRecord.birthday
+                                                                    ? dayjs(
+                                                                          newRecord.birthday,
+                                                                      )
+                                                                    : null
+                                                            }
+                                                            onChange={(
+                                                                date: any,
+                                                            ) =>
+                                                                setNewRecord(
+                                                                    (prev) => ({
+                                                                        ...prev,
+                                                                        birthday:
+                                                                            date
+                                                                                ? date.format(
+                                                                                      'YYYY-MM-DD',
+                                                                                  )
+                                                                                : '',
+                                                                    }),
+                                                                )
+                                                            }
+                                                            slotProps={{
+                                                                textField: {
+                                                                    fullWidth:
+                                                                        true,
+                                                                },
+                                                            }}
+                                                        />
+                                                    </LocalizationProvider>
+                                                ) : field === 'gender' ? (
+                                                    <TextField
+                                                        select
+                                                        fullWidth
+                                                        value={
+                                                            newRecord.gender ||
+                                                            ''
+                                                        }
+                                                        onChange={(e) =>
+                                                            setNewRecord(
+                                                                (prev) => ({
+                                                                    ...prev,
+                                                                    gender: e
+                                                                        .target
+                                                                        .value,
+                                                                }),
+                                                            )
+                                                        }
+                                                    >
+                                                        {genderOptions.map(
+                                                            (option) => (
+                                                                <MenuItem
+                                                                    key={
+                                                                        option.value
+                                                                    }
+                                                                    value={
+                                                                        option.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        option.label
+                                                                    }
+                                                                </MenuItem>
+                                                            ),
+                                                        )}
+                                                    </TextField>
+                                                ) : field === 'faculty' ? (
+                                                    <TextField
+                                                        select
+                                                        fullWidth
+                                                        value={
+                                                            newRecord.faculty ||
+                                                            ''
+                                                        }
+                                                        onChange={(e) =>
+                                                            setNewRecord(
+                                                                (prev) => ({
+                                                                    ...prev,
+                                                                    faculty:
+                                                                        e.target
+                                                                            .value,
+                                                                }),
+                                                            )
+                                                        }
+                                                    >
+                                                        {facultyOptions.map(
+                                                            (option) => (
+                                                                <MenuItem
+                                                                    key={
+                                                                        option.value
+                                                                    }
+                                                                    value={
+                                                                        option.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        option.label
+                                                                    }
+                                                                </MenuItem>
+                                                            ),
+                                                        )}
+                                                    </TextField>
+                                                ) : field === 'classYear' ? (
+                                                    <TextField
+                                                        select
+                                                        fullWidth
+                                                        value={
+                                                            newRecord.classYear ||
+                                                            ''
+                                                        }
+                                                        onChange={(e) =>
+                                                            setNewRecord(
+                                                                (prev) => ({
+                                                                    ...prev,
+                                                                    classYear:
+                                                                        e.target
+                                                                            .value,
+                                                                }),
+                                                            )
+                                                        }
+                                                    >
+                                                        {classYearOptions.map(
+                                                            (option) => (
+                                                                <MenuItem
+                                                                    key={
+                                                                        option.value
+                                                                    }
+                                                                    value={
+                                                                        option.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        option.label
+                                                                    }
+                                                                </MenuItem>
+                                                            ),
+                                                        )}
+                                                    </TextField>
+                                                ) : field === 'program' ? (
+                                                    <TextField
+                                                        select
+                                                        fullWidth
+                                                        value={
+                                                            newRecord.program ||
+                                                            ''
+                                                        }
+                                                        onChange={(e) =>
+                                                            setNewRecord(
+                                                                (prev) => ({
+                                                                    ...prev,
+                                                                    program:
+                                                                        e.target
+                                                                            .value,
+                                                                }),
+                                                            )
+                                                        }
+                                                    >
+                                                        {programOptions.map(
+                                                            (option) => (
+                                                                console.log(
+                                                                    option.value,
+                                                                ),
+                                                                (
+                                                                    <MenuItem
+                                                                        key={
+                                                                            option.value
+                                                                        }
+                                                                        value={
+                                                                            option.value
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            option.label
+                                                                        }
+                                                                    </MenuItem>
+                                                                )
+                                                            ),
+                                                        )}
+                                                    </TextField>
+                                                ) : (
+                                                    <TextField
+                                                        fullWidth
+                                                        value={
+                                                            (newRecord as any)[
+                                                                field
+                                                            ]
+                                                        }
+                                                        onChange={(e) =>
+                                                            setNewRecord(
+                                                                (prev) => ({
+                                                                    ...prev,
+                                                                    [field]:
+                                                                        e.target
+                                                                            .value,
+                                                                }),
+                                                            )
+                                                        }
+                                                    />
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    )}
+
+                    {showNewRecordForm && (
+                        <Button
+                            variant="contained"
+                            color="success"
+                            onClick={handleAddNewRecord}
+                            style={{ display: 'block', margin: '10px auto' }}
+                        >
+                            Submit New Record
+                        </Button>
+                    )}
+
                     <Box
                         display="flex"
                         justifyContent="center"
@@ -366,9 +692,9 @@ const UsersPage = () => {
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>ID</TableCell>
-                                        <TableCell>Username</TableCell>
+                                        <TableCell>Student ID</TableCell>
                                         <TableCell>Email</TableCell>
-                                        <TableCell>Birthdate</TableCell>
+                                        <TableCell>Birthday</TableCell>
                                         <TableCell>Actions</TableCell>
                                     </TableRow>
                                 </TableHead>
