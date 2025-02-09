@@ -147,8 +147,17 @@ export class UserController {
         return users.map((user) => ({
             id: user._id,
             username: user.username,
-            email: user.email,
+            fullname: user.fullname,
             birthday: user.birthday,
+            gender: user.gender,
+            faculty: user.faculty,
+            classYear: user.classYear,
+            program: user.program,
+            address: user.address,
+            email: user.email,
+            phone: user.phone,
+            status: user.status,
+            role: user.role,
         }));
     }
 

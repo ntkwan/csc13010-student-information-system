@@ -463,7 +463,46 @@ const UsersPage = () => {
                                             <TableCell
                                                 style={{ fontWeight: 'bold' }}
                                             >
-                                                {field}
+                                                {(() => {
+                                                    const key = field;
+                                                    const displayKey =
+                                                        key === 'fullname'
+                                                            ? 'Full name'
+                                                            : key === 'username'
+                                                              ? 'Student ID'
+                                                              : key ===
+                                                                  'birthday'
+                                                                ? 'Birthday'
+                                                                : key ===
+                                                                    'gender'
+                                                                  ? 'Gender'
+                                                                  : key ===
+                                                                      'faculty'
+                                                                    ? 'Faculty'
+                                                                    : key ===
+                                                                        'classYear'
+                                                                      ? 'Class Year'
+                                                                      : key ===
+                                                                          'program'
+                                                                        ? 'Program'
+                                                                        : key ===
+                                                                            'address'
+                                                                          ? 'Address'
+                                                                          : key ===
+                                                                              'email'
+                                                                            ? 'Email'
+                                                                            : key ===
+                                                                                'phone'
+                                                                              ? 'Phone number'
+                                                                              : key ===
+                                                                                  'status'
+                                                                                ? 'Status'
+                                                                                : key ===
+                                                                                    'role'
+                                                                                  ? 'Role'
+                                                                                  : key;
+                                                    return displayKey;
+                                                })()}
                                             </TableCell>
                                             <TableCell>
                                                 {field === 'birthday' ? (
