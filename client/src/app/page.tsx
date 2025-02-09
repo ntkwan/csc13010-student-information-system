@@ -469,22 +469,258 @@ const UsersPage = () => {
                         </Box>
                     </Box>
 
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => setShowNewRecordForm(!showNewRecordForm)}
-                        style={{ marginBottom: '20px' }}
+                    <Box
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        mb={6}
                     >
-                        {showNewRecordForm ? 'Cancel' : 'Add New Record'}
-                    </Button>
-
-                    {showNewRecordForm && (
                         <TableContainer
                             component={Paper}
                             style={{
-                                marginBottom: '20px',
                                 width: '80%',
-                                margin: '0 auto',
+                                maxWidth: '1200px',
+                                maxHeight: '600px', // Set max height for scrolling
+                                overflow: 'auto', // Enable scrolling
+                            }}
+                        >
+                            <Table stickyHeader>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>ID</TableCell>
+                                        <TableCell>Student ID</TableCell>
+                                        <TableCell>Full name</TableCell>
+                                        <TableCell>Birthday</TableCell>
+                                        <TableCell>Actions</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {records.map(
+                                        (record: any, index: number) => (
+                                            <TableRow key={index}>
+                                                <TableCell>
+                                                    {record.id}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {record.username}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {record.fullname}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {
+                                                        new Date(
+                                                            record.birthday,
+                                                        )
+                                                            .toISOString()
+                                                            .split('T')[0]
+                                                    }
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="primary"
+                                                        onClick={async () => {
+                                                            if (
+                                                                editing[
+                                                                    record.id
+                                                                ]
+                                                            ) {
+                                                                const updates =
+                                                                    {
+                                                                        id: record.id,
+                                                                        updates:
+                                                                            editing[
+                                                                                record
+                                                                                    .id
+                                                                            ],
+                                                                    };
+                                                                try {
+                                                                    await axios.post(
+                                                                        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users`,
+                                                                        [
+                                                                            updates,
+                                                                        ],
+                                                                        {
+                                                                            headers:
+                                                                                {
+                                                                                    Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                                                                                },
+                                                                        },
+                                                                    );
+                                                                    setEditing(
+                                                                        (
+                                                                            prev,
+                                                                        ) => {
+                                                                            const updated =
+                                                                                {
+                                                                                    ...prev,
+                                                                                };
+                                                                            delete updated[
+                                                                                record
+                                                                                    .id
+                                                                            ];
+                                                                            return updated;
+                                                                        },
+                                                                    );
+                                                                    fetchRecords();
+                                                                } catch (error) {
+                                                                    console.error(
+                                                                        'Error updating record:',
+                                                                        error,
+                                                                    );
+                                                                }
+                                                            }
+                                                        }}
+                                                        disabled={
+                                                            !editing[record.id]
+                                                        }
+                                                    >
+                                                        Update
+                                                    </Button>
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="secondary"
+                                                        onClick={() =>
+                                                            handleViewDetails(
+                                                                record,
+                                                            )
+                                                        }
+                                                        style={{
+                                                            marginLeft: '10px',
+                                                        }}
+                                                    >
+                                                        View Details
+                                                    </Button>
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="error"
+                                                        onClick={() =>
+                                                            handleClickOpen(
+                                                                record,
+                                                            )
+                                                        }
+                                                        style={{
+                                                            marginLeft: '10px',
+                                                        }}
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ),
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
+
+                    {open && (
+                        <Dialog open={open} onClose={handleClose}>
+                            <DialogTitle>Confirm Deletion</DialogTitle>
+                            <DialogContent>
+                                Are you sure you want to delete?
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={handleClose} color="primary">
+                                    Cancel
+                                </Button>
+                                <Button
+                                    onClick={() => handleDelete(selectedRecord)}
+                                    color="error"
+                                >
+                                    Delete
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
+                    )}
+
+                    {isOpenRecord && (
+                        <Dialog
+                            open={isOpenRecord}
+                            onClose={handleCloseDetails}
+                        >
+                            <DialogTitle>Record Details</DialogTitle>
+                            <DialogContent>
+                                {Object.entries(selectedRecord || {}).map(
+                                    ([key, value]) => {
+                                        if (key === 'id') return null;
+
+                                        const displayKey =
+                                            key === 'fullname'
+                                                ? 'Full name'
+                                                : key === 'username'
+                                                  ? 'Student ID'
+                                                  : key === 'birthday'
+                                                    ? 'Birthday'
+                                                    : key === 'gender'
+                                                      ? 'Gender'
+                                                      : key === 'faculty'
+                                                        ? 'Faculty'
+                                                        : key === 'classYear'
+                                                          ? 'Class Year'
+                                                          : key === 'program'
+                                                            ? 'Program'
+                                                            : key === 'address'
+                                                              ? 'Address'
+                                                              : key === 'email'
+                                                                ? 'Email'
+                                                                : key ===
+                                                                    'phone'
+                                                                  ? 'Phone number'
+                                                                  : key ===
+                                                                      'status'
+                                                                    ? 'Status'
+                                                                    : key ===
+                                                                        'role'
+                                                                      ? 'Role'
+                                                                      : key;
+
+                                        return (
+                                            <Typography
+                                                key={key}
+                                                gutterBottom
+                                                style={{
+                                                    width: '500px',
+                                                    height: '30px',
+                                                    textAlign: 'left',
+                                                    lineHeight: '32px',
+                                                    overflow: 'hidden',
+                                                }}
+                                            >
+                                                <strong>{displayKey}:</strong>{' '}
+                                                {key === 'birthday'
+                                                    ? new Date(value as string)
+                                                          .toISOString()
+                                                          .split('T')[0]
+                                                    : String(value)}
+                                            </Typography>
+                                        );
+                                    },
+                                )}
+                            </DialogContent>
+                            <DialogActions>
+                                <Button
+                                    onClick={handleCloseDetails}
+                                    color="primary"
+                                >
+                                    Close
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
+                    )}
+
+                    {showNewRecordForm && (
+                        <Dialog
+                            open={showNewRecordForm}
+                            onClose={() => setShowNewRecordForm(false)}
+                            maxWidth="md"
+                            fullWidth
+                            sx={{
+                                '& .MuiDialog-paper': {
+                                    width: '1000px',
+                                    maxHeight: '70vh',
+                                },
                             }}
                         >
                             <Table>
@@ -531,7 +767,10 @@ const UsersPage = () => {
                                                                                 : key ===
                                                                                     'role'
                                                                                   ? 'Role'
-                                                                                  : key;
+                                                                                  : key ===
+                                                                                      'password'
+                                                                                    ? 'Default password'
+                                                                                    : key;
                                                     return displayKey;
                                                 })()}
                                             </TableCell>
@@ -747,274 +986,47 @@ const UsersPage = () => {
                                     ))}
                                 </TableBody>
                             </Table>
-                        </TableContainer>
+                            <Box
+                                display="flex"
+                                justifyContent="center"
+                                alignItems="center"
+                                gap={2}
+                                sx={{ padding: 2 }}
+                            >
+                                <Button
+                                    variant="contained"
+                                    color="success"
+                                    onClick={handleAddNewRecord}
+                                >
+                                    Submit New Record
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    onClick={() => setShowNewRecordForm(false)}
+                                >
+                                    Cancel
+                                </Button>
+                            </Box>
+                        </Dialog>
                     )}
-
-                    {showNewRecordForm && (
-                        <Button
-                            variant="contained"
-                            color="success"
-                            onClick={handleAddNewRecord}
-                            style={{ display: 'block', margin: '10px auto' }}
-                        >
-                            Submit New Record
-                        </Button>
-                    )}
-
                     <Box
                         display="flex"
                         justifyContent="center"
                         alignItems="center"
-                        mb={6}
+                        gap={2}
+                        sx={{ padding: 2 }}
                     >
-                        <TableContainer
-                            component={Paper}
-                            style={{
-                                width: '80%',
-                                maxWidth: '1200px',
-                                maxHeight: '600px', // Set max height for scrolling
-                                overflow: 'auto', // Enable scrolling
-                            }}
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() =>
+                                setShowNewRecordForm(!showNewRecordForm)
+                            }
                         >
-                            <Table stickyHeader>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>ID</TableCell>
-                                        <TableCell>Student ID</TableCell>
-                                        <TableCell>Full name</TableCell>
-                                        <TableCell>Birthday</TableCell>
-                                        <TableCell>Actions</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {records.map(
-                                        (record: any, index: number) => (
-                                            <TableRow key={index}>
-                                                <TableCell>
-                                                    {record.id}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {record.username}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {record.fullname}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {
-                                                        new Date(
-                                                            record.birthday,
-                                                        )
-                                                            .toISOString()
-                                                            .split('T')[0]
-                                                    }
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Button
-                                                        variant="outlined"
-                                                        color="primary"
-                                                        onClick={async () => {
-                                                            if (
-                                                                editing[
-                                                                    record.id
-                                                                ]
-                                                            ) {
-                                                                const updates =
-                                                                    {
-                                                                        id: record.id,
-                                                                        updates:
-                                                                            editing[
-                                                                                record
-                                                                                    .id
-                                                                            ],
-                                                                    };
-                                                                try {
-                                                                    await axios.post(
-                                                                        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users`,
-                                                                        [
-                                                                            updates,
-                                                                        ],
-                                                                        {
-                                                                            headers:
-                                                                                {
-                                                                                    Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-                                                                                },
-                                                                        },
-                                                                    );
-                                                                    setEditing(
-                                                                        (
-                                                                            prev,
-                                                                        ) => {
-                                                                            const updated =
-                                                                                {
-                                                                                    ...prev,
-                                                                                };
-                                                                            delete updated[
-                                                                                record
-                                                                                    .id
-                                                                            ];
-                                                                            return updated;
-                                                                        },
-                                                                    );
-                                                                    fetchRecords();
-                                                                } catch (error) {
-                                                                    console.error(
-                                                                        'Error updating record:',
-                                                                        error,
-                                                                    );
-                                                                }
-                                                            }
-                                                        }}
-                                                        disabled={
-                                                            !editing[record.id]
-                                                        }
-                                                    >
-                                                        Update
-                                                    </Button>
-                                                    <Button
-                                                        variant="outlined"
-                                                        color="secondary"
-                                                        onClick={() =>
-                                                            handleViewDetails(
-                                                                record,
-                                                            )
-                                                        }
-                                                        style={{
-                                                            marginLeft: '10px',
-                                                        }}
-                                                    >
-                                                        View Details
-                                                    </Button>
-                                                    <Button
-                                                        variant="outlined"
-                                                        color="error"
-                                                        onClick={() =>
-                                                            handleClickOpen(
-                                                                record,
-                                                            )
-                                                        }
-                                                        style={{
-                                                            marginLeft: '10px',
-                                                        }}
-                                                    >
-                                                        Delete
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        ),
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
+                            Add New Record
+                        </Button>
                     </Box>
-
-                    {open && (
-                        <Dialog open={open} onClose={handleClose}>
-                            <DialogTitle>Confirm Deletion</DialogTitle>
-                            <DialogContent>
-                                Are you sure you want to delete?
-                            </DialogContent>
-                            <DialogActions>
-                                <Button onClick={handleClose} color="primary">
-                                    Cancel
-                                </Button>
-                                <Button
-                                    onClick={() => handleDelete(selectedRecord)}
-                                    color="error"
-                                >
-                                    Delete
-                                </Button>
-                            </DialogActions>
-                        </Dialog>
-                    )}
-
-                    {isOpenRecord && (
-                        <Dialog
-                            open={isOpenRecord}
-                            onClose={handleCloseDetails}
-                        >
-                            <DialogTitle>Record Details</DialogTitle>
-                            <DialogContent>
-                                {Object.entries(selectedRecord).map(
-                                    ([key, value]) => {
-                                        if (key === 'id') return null;
-
-                                        const displayKey =
-                                            key === 'fullname'
-                                                ? 'Full name'
-                                                : key === 'username'
-                                                  ? 'Student ID'
-                                                  : key === 'birthday'
-                                                    ? 'Birthday'
-                                                    : key === 'gender'
-                                                      ? 'Gender'
-                                                      : key === 'faculty'
-                                                        ? 'Faculty'
-                                                        : key === 'classYear'
-                                                          ? 'Class Year'
-                                                          : key === 'program'
-                                                            ? 'Program'
-                                                            : key === 'address'
-                                                              ? 'Address'
-                                                              : key === 'email'
-                                                                ? 'Email'
-                                                                : key ===
-                                                                    'phone'
-                                                                  ? 'Phone number'
-                                                                  : key ===
-                                                                      'status'
-                                                                    ? 'Status'
-                                                                    : key ===
-                                                                        'role'
-                                                                      ? 'Role'
-                                                                      : key;
-
-                                        return (
-                                            <Typography
-                                                key={key}
-                                                gutterBottom
-                                                style={{
-                                                    width: '500px', // Fixed width for the box
-                                                    height: '30px', // Fixed height for the box
-                                                    textAlign: 'left', // Center the text inside the box
-                                                    lineHeight: '32px', // Adjust the line height to center the text vertically
-                                                    overflow: 'hidden', // Prevent overflow in case the text is too long
-                                                }}
-                                            >
-                                                <strong>{displayKey}:</strong>{' '}
-                                                {key === 'birthday'
-                                                    ? new Date(value as string)
-                                                          .toISOString()
-                                                          .split('T')[0]
-                                                    : String(value)}
-                                            </Typography>
-                                        );
-                                    },
-                                )}
-                            </DialogContent>
-                            <DialogActions>
-                                <Button
-                                    onClick={handleCloseDetails}
-                                    color="primary"
-                                >
-                                    Close
-                                </Button>
-                            </DialogActions>
-                        </Dialog>
-                    )}
-
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        style={{
-                            display: 'block',
-                            marginLeft: 'auto',
-                            marginRight: 'auto',
-                        }}
-                        onClick={saveChanges}
-                        disabled={Object.keys(editing).length === 0}
-                    >
-                        Save Changes
-                    </Button>
                 </>
             )}
         </div>
