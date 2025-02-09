@@ -86,13 +86,44 @@ const UsersPage = () => {
         phone: '',
     });
     const [selectedRecord, setSelectedRecord] = useState(null);
+    const [open, setOpen] = useState(false);
+    const [isOpenRecord, setIsOpenRecord] = useState(false);
 
-    const handleViewDetails = (record) => {
+    const handleClickOpen = (record: any) => {
         setSelectedRecord(record);
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setSelectedRecord(null);
+        setOpen(false);
+    };
+
+    const handleDelete = async (record: any) => {
+        try {
+            await axios.delete(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/user/${record.username}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                },
+            );
+            fetchRecords(); // Re-fetch records after deletion
+            setOpen(false);
+        } catch (error) {
+            console.error('Error deleting record:', error);
+        }
+    };
+
+    const handleViewDetails = (record: any) => {
+        setSelectedRecord(record);
+        setIsOpenRecord(true);
     };
 
     const handleCloseDetails = () => {
         setSelectedRecord(null);
+        setIsOpenRecord(false);
     };
 
     const defaultAvatar = 'https://robohash.org/mail@ashallendesign.co.uk';
@@ -853,6 +884,20 @@ const UsersPage = () => {
                                                     >
                                                         View Details
                                                     </Button>
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="error"
+                                                        onClick={() =>
+                                                            handleClickOpen(
+                                                                record,
+                                                            )
+                                                        }
+                                                        style={{
+                                                            marginLeft: '10px',
+                                                        }}
+                                                    >
+                                                        Delete
+                                                    </Button>
                                                 </TableCell>
                                             </TableRow>
                                         ),
@@ -862,9 +907,29 @@ const UsersPage = () => {
                         </TableContainer>
                     </Box>
 
-                    {selectedRecord && (
+                    {open && (
+                        <Dialog open={open} onClose={handleClose}>
+                            <DialogTitle>Confirm Deletion</DialogTitle>
+                            <DialogContent>
+                                Are you sure you want to delete?
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={handleClose} color="primary">
+                                    Cancel
+                                </Button>
+                                <Button
+                                    onClick={() => handleDelete(selectedRecord)}
+                                    color="error"
+                                >
+                                    Delete
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
+                    )}
+
+                    {isOpenRecord && (
                         <Dialog
-                            open={Boolean(selectedRecord)}
+                            open={isOpenRecord}
                             onClose={handleCloseDetails}
                         >
                             <DialogTitle>Record Details</DialogTitle>
