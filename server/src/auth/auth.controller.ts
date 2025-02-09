@@ -173,7 +173,7 @@ export class AuthController {
     @ApiBearerAuth('access-token')
     @ApiOperation({
         summary:
-            'Change user role by ID [ADMIN]. There are 2 roles: administrator (ADMIN), user (USER). Cannot change role to ADMIN',
+            'Change user role by ID [ADMIN]. There are 2 roles: teacher (TEACHER), student (STUDENT). Cannot change role to ADMIN',
     })
     @Put('change-role/:id')
     @ApiBody({ type: ChangeRoleDto })

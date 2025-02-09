@@ -260,10 +260,10 @@ export class UserService {
         }
     }
 
-    async searchByNameOrEmail(name: string): Promise<User[]> {
+    async searchByNameOrStudentID(name: string): Promise<User[]> {
         const regex = new RegExp(name, 'i'); // Case-insensitive regex search
         const users = await this.userModel.find({
-            $or: [{ username: regex }, { email: regex }],
+            $or: [{ fullname: regex }, { username: regex }],
         });
 
         if (!users.length) {

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Gender, Faculty, Program, Status } from '../enums/student.enum';
 
 export class UpdateUsersDto {
     @ApiProperty({
@@ -15,8 +16,15 @@ export class UpdateUsersDto {
     updates: Partial<{
         username?: string;
         email?: string;
-        birthdate?: Date;
-        role?: string;
+        birthday?: Date;
+        fullname?: string;
+        gender?: Gender;
+        faculty?: Faculty;
+        classYear?: number;
+        program?: Program;
+        address?: string;
+        phone?: string;
+        status?: Status;
     }>;
 }
 export class UpdateResultDto {

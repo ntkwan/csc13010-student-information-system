@@ -14,16 +14,16 @@
     "author": "",
     "license": "MIT",
     "lint-staged": {
-        "*.{css, scss}": [
+        "*.{css,scss}": [
             "prettier --ignore-path .eslintignore --single-quote --tab-width 4 --write"
         ],
-        "*.{js, jsx, ts, tsx}": [
+        "*.{js,jsx,ts,tsx}": [
             "prettier --ignore-path .eslintignore --single-quote --tab-width 4 --trailing-comma all --write"
         ],
         "*.json": [
             "prettier --ignore-path .eslintignore --write"
         ],
-        "*.{html, md, yml}": [
+        "*.{html,md,yml}": [
             "prettier --ignore-path .eslintignore --single-quote --write"
         ]
     },

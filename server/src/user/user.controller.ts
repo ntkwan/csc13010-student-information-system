@@ -9,6 +9,8 @@ import {
     Post,
     Body,
     Put,
+    Delete,
+    Param,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ATAuthGuard } from '../auth/guards/at-auth.guard';
@@ -33,7 +35,7 @@ export class UserController {
 
     @ApiOperation({ summary: 'Add a new student [ADMIN]' })
     @ApiBearerAuth('access-token')
-    @Post('student')
+    @Post('user')
     @ApiBody({ type: UserSignUpDto })
     @ApiResponse({
         status: 201,
@@ -41,6 +43,7 @@ export class UserController {
         type: ProfileEntity,
     })
     @UseGuards(ATAuthGuard)
+    @Roles(Role.ADMIN)
     async addStudent(@Request() req: UserSignUpDto, @Res() res: Response) {
         const newStudent = await this.userService.create(req);
         res.status(201).send({
@@ -55,6 +58,22 @@ export class UserController {
             address: newStudent.address,
             phone: newStudent.phone,
             status: newStudent.status,
+        });
+    }
+
+    @ApiOperation({ summary: 'Delete a student [ADMIN]' })
+    @ApiBearerAuth('access-token')
+    @Delete('user/:id')
+    @ApiResponse({
+        status: 200,
+        description: 'Student deleted successfully',
+    })
+    @UseGuards(ATAuthGuard)
+    @Roles(Role.ADMIN)
+    async deleteStudent(@Param('id') id: string, @Res() res: Response) {
+        await this.userService.removeById(id);
+        res.status(200).send({
+            message: 'Student deleted successfully',
         });
     }
 
@@ -115,7 +134,7 @@ export class UserController {
             throw new BadRequestException('Query parameter "name" is required');
         }
 
-        const users = await this.userService.searchByNameOrEmail(name);
+        const users = await this.userService.searchByNameOrStudentID(name);
         return users.map((user) => ({
             id: user._id,
             username: user.username,
