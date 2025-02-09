@@ -22,7 +22,7 @@ export enum Gender {
 
 export enum Program {
     FP = 'Formal Program',
-    HQP = 'High-Quality Program',
+    HQ = 'High-Quality Program',
     AP = 'Advanced Program',
     NULL = 'Unassigned',
 }

@@ -16,6 +16,10 @@ import {
     Box,
     Typography,
     MenuItem,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
 } from '@mui/material';
 import { ExitToApp } from '@mui/icons-material';
 import axios from 'axios';
@@ -81,6 +85,15 @@ const UsersPage = () => {
         password: '',
         phone: '',
     });
+    const [selectedRecord, setSelectedRecord] = useState(null);
+
+    const handleViewDetails = (record) => {
+        setSelectedRecord(record);
+    };
+
+    const handleCloseDetails = () => {
+        setSelectedRecord(null);
+    };
 
     const defaultAvatar = 'https://robohash.org/mail@ashallendesign.co.uk';
 
@@ -191,6 +204,7 @@ const UsersPage = () => {
                 setErrorMessage('No users found.');
             } else {
                 setRecords(response.data);
+                console.log(response.data);
             }
         } catch (error) {
             console.error('Error fetching all profiles:', error);
@@ -287,11 +301,13 @@ const UsersPage = () => {
         <div style={{ padding: '20px' }}>
             <Head>
                 <title>
-                    {isLoggedIn ? 'User Management' : 'Welcome to the Homepage'}
+                    {isLoggedIn
+                        ? 'Student Information System'
+                        : 'Welcome to the Student Information System'}
                 </title>
                 <meta
-                    name="For administrator to manage users efficiently"
-                    content="User management page"
+                    name="For administrator to manage school records efficiently"
+                    content="Student Information System"
                 />
             </Head>
 
@@ -306,7 +322,9 @@ const UsersPage = () => {
                     style={{ cursor: 'pointer', userSelect: 'none' }}
                     onClick={() => router.push('/')}
                 >
-                    {isLoggedIn ? 'User Management' : 'Welcome to Homepage'}
+                    {isLoggedIn
+                        ? 'Student Information System'
+                        : 'Welcome to Student Information System'}
                 </Typography>
                 <Box
                     display="flex"
@@ -391,7 +409,7 @@ const UsersPage = () => {
                     >
                         <Box width="50%" minWidth="300px">
                             <TextField
-                                label="Search by Student ID or full name"
+                                label="Search by student ID or full name"
                                 variant="outlined"
                                 fullWidth
                                 value={searchQuery}
@@ -693,7 +711,7 @@ const UsersPage = () => {
                                     <TableRow>
                                         <TableCell>ID</TableCell>
                                         <TableCell>Student ID</TableCell>
-                                        <TableCell>Email</TableCell>
+                                        <TableCell>Full name</TableCell>
                                         <TableCell>Birthday</TableCell>
                                         <TableCell>Actions</TableCell>
                                     </TableRow>
@@ -706,57 +724,19 @@ const UsersPage = () => {
                                                     {record.id}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <TextField
-                                                        value={
-                                                            editing[record.id]
-                                                                ?.username ||
-                                                            record.username
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleEditChange(
-                                                                record.id,
-                                                                'username',
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                    />
+                                                    {record.username}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <TextField
-                                                        value={
-                                                            editing[record.id]
-                                                                ?.email ||
-                                                            record.email
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleEditChange(
-                                                                record.id,
-                                                                'email',
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                    />
+                                                    {record.fullname}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <TextField
-                                                        type="date"
-                                                        value={
-                                                            editing[record.id]
-                                                                ?.birthdate ||
-                                                            new Date(
-                                                                record.birthday,
-                                                            )
-                                                                .toISOString()
-                                                                .split('T')[0]
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleEditChange(
-                                                                record.id,
-                                                                'birthdate',
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                    />
+                                                    {
+                                                        new Date(
+                                                            record.birthday,
+                                                        )
+                                                            .toISOString()
+                                                            .split('T')[0]
+                                                    }
                                                 </TableCell>
                                                 <TableCell>
                                                     <Button
@@ -820,6 +800,20 @@ const UsersPage = () => {
                                                     >
                                                         Update
                                                     </Button>
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="secondary"
+                                                        onClick={() =>
+                                                            handleViewDetails(
+                                                                record,
+                                                            )
+                                                        }
+                                                        style={{
+                                                            marginLeft: '10px',
+                                                        }}
+                                                    >
+                                                        View Details
+                                                    </Button>
                                                 </TableCell>
                                             </TableRow>
                                         ),
@@ -828,6 +822,82 @@ const UsersPage = () => {
                             </Table>
                         </TableContainer>
                     </Box>
+
+                    {selectedRecord && (
+                        <Dialog
+                            open={Boolean(selectedRecord)}
+                            onClose={handleCloseDetails}
+                        >
+                            <DialogTitle>Record Details</DialogTitle>
+                            <DialogContent>
+                                {Object.entries(selectedRecord).map(
+                                    ([key, value]) => {
+                                        if (key === 'id') return null;
+
+                                        const displayKey =
+                                            key === 'fullname'
+                                                ? 'Full name'
+                                                : key === 'username'
+                                                  ? 'Student ID'
+                                                  : key === 'birthday'
+                                                    ? 'Birthday'
+                                                    : key === 'gender'
+                                                      ? 'Gender'
+                                                      : key === 'faculty'
+                                                        ? 'Faculty'
+                                                        : key === 'classYear'
+                                                          ? 'Class Year'
+                                                          : key === 'program'
+                                                            ? 'Program'
+                                                            : key === 'address'
+                                                              ? 'Address'
+                                                              : key === 'email'
+                                                                ? 'Email'
+                                                                : key ===
+                                                                    'phone'
+                                                                  ? 'Phone number'
+                                                                  : key ===
+                                                                      'status'
+                                                                    ? 'Status'
+                                                                    : key ===
+                                                                        'role'
+                                                                      ? 'Role'
+                                                                      : key;
+
+                                        return (
+                                            <Typography
+                                                key={key}
+                                                gutterBottom
+                                                style={{
+                                                    width: '500px', // Fixed width for the box
+                                                    height: '30px', // Fixed height for the box
+                                                    textAlign: 'left', // Center the text inside the box
+                                                    lineHeight: '32px', // Adjust the line height to center the text vertically
+                                                    overflow: 'hidden', // Prevent overflow in case the text is too long
+                                                }}
+                                            >
+                                                <strong>{displayKey}:</strong>{' '}
+                                                {key === 'birthday'
+                                                    ? new Date(value as string)
+                                                          .toISOString()
+                                                          .split('T')[0]
+                                                    : String(value)}
+                                            </Typography>
+                                        );
+                                    },
+                                )}
+                            </DialogContent>
+                            <DialogActions>
+                                <Button
+                                    onClick={handleCloseDetails}
+                                    color="primary"
+                                >
+                                    Close
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
+                    )}
+
                     <Button
                         variant="contained"
                         color="primary"

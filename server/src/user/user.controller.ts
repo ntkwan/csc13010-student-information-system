@@ -111,9 +111,17 @@ export class UserController {
         res.send(
             foundUsers.map((user) => ({
                 id: user._id,
-                email: user.email,
                 username: user.username,
+                fullname: user.fullname,
                 birthday: user.birthday,
+                gender: user.gender,
+                faculty: user.faculty,
+                classYear: user.classYear,
+                program: user.program,
+                address: user.address,
+                email: user.email,
+                phone: user.phone,
+                status: user.status,
                 role: user.role,
             })),
         );
