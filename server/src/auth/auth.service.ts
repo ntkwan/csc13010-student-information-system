@@ -140,7 +140,7 @@ export class AuthService {
 
             const newAT = await this.jwtService.signAsync(payloadAccessToken, {
                 secret: this.configService.get('AT_SECRET'),
-                expiresIn: '1h',
+                expiresIn: '12h',
             });
 
             const payloadRefreshToken = {

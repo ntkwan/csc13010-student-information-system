@@ -148,8 +148,6 @@ export class UserService {
             phone,
         } = userSignUpDto;
         const hashedPassword = await this.hashPassword(password);
-
-        console.log('hi');
         const user = await this.userModel.create({
             username: username,
             email: email,
@@ -294,14 +292,11 @@ export class UserService {
 
     async updateMultipleUsersByStudentID(records: UpdateUsersDto[]) {
         const results = [];
-
-        for (const { username, updates } of records) {
-            const user = await this.userModel
-                .findOne({ username: username })
-                .exec();
+        for (const { id, updates } of records) {
+            const user = await this.userModel.findOne({ _id: id }).exec();
             if (!user) {
                 throw new NotFoundException(
-                    `Student with id ${username} not found`,
+                    `Student with objectID ${id} not found`,
                 );
             }
 
@@ -314,7 +309,7 @@ export class UserService {
                 });
             } catch (error) {
                 results.push({
-                    username,
+                    username: user.username,
                     status: 'error',
                     message: error.message,
                 });

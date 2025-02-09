@@ -39,12 +39,14 @@ const facultyOptions = [
     },
     { value: 'Faculty of Japanese', label: 'Faculty of Japanese' },
     { value: 'Faculty of French', label: 'Faculty of French' },
+    { value: 'Unassigned', label: 'Unassigned' },
 ];
 
 const programOptions = [
     { value: 'Formal Program', label: 'Formal Program' },
     { value: 'High-Quality Program', label: 'High-Quality Program' },
     { value: 'Advanced Program', label: 'Advanced Program' },
+    { value: 'Unassigned', label: 'Unassigned' },
 ];
 
 const classYearOptions = Array.from({ length: 2025 - 1990 + 1 }, (_, i) => ({
@@ -55,6 +57,15 @@ const classYearOptions = Array.from({ length: 2025 - 1990 + 1 }, (_, i) => ({
 const genderOptions = [
     { value: 'Male', label: 'Male' },
     { value: 'Female', label: 'Female' },
+    { value: 'Unassigned', label: 'Unassigned' },
+];
+
+const statusOptions = [
+    { value: 'Active', label: 'Active' },
+    { value: 'Graduated', label: 'Graduated' },
+    { value: 'Leave', label: 'Leave' },
+    { value: 'Absent', label: 'Absent' },
+    { value: 'Unassigned', label: 'Unassigned' },
 ];
 
 const UsersPage = () => {
@@ -88,7 +99,57 @@ const UsersPage = () => {
     const [selectedRecord, setSelectedRecord] = useState(null);
     const [open, setOpen] = useState(false);
     const [isOpenRecord, setIsOpenRecord] = useState(false);
+    const [editingRecord, setEditingRecord] = useState<any>(null);
+    const [updatedRecord, setUpdatedRecord] = useState<any>(null);
+    const [isEditDialogOpen, setEditDialogOpen] = useState(false);
 
+    const handleEditClick = (record: any) => {
+        setUpdatedRecord({ ...record });
+        setEditingRecord(record);
+        setEditDialogOpen(true);
+    };
+
+    const handleInputChange = (field: string, value: any) => {
+        setUpdatedRecord((prev: any) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
+
+    const handleSaveChanges = async () => {
+        try {
+            const recordToUpdate = {
+                id: updatedRecord.id,
+                updates: {
+                    username: updatedRecord.username,
+                    email: updatedRecord.email,
+                    birthday: updatedRecord.birthday,
+                    fullname: updatedRecord.fullname,
+                    gender: updatedRecord.gender,
+                    faculty: updatedRecord.faculty,
+                    classYear: updatedRecord.classYear,
+                    program: updatedRecord.program,
+                    address: updatedRecord.address,
+                    phone: updatedRecord.phone,
+                    status: updatedRecord.status,
+                },
+            };
+            await axios.put(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users`,
+                [recordToUpdate],
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                },
+            );
+            setEditDialogOpen(false);
+            setEditingRecord(null);
+            fetchRecords();
+        } catch (error) {
+            console.error('Error updating record:', error);
+        }
+    };
     const handleClickOpen = (record: any) => {
         setSelectedRecord(record);
         setOpen(true);
@@ -289,40 +350,6 @@ const UsersPage = () => {
         }
     }, []);
 
-    const handleEditChange = (id: string, field: string, value: string) => {
-        setEditing((prev) => ({
-            ...prev,
-            [id]: {
-                ...prev[id],
-                [field]: value,
-            },
-        }));
-    };
-
-    const saveChanges = async () => {
-        const updates = Object.entries(editing).map(([id, updates]) => ({
-            id,
-            updates,
-        }));
-        if (updates.length === 0) return;
-
-        try {
-            await axios.post(
-                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users`,
-                updates,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-                    },
-                },
-            );
-            setEditing({});
-            fetchRecords();
-        } catch (error) {
-            console.error('Error updating records:', error);
-        }
-    };
-
     const isLoggedIn =
         typeof window !== 'undefined'
             ? localStorage.getItem('authToken')
@@ -520,63 +547,13 @@ const UsersPage = () => {
                                                     <Button
                                                         variant="outlined"
                                                         color="primary"
-                                                        onClick={async () => {
-                                                            if (
-                                                                editing[
-                                                                    record.id
-                                                                ]
-                                                            ) {
-                                                                const updates =
-                                                                    {
-                                                                        id: record.id,
-                                                                        updates:
-                                                                            editing[
-                                                                                record
-                                                                                    .id
-                                                                            ],
-                                                                    };
-                                                                try {
-                                                                    await axios.post(
-                                                                        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users`,
-                                                                        [
-                                                                            updates,
-                                                                        ],
-                                                                        {
-                                                                            headers:
-                                                                                {
-                                                                                    Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-                                                                                },
-                                                                        },
-                                                                    );
-                                                                    setEditing(
-                                                                        (
-                                                                            prev,
-                                                                        ) => {
-                                                                            const updated =
-                                                                                {
-                                                                                    ...prev,
-                                                                                };
-                                                                            delete updated[
-                                                                                record
-                                                                                    .id
-                                                                            ];
-                                                                            return updated;
-                                                                        },
-                                                                    );
-                                                                    fetchRecords();
-                                                                } catch (error) {
-                                                                    console.error(
-                                                                        'Error updating record:',
-                                                                        error,
-                                                                    );
-                                                                }
-                                                            }
-                                                        }}
-                                                        disabled={
-                                                            !editing[record.id]
+                                                        onClick={() =>
+                                                            handleEditClick(
+                                                                record,
+                                                            )
                                                         }
                                                     >
-                                                        Update
+                                                        Edit
                                                     </Button>
                                                     <Button
                                                         variant="outlined"
@@ -614,6 +591,169 @@ const UsersPage = () => {
                             </Table>
                         </TableContainer>
                     </Box>
+                    {editingRecord && (
+                        <Dialog
+                            open={isEditDialogOpen}
+                            onClose={() => setEditDialogOpen(false)}
+                        >
+                            <DialogTitle>Edit Record</DialogTitle>
+                            <DialogContent>
+                                {Object.keys(editingRecord).map((field) => {
+                                    if (field === 'birthday') {
+                                        return (
+                                            <LocalizationProvider
+                                                dateAdapter={AdapterDayjs}
+                                                key={field}
+                                            >
+                                                <DatePicker
+                                                    label="Birthday"
+                                                    value={
+                                                        updatedRecord.birthday
+                                                            ? dayjs(
+                                                                  updatedRecord.birthday,
+                                                              )
+                                                            : null
+                                                    }
+                                                    onChange={(date) =>
+                                                        handleInputChange(
+                                                            field,
+                                                            date
+                                                                ? date.format(
+                                                                      'YYYY-MM-DD',
+                                                                  )
+                                                                : '',
+                                                        )
+                                                    }
+                                                    slotProps={{
+                                                        textField: {
+                                                            fullWidth: true,
+                                                            margin: 'dense',
+                                                        },
+                                                    }}
+                                                />
+                                            </LocalizationProvider>
+                                        );
+                                    } else if (
+                                        [
+                                            'gender',
+                                            'faculty',
+                                            'classYear',
+                                            'program',
+                                            'status',
+                                        ].includes(field)
+                                    ) {
+                                        const options =
+                                            field === 'gender'
+                                                ? genderOptions
+                                                : field === 'faculty'
+                                                  ? facultyOptions
+                                                  : field === 'classYear'
+                                                    ? classYearOptions
+                                                    : field === 'program'
+                                                      ? programOptions
+                                                      : statusOptions;
+
+                                        return (
+                                            <TextField
+                                                key={field}
+                                                select
+                                                label={
+                                                    field
+                                                        .charAt(0)
+                                                        .toUpperCase() +
+                                                    field.slice(1)
+                                                }
+                                                fullWidth
+                                                margin="dense"
+                                                value={
+                                                    updatedRecord[field] || ''
+                                                }
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        field,
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                disabled={
+                                                    updatedRecord[field] ===
+                                                    'Unassigned'
+                                                }
+                                            >
+                                                {options
+                                                    .filter(
+                                                        (option) =>
+                                                            option.value !==
+                                                            'Unassigned',
+                                                    )
+                                                    .map((option) => (
+                                                        <MenuItem
+                                                            key={option.value}
+                                                            value={option.value}
+                                                        >
+                                                            {option.label}
+                                                        </MenuItem>
+                                                    ))}
+                                                {updatedRecord[field] ===
+                                                    'Unassigned' && (
+                                                    <MenuItem
+                                                        key="Unassigned"
+                                                        value="Unassigned"
+                                                        style={{
+                                                            display: 'none',
+                                                        }}
+                                                    >
+                                                        Unassigned
+                                                    </MenuItem>
+                                                )}
+                                            </TextField>
+                                        );
+                                    } else {
+                                        return (
+                                            <TextField
+                                                key={field}
+                                                label={
+                                                    field
+                                                        .charAt(0)
+                                                        .toUpperCase() +
+                                                    field.slice(1)
+                                                }
+                                                fullWidth
+                                                margin="dense"
+                                                value={
+                                                    updatedRecord[field] || ''
+                                                }
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        field,
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                disabled={
+                                                    field === 'id' ||
+                                                    field === 'role'
+                                                }
+                                            />
+                                        );
+                                    }
+                                })}
+                            </DialogContent>
+                            <DialogActions>
+                                <Button
+                                    onClick={() => setEditDialogOpen(false)}
+                                    color="secondary"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    onClick={handleSaveChanges}
+                                    variant="contained"
+                                    color="primary"
+                                >
+                                    Save
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
+                    )}
 
                     {open && (
                         <Dialog open={open} onClose={handleClose}>

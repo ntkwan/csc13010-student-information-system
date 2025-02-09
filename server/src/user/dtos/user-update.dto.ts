@@ -3,10 +3,9 @@ import { Gender, Faculty, Program, Status } from '../enums/student.enum';
 
 export class UpdateUsersDto {
     @ApiProperty({
-        description: 'Student ID  of the user to update',
-        example: '22127000',
+        description: 'Mongo ID of the user to update',
     })
-    username: string;
+    id: string;
 
     @ApiProperty({
         description: 'Partial update object with at least one field to update',
@@ -14,6 +13,7 @@ export class UpdateUsersDto {
         minProperties: 1, // Swagger property to hint at least one field required
     })
     updates: Partial<{
+        username?: string;
         email?: string;
         birthday?: Date;
         fullname?: string;
