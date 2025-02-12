@@ -12,11 +12,11 @@ COPY package*.json ./
 
 RUN pnpm install
 
-COPY . .
+RUN pnpm approve-builds bcrypt
 
 RUN pnpm run build
 
-RUN pnpm rebuild brcypt
+COPY . .
 
 EXPOSE 5000
 
