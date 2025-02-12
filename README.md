@@ -116,7 +116,7 @@ Follow these steps to get the application up and running:
     docker run [IMAGE_ID]
     ```
 
-    To find `IMAGE_ID`, use `docker images` and locking for image named `sis-backend`
+    To find `IMAGE_ID`, use `docker images` and looking for image named `sis-backend`
     After starting the server, it is now accessible in your browser at `http://localhost:[port]` (e.g., `http://localhost:8080`)
 
 2.  **Start the Client:**
