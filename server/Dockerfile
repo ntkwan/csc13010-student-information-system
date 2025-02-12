@@ -3,6 +3,9 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
+# Disable Corepack integrity check
+ENV COREPACK_INTEGRITY_KEYS=0
+
 WORKDIR /server
 
 COPY package*.json ./
