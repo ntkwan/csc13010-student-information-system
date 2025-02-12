@@ -12,11 +12,11 @@ COPY package*.json ./
 
 RUN pnpm install
 
-RUN pnpm approve-builds bcrypt
-
-RUN pnpm run build
+RUN cd node_modules/bcrypt & node-pre-gyp install --fallback-to-build
 
 COPY . .
+
+RUN pnpm run build
 
 EXPOSE 5000
 
