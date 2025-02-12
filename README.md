@@ -46,13 +46,6 @@ The backend API enforces the following validation rules:
     - Formal Program (FP)
     - Advanced Program (AP)
 
-* **Modern Frontend:** [Specify Frontend Framework e.g., React, Vue, Angular] The client-side is built using [Frontend Framework Name] offering a modern and responsive user experience.
-* **Robust Backend:** [Specify Backend Framework e.g., Node.js/Express, NestJS] The server-side is built using [Backend Framework Name], providing a scalable and reliable API.
-* **Data Storage:** [Specify Database e.g., PostgreSQL, MongoDB] The system uses [Database Name] for persistent data storage.
-* **API:** A well-defined API allows the client to interact with the server for data retrieval and manipulation.
-* **Automated Builds & Deployments:** GitHub Actions workflows are configured for automated building, testing, and deployment.
-* **Git Hooks:** Husky is used to enforce code quality and commit message standards through Git hooks.
-
 ## Technologies
 
 - **Frontend:**
