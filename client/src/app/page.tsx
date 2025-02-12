@@ -389,8 +389,7 @@ const UsersPage = () => {
             });
             setShowNewRecordForm(false);
             fetchAllProfiles();
-        } catch (error) {
-            console.error('Error adding new record:', error);
+        } catch (error: any) {
             setValidationErrorMessage(
                 error.response?.data?.message ||
                     'An error occurred. Please try again.',
