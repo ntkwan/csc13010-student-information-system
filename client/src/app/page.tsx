@@ -152,8 +152,8 @@ const UsersPage = () => {
     const handleSaveChanges = async () => {
         try {
             if (
-                !validateEmail(newRecord.email) ||
-                !validatePhone(newRecord.phone)
+                !validateEmail(updatedRecord.email) ||
+                !validatePhone(updatedRecord.phone)
             ) {
                 setValidationErrorMessage(
                     'Invalid email or phone number format',
@@ -391,8 +391,9 @@ const UsersPage = () => {
             fetchAllProfiles();
         } catch (error) {
             console.error('Error adding new record:', error);
-            setErrorMessage(
-                'An error occurred while adding the record. Please try again.',
+            setValidationErrorMessage(
+                error.response?.data?.message ||
+                    'An error occurred. Please try again.',
             );
         }
     };

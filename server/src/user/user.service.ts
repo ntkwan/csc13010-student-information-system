@@ -134,46 +134,49 @@ export class UserService {
     }
 
     async create(userSignUpDto: UserSignUpDto): Promise<User> {
-        const {
-            username,
-            fullname,
-            birthday,
-            gender,
-            faculty,
-            classYear,
-            program,
-            address,
-            email,
-            password,
-            phone,
-        } = userSignUpDto;
-        const hashedPassword = await this.hashPassword(password);
-        const user = await this.userModel.create({
-            username: username,
-            email: email,
-            password: hashedPassword,
-            birthday: new Date(birthday),
-            fullname: fullname,
-            gender: gender,
-            faculty: faculty,
-            classYear: classYear,
-            program: program,
-            address: address,
-            phone: phone,
-            status: Status.ACTIVE,
-            otp: null,
-            otpExpiry: null,
-            role: Role.STUDENT,
-        });
+        try {
+            const {
+                username,
+                fullname,
+                birthday,
+                gender,
+                faculty,
+                classYear,
+                program,
+                address,
+                email,
+                password,
+                phone,
+            } = userSignUpDto;
+            const hashedPassword = await this.hashPassword(password);
+            const user = await this.userModel.create({
+                username: username,
+                email: email,
+                password: hashedPassword,
+                birthday: new Date(birthday),
+                fullname: fullname,
+                gender: gender,
+                faculty: faculty,
+                classYear: classYear,
+                program: program,
+                address: address,
+                phone: phone,
+                status: Status.ACTIVE,
+                otp: null,
+                otpExpiry: null,
+                role: Role.STUDENT,
+            });
 
-        if (!user) {
-            throw new InternalServerErrorException(
-                'This email or username is already in use',
-            );
+            if (!user) {
+                throw new InternalServerErrorException(
+                    'This email or username is already in use',
+                );
+            }
+            return user;
+        } catch (error) {
+            throw new InternalServerErrorException(error.message);
         }
-        return user;
     }
-
     async updateRefreshToken(id: string, refreshToken: string): Promise<void> {
         try {
             await this.userModel
