@@ -12,6 +12,8 @@ COPY package*.json ./
 
 RUN pnpm install
 
+RUN pnpm install node-gyp -g
+
 RUN cd node_modules/bcrypt & node-pre-gyp install --fallback-to-build
 
 COPY . .
