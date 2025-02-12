@@ -3,7 +3,7 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
-WORKDIR /Task2/server
+WORKDIR /server
 
 COPY package*.json ./
 
