@@ -145,6 +145,38 @@ Once the application is running, you can interact with it through the dashboard 
 - Updating student information
 - Searching for students
 
+## Screenshots
+
+### Landing page
+
+![screenshot](screenshots/screenshot1.png)
+
+### Login page
+
+![screenshot](screenshots/screenshot2.png)
+
+### Menu
+
+![screenshot](screenshots/screenshot3.png)
+
+### Search a record
+
+![screenshot](screenshots/screenshot4.png)
+
+### Edit a record
+
+![screenshot](screenshots/screenshot5.png)
+
+### View a record
+
+![screenshot](screenshots/screenshot6.png)
+
+### Add a record
+
+![screenshot](screenshots/screenshot7.png)
+![screenshot](screenshots/screenshot8.png)
+![screenshot](screenshots/screenshot9.png)
+
 ## Code convention
 
 This project uses [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/) for code formatting and linting. Please ensure your code adheres to the project's style guidelines. The Git hooks (using Husky) will automatically run these tools before each commit.
