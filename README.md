@@ -149,33 +149,33 @@ Once the application is running, you can interact with it through the dashboard 
 
 ### Landing page
 
-![screenshot](screenshots/screenshot1.png)
+![screenshot](screenshots/screen1.png)
 
 ### Login page
 
-![screenshot](screenshots/screenshot2.png)
+![screenshot](screenshots/screen2.png)
 
 ### Menu
 
-![screenshot](screenshots/screenshot3.png)
+![screenshot](screenshots/screen3.png)
 
 ### Search a record
 
-![screenshot](screenshots/screenshot4.png)
+![screenshot](screenshots/screen4.png)
 
 ### Edit a record
 
-![screenshot](screenshots/screenshot5.png)
+![screenshot](screenshots/screen5.png)
 
 ### View a record
 
-![screenshot](screenshots/screenshot6.png)
+![screenshot](screenshots/screen6.png)
 
 ### Add a record
 
-![screenshot](screenshots/screenshot7.png)
-![screenshot](screenshots/screenshot8.png)
-![screenshot](screenshots/screenshot9.png)
+![screenshot](screenshots/screen7.png)
+![screenshot](screenshots/screen8.png)
+![screenshot](screenshots/screen9.png)
 
 ## Code convention
 
