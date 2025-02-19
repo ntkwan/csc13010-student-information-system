@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+import Footer from './footer';
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -13,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: 'User management page',
+    title: 'Student Information System',
     description: 'For administrator to manage users efficiently',
 };
 
@@ -26,8 +27,14 @@ export default function RootLayout({
         <html lang="en">
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: '100vh',
+                }}
             >
-                {children}
+                <main style={{ flex: 1 }}>{children}</main>
+                <Footer />
             </body>
         </html>
     );

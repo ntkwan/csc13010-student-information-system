@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     TextField,
     Table,
@@ -22,6 +22,8 @@ import {
     DialogTitle,
     Select,
 } from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { ExitToApp } from '@mui/icons-material';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
@@ -409,6 +411,58 @@ const UsersPage = () => {
         }
     };
 
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+    const handleImportClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleFileUpload = async (
+        event: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Process file (JSON or CSV)
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/import`,
+                {
+                    method: 'POST',
+                    body: formData,
+                },
+            );
+            console.log('hi');
+            const result = await response.json();
+            console.log('Import Result:', result);
+        } catch (error) {
+            console.error('Import failed:', error);
+        }
+    };
+
+    const handleExport = async (format: 'json' | 'csv') => {
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/export?format=${format}`,
+            );
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `users.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Export failed:', error);
+        }
+    };
+
     useEffect(() => {
         if (typeof window === 'undefined') return;
         if (localStorage.getItem('authToken')) {
@@ -451,6 +505,15 @@ const UsersPage = () => {
                         ? 'Student Information System'
                         : 'Welcome to Student Information System'}
                 </Typography>
+
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    accept=".json,.csv"
+                    onChange={handleFileUpload}
+                />
+
                 <Box
                     display="flex"
                     alignItems="center"
@@ -458,6 +521,35 @@ const UsersPage = () => {
                 >
                     {isLoggedIn ? (
                         <>
+                            <Box display="flex" mr={2} gap={2} mt={2} mb={2}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    startIcon={<CloudUploadIcon />}
+                                    onClick={handleImportClick}
+                                >
+                                    JSON/CSV
+                                </Button>
+
+                                <Button
+                                    variant="contained"
+                                    color="secondary"
+                                    startIcon={<CloudDownloadIcon />}
+                                    onClick={() => handleExport('json')}
+                                >
+                                    JSON
+                                </Button>
+
+                                <Button
+                                    variant="contained"
+                                    color="secondary"
+                                    startIcon={<CloudDownloadIcon />}
+                                    onClick={() => handleExport('csv')}
+                                >
+                                    CSV
+                                </Button>
+                            </Box>
+
                             <Box
                                 display="flex"
                                 alignItems="center"
@@ -1444,7 +1536,6 @@ const UsersPage = () => {
                     </Box>
                 </>
             )}
-            <Footer></Footer>
         </div>
     );
 };

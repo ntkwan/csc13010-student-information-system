@@ -1,3 +1,4 @@
+'use client';
 import { Box, Container, Typography, IconButton } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { useEffect, useState } from 'react';
@@ -37,7 +38,7 @@ const Footer = () => {
         };
 
         fetchBuildInfo();
-    }, []); // Runs only once when the component mounts
+    }, []);
 
     return (
         <Box
@@ -48,6 +49,7 @@ const Footer = () => {
                 py: 2,
                 textAlign: 'center',
                 mt: 'auto',
+                width: '100%',
             }}
         >
             <Container>
