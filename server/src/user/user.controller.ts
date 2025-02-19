@@ -11,6 +11,8 @@ import {
     Put,
     Delete,
     Param,
+    UploadedFile,
+    UseInterceptors,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ATAuthGuard } from '../auth/guards/at-auth.guard';
@@ -20,6 +22,7 @@ import {
     ApiBearerAuth,
     ApiBody,
     ApiQuery,
+    ApiConsumes,
 } from '@nestjs/swagger';
 import { ProfileEntity } from '../auth/entities/creds.entity';
 import { UserService } from './user.service';
@@ -29,6 +32,8 @@ import { User } from './entities/user.entity';
 import { UpdateResultDto, UpdateUsersDto } from './dtos/user-update.dto';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { UserSignUpDto } from './dtos/user-signup.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import multer from 'multer';
 
 @Controller('users')
 export class UserController {
@@ -239,5 +244,70 @@ export class UserController {
         });
 
         return await this.userService.updateMultipleUsersByStudentID(users);
+    }
+
+    @ApiOperation({ summary: 'Import users from JSON/CSV file [ADMIN]' })
+    @ApiBearerAuth('access-token')
+    @Post('import')
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                    description: 'CSV or JSON file',
+                },
+            },
+        },
+    })
+    @ApiResponse({
+        status: 201,
+        description: 'Users imported successfully',
+    })
+    @UseGuards(ATAuthGuard)
+    @Roles(Role.ADMIN)
+    @UseInterceptors(
+        FileInterceptor('file', { storage: multer.memoryStorage() }),
+    )
+    async importUsers(
+        @UploadedFile() file: Express.Multer.File,
+        @Res() res: Response,
+    ) {
+        const result = await this.userService.importUsers(file);
+        res.status(201).send(result);
+    }
+
+    @ApiOperation({ summary: 'Export all users as JSON [ADMIN]' })
+    @ApiBearerAuth('access-token')
+    @Get('export/json')
+    @ApiResponse({
+        status: 200,
+        description: 'Users exported successfully',
+    })
+    @UseGuards(ATAuthGuard)
+    @Roles(Role.ADMIN)
+    async exportUsersJson(@Res() res: Response) {
+        const jsonData = await this.userService.exportUsersJson();
+        res.setHeader('Content-Disposition', 'attachment; filename=users.json');
+        res.setHeader('Content-Type', 'application/json');
+        res.send(jsonData);
+    }
+
+    @ApiOperation({ summary: 'Export all users as CSV [ADMIN]' })
+    @ApiBearerAuth('access-token')
+    @Get('export/csv')
+    @ApiResponse({
+        status: 200,
+        description: 'Users exported successfully',
+    })
+    @UseGuards(ATAuthGuard)
+    @Roles(Role.ADMIN)
+    async exportUsersCsv(@Res() res: Response) {
+        const csvData = await this.userService.exportUsersCsv();
+        res.setHeader('Content-Disposition', 'attachment; filename=users.csv');
+        res.setHeader('Content-Type', 'text/csv');
+        res.send(csvData);
     }
 }

@@ -5,6 +5,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Parser } from 'json2csv';
 import { User } from './entities/user.entity';
 import { UserSignUpDto } from './dtos/user-signup.dto';
 import { ConfigService } from '@nestjs/config';
@@ -13,7 +14,8 @@ import { Model } from 'mongoose';
 import { Role } from '../auth/enums/roles.enum';
 import { UpdateUsersDto } from './dtos/user-update.dto';
 import { Status } from './enums/student.enum';
-
+import csvParser from 'csv-parser';
+import { Readable } from 'stream';
 @Injectable()
 export class UserService {
     constructor(
@@ -333,5 +335,81 @@ export class UserService {
         }
 
         return results;
+    }
+
+    async importUsers(file: Express.Multer.File) {
+        if (!file) {
+            throw new BadRequestException('No file uploaded');
+        }
+
+        let users = [];
+
+        if (file.mimetype === 'application/json') {
+            users = JSON.parse(file.buffer.toString());
+        } else if (
+            file.mimetype === 'text/csv' ||
+            file.mimetype === 'application/vnd.ms-excel'
+        ) {
+            const csvData = file.buffer.toString();
+            users = await new Promise((resolve, reject) => {
+                const results = [];
+                Readable.from(csvData)
+                    .pipe(csvParser())
+                    .on('data', (data) => results.push(data))
+                    .on('end', () => resolve(results))
+                    .on('error', (err) => reject(err));
+            });
+        } else {
+            throw new BadRequestException(
+                'Invalid file format. Use CSV or JSON',
+            );
+        }
+        const createdUsers = await this.userModel.insertMany(users);
+        return createdUsers;
+    }
+
+    async exportUsersJson() {
+        const users = await this.findAll();
+        const newUsers = users.map((user) => {
+            return {
+                username: user.username,
+                email: user.email,
+                fullname: user.fullname,
+                birthday: user.birthday,
+                gender: user.gender,
+                faculty: user.faculty,
+                classYear: user.classYear,
+                program: user.program,
+                address: user.address,
+                phone: user.phone,
+                status: user.status,
+                role: user.role,
+            };
+        });
+        return JSON.stringify(newUsers, null, 2);
+    }
+
+    async exportUsersCsv() {
+        const users = await this.findAll();
+        const newUsers = users.map((user) => ({
+            username: user.username,
+            email: user.email,
+            fullname: user.fullname,
+            birthday: user.birthday,
+            gender: user.gender,
+            faculty: user.faculty,
+            classYear: user.classYear,
+            program: user.program,
+            address: user.address,
+            phone: `'${user.phone}`,
+            status: user.status,
+            role: user.role,
+        }));
+
+        const json2csvParser = new Parser({
+            withBOM: true,
+        });
+
+        return json2csvParser.parse(newUsers);
     }
 }
