@@ -20,6 +20,7 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
+    Select,
 } from '@mui/material';
 import { ExitToApp } from '@mui/icons-material';
 import axios from 'axios';
@@ -70,7 +71,6 @@ const statusOptions = [
 
 const UsersPage = () => {
     const router = useRouter();
-    const [searchQuery, setSearchQuery] = useState('');
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(false);
     const [errorValidationMessage, setValidationErrorMessage] = useState('');
@@ -105,6 +105,17 @@ const UsersPage = () => {
     const validateEmail = (email: any) => {
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         return emailRegex.test(email);
+    };
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const [facultyFilter, setFacultyFilter] = useState('');
+    const [isFilteringByFaculty, setIsFilteringByFaculty] = useState(false);
+
+    const handleSearch = () => {
+        fetchRecords({
+            searchQuery,
+            faculty: isFilteringByFaculty ? facultyFilter : '',
+        });
     };
 
     const validatePhone = (phone: any) => {
@@ -188,7 +199,7 @@ const UsersPage = () => {
             );
             setEditDialogOpen(false);
             setEditingRecord(null);
-            fetchRecords();
+            fetchRecords({ searchQuery: '', faculty: '' });
         } catch (error) {
             console.error('Error updating record:', error);
         }
@@ -213,7 +224,7 @@ const UsersPage = () => {
                     },
                 },
             );
-            fetchRecords(); // Re-fetch records after deletion
+            fetchRecords({ searchQuery: '', faculty: '' }); // Re-fetch records after deletion
             setOpen(false);
         } catch (error) {
             console.error('Error deleting record:', error);
@@ -232,18 +243,17 @@ const UsersPage = () => {
 
     const defaultAvatar = 'https://robohash.org/mail@ashallendesign.co.uk';
 
-    const fetchRecords = async () => {
+    const fetchRecords = async (searchItems: {
+        searchQuery: string;
+        faculty: string;
+    }) => {
+        console.log('hi', searchItems);
         setLoading(true);
         setErrorMessage('');
-        if (!searchQuery) {
-            fetchAllProfiles();
-            fetchUserProfile();
-            return;
-        }
 
         try {
             const response = await axios.get(
-                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/search?name=${searchQuery}`,
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/search?name=${searchItems.searchQuery}&faculty=${searchItems.faculty}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('authToken')}`,
@@ -263,9 +273,10 @@ const UsersPage = () => {
                     'No users found matching your search criteria.',
                 );
             } else {
-                console.error('Error fetching records:', error);
+                const err = error as any;
                 setErrorMessage(
-                    'An error occurred while fetching data. Please try again.',
+                    err.response?.data?.message ||
+                        'An error occurred while fetching data. Please try again.',
                 );
             }
         } finally {
@@ -520,7 +531,12 @@ const UsersPage = () => {
                         alignItems="center"
                         style={{ width: '100%' }}
                     >
-                        <Box width="50%" minWidth="300px">
+                        <Box
+                            width="50%"
+                            minWidth="300px"
+                            display="flex"
+                            gap={2}
+                        >
                             <TextField
                                 label="Search by student ID or full name"
                                 variant="outlined"
@@ -528,28 +544,77 @@ const UsersPage = () => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onKeyPress={(e) =>
-                                    e.key === 'Enter' && fetchRecords()
+                                    e.key === 'Enter' && handleSearch()
                                 }
-                                style={{ marginBottom: '20px' }}
                             />
                             <Button
                                 variant="contained"
-                                onClick={fetchRecords}
-                                disabled={loading}
+                                style={{ height: '35px', marginTop: '10px' }}
+                                onClick={() =>
+                                    setIsFilteringByFaculty(
+                                        !isFilteringByFaculty,
+                                    )
+                                }
                             >
-                                {'Search'}
+                                {isFilteringByFaculty ? 'Cancel' : 'Faculty'}
                             </Button>
-                            {errorMessage && (
-                                <Typography
-                                    color="error"
-                                    variant="body2"
-                                    style={{ marginTop: '10px' }}
-                                >
-                                    {errorMessage}
-                                </Typography>
-                            )}
                         </Box>
+
+                        {isFilteringByFaculty && (
+                            <Select
+                                value={facultyFilter}
+                                onChange={(e) =>
+                                    setFacultyFilter(e.target.value)
+                                }
+                                displayEmpty
+                                variant="outlined"
+                                style={{
+                                    marginLeft: '10px',
+                                    minWidth: '200px',
+                                }}
+                            >
+                                <MenuItem value="">Select Faculty</MenuItem>
+                                {facultyOptions.map((faculty) => (
+                                    <MenuItem
+                                        key={faculty.label}
+                                        value={faculty.value}
+                                    >
+                                        {faculty.value}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        )}
+
+                        <Button
+                            variant="contained"
+                            onClick={handleSearch}
+                            disabled={loading}
+                            style={{ marginLeft: '10px' }}
+                        >
+                            Search
+                        </Button>
                     </Box>
+
+                    {errorMessage && (
+                        <Typography
+                            color="error"
+                            variant="body2"
+                            style={{
+                                alignContent: 'center',
+                                marginBottom: '50px',
+                                marginLeft: '800px',
+                            }}
+                        >
+                            {errorMessage}
+                        </Typography>
+                    )}
+
+                    {!errorMessage && (
+                        <Typography
+                            variant="body2"
+                            style={{ marginBottom: '118px' }}
+                        ></Typography>
+                    )}
 
                     <Box
                         display="flex"

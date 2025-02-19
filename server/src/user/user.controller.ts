@@ -158,10 +158,6 @@ export class UserController {
         @Query('name') name?: string,
         @Query('faculty') faculty?: string,
     ) {
-        if (!name) {
-            throw new BadRequestException('Query parameter "name" is required');
-        }
-
         const users = await this.userService.searchByNameOrStudentID(
             name || '',
             faculty || '',

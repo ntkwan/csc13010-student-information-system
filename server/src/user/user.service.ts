@@ -270,26 +270,32 @@ export class UserService {
         name: string,
         faculty?: string,
     ): Promise<User[]> {
-        const regex = new RegExp(name, 'i'); // Case-insensitive regex search
-        let query: any = {
-            $or: [{ fullname: regex }, { username: regex }],
-        };
-
-        if (faculty) {
-            // If faculty is provided, filter by faculty first
-            query = {
-                faculty: new RegExp(faculty, 'i'), // Case-insensitive faculty filter
+        try {
+            const regex = new RegExp(name, 'i'); // Case-insensitive regex search
+            let query: any = {
                 $or: [{ fullname: regex }, { username: regex }],
             };
+
+            if (faculty) {
+                // If faculty is provided, filter by faculty first
+                query = {
+                    faculty: new RegExp(faculty, 'i'), // Case-insensitive faculty filter
+                    $or: [{ fullname: regex }, { username: regex }],
+                };
+            }
+
+            const users = await this.userModel.find(query);
+
+            if (!users.length) {
+                throw new NotFoundException(
+                    'No users found matching the criteria',
+                );
+            }
+
+            return users;
+        } catch (error) {
+            throw new InternalServerErrorException(error.message);
         }
-
-        const users = await this.userModel.find(query);
-
-        if (!users.length) {
-            throw new NotFoundException('No users found matching the criteria');
-        }
-
-        return users;
     }
 
     async updateRole(id: string, role: string): Promise<void> {
@@ -364,8 +370,13 @@ export class UserService {
                 'Invalid file format. Use CSV or JSON',
             );
         }
-        const createdUsers = await this.userModel.insertMany(users);
-        return createdUsers;
+
+        try {
+            const createdUsers = await this.userModel.insertMany(users);
+            return createdUsers;
+        } catch (error) {
+            throw new InternalServerErrorException(error.message);
+        }
     }
 
     async exportUsersJson() {
