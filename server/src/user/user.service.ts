@@ -264,11 +264,24 @@ export class UserService {
         }
     }
 
-    async searchByNameOrStudentID(name: string): Promise<User[]> {
+    async searchByNameOrStudentID(
+        name: string,
+        faculty?: string,
+    ): Promise<User[]> {
         const regex = new RegExp(name, 'i'); // Case-insensitive regex search
-        const users = await this.userModel.find({
+        let query: any = {
             $or: [{ fullname: regex }, { username: regex }],
-        });
+        };
+
+        if (faculty) {
+            // If faculty is provided, filter by faculty first
+            query = {
+                faculty: new RegExp(faculty, 'i'), // Case-insensitive faculty filter
+                $or: [{ fullname: regex }, { username: regex }],
+            };
+        }
+
+        const users = await this.userModel.find(query);
 
         if (!users.length) {
             throw new NotFoundException('No users found matching the criteria');

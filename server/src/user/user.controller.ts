@@ -19,6 +19,7 @@ import {
     ApiOperation,
     ApiBearerAuth,
     ApiBody,
+    ApiQuery,
 } from '@nestjs/swagger';
 import { ProfileEntity } from '../auth/entities/creds.entity';
 import { UserService } from './user.service';
@@ -128,7 +129,7 @@ export class UserController {
     }
 
     @ApiBearerAuth('access-token')
-    @ApiOperation({ summary: 'Search users by name [ADMIN]' })
+    @ApiOperation({ summary: 'Search users by name or student ID [ADMIN]' })
     @ApiResponse({
         status: 200,
         description: 'Search users successfully',
@@ -138,12 +139,28 @@ export class UserController {
     @UseGuards(ATAuthGuard)
     @Roles(Role.ADMIN)
     @Get('search')
-    async searchUsers(@Query('name') name: string) {
+    @ApiQuery({
+        name: 'name',
+        required: false,
+        description: 'Search by name or student ID',
+    })
+    @ApiQuery({
+        name: 'faculty',
+        required: false,
+        description: 'Filter by faculty',
+    })
+    async searchUsers(
+        @Query('name') name?: string,
+        @Query('faculty') faculty?: string,
+    ) {
         if (!name) {
             throw new BadRequestException('Query parameter "name" is required');
         }
 
-        const users = await this.userService.searchByNameOrStudentID(name);
+        const users = await this.userService.searchByNameOrStudentID(
+            name || '',
+            faculty || '',
+        );
         return users.map((user) => ({
             id: user._id,
             username: user.username,
