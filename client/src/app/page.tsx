@@ -31,6 +31,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
+import Footer from './footer';
 
 const facultyOptions = [
     { value: 'Faculty of Law', label: 'Faculty of Law' },
@@ -1443,6 +1444,7 @@ const UsersPage = () => {
                     </Box>
                 </>
             )}
+            <Footer></Footer>
         </div>
     );
 };
