@@ -1,6 +1,7 @@
 import { Controller, Get, HttpCode } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { BuildInfo } from './app.interface';
 
 @Controller()
 export class AppController {
@@ -20,5 +21,22 @@ export class AppController {
     @Get()
     getStatus() {
         return this.appService.getStatus();
+    }
+
+    @ApiOperation({ summary: 'Check the status of the server' })
+    @ApiResponse({
+        status: 200,
+        description: 'Show the server build info',
+        schema: {
+            example: {
+                version: '1.0.0',
+                buildDate: '2021-07-07T00:00:00.000Z',
+            },
+        },
+    })
+    @HttpCode(200)
+    @Get('build')
+    getBuildInfo(): Promise<BuildInfo> {
+        return this.appService.getBuildInfo();
     }
 }
