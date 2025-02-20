@@ -430,16 +430,17 @@ const UsersPage = () => {
         formData.append('file', file);
 
         try {
-            const response = await fetch(
+            axios.post(
                 `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/import`,
+                formData,
                 {
-                    method: 'POST',
-                    body: formData,
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'multipart/form-data',
+                    },
                 },
             );
-            console.log('hi');
-            const result = await response.json();
-            console.log('Import Result:', result);
+            fetchAllProfiles();
         } catch (error) {
             console.error('Import failed:', error);
         }
@@ -447,10 +448,18 @@ const UsersPage = () => {
 
     const handleExport = async (format: 'json' | 'csv') => {
         try {
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/export?format=${format}`,
+            const response = await axios.get(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/export/${format}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'multipart/form-data',
+                    },
+                    responseType: 'blob', // Important for handling file responses
+                },
             );
-            const blob = await response.blob();
+
+            const blob = new Blob([response.data]); // Create a blob from response
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
