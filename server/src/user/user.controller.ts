@@ -113,10 +113,10 @@ export class UserController {
     @UseGuards(ATAuthGuard)
     @Roles(Role.ADMIN)
     async getAll(@Request() req: any, @Res() res: Response) {
-        const foundUsers: User[] = await this.userService.findAll();
+        const foundUsers = await this.userService.findAll();
         res.send(
             foundUsers.map((user) => ({
-                id: user._id,
+                id: user.id,
                 username: user.username,
                 fullname: user.fullname,
                 birthday: user.birthday,
@@ -305,5 +305,28 @@ export class UserController {
         res.setHeader('Content-Disposition', 'attachment; filename=users.csv');
         res.setHeader('Content-Type', 'text/csv');
         res.send(csvData);
+    }
+
+    @ApiOperation({ summary: 'Get the specific attribute [ADMIN]' })
+    @ApiBearerAuth('access-token')
+    @Get('attributes')
+    @ApiResponse({
+        status: 200,
+        description: 'Get attributes successfully',
+    })
+    @ApiQuery({
+        name: 'attribute',
+        required: true,
+        description: 'Fetch a specific attribute [ex: faculty]',
+    })
+    @UseGuards(ATAuthGuard)
+    @Roles(Role.ADMIN)
+    async getAttributes(
+        @Query('attribute') attribute: string,
+        @Res() res: Response,
+    ) {
+        const attributes =
+            await this.userService.fetchAttributeSchema(attribute);
+        res.send(attributes);
     }
 }

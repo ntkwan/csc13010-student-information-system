@@ -5,11 +5,12 @@ import {
     IsDateString,
     IsEmail,
     IsEnum,
+    IsMongoId,
     IsNumber,
     IsPhoneNumber,
     IsString,
 } from 'class-validator';
-import { Faculty, Gender, Program, Status } from 'src/user/enums/student.enum';
+import { Gender } from 'src/user/enums/student.enum';
 
 export class CredEntity {
     @ApiProperty()
@@ -46,18 +47,16 @@ export class ProfileEntity {
     readonly gender: Gender;
 
     @ApiProperty()
-    @IsString()
-    @IsEnum(Faculty)
-    readonly faculty: Faculty;
+    @IsMongoId({ message: 'Invalid faculty ID' })
+    readonly faculty: string;
 
     @ApiProperty()
     @IsNumber()
     readonly classYear: number;
 
     @ApiProperty()
-    @IsString()
-    @IsEnum(Program)
-    readonly program: Program;
+    @IsMongoId({ message: 'Invalid program ID' })
+    readonly program: string;
 
     @ApiProperty()
     @IsString()
@@ -74,7 +73,6 @@ export class ProfileEntity {
     readonly phone: string;
 
     @ApiProperty()
-    @IsString()
-    @IsEnum(Status)
-    readonly status: Status;
+    @IsMongoId({ message: 'Invalid status ID' })
+    readonly status: string;
 }

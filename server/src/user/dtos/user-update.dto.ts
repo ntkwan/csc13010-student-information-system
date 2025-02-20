@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Gender, Faculty, Program, Status } from '../enums/student.enum';
+import { Gender } from '../enums/student.enum';
+import { Types } from 'mongoose';
 
 export class UpdateUsersDto {
     @ApiProperty({
@@ -18,12 +19,12 @@ export class UpdateUsersDto {
         birthday?: Date;
         fullname: string;
         gender: Gender;
-        faculty: Faculty;
+        faculty: Types.ObjectId;
         classYear: number;
-        program: Program;
+        program: Types.ObjectId;
         address?: string;
         phone: string;
-        status: Status;
+        status: Types.ObjectId;
     }>;
 }
 export class UpdateResultDto {

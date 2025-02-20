@@ -40,8 +40,6 @@ import { LoggerModule } from './logger/logger.module';
                     uri: `mongodb+srv://${configService.get('MONGO_USERNAME')}:${configService.get(
                         'MONGO_PASSWORD',
                     )}@${configService.get('MONGO_DATABASE')}/?retryWrites=true&w=majority&appName=${configService.get('MONGO_APPNAME')}`,
-                    useNewUrlParser: true,
-                    useUnifiedTopology: true,
                 };
             },
             inject: [ConfigService],

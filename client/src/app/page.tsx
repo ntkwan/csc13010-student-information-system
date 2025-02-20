@@ -36,23 +36,14 @@ import dayjs from 'dayjs';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 
-const facultyOptions = [
-    { value: 'Faculty of Law', label: 'Faculty of Law' },
-    {
-        value: 'Faculty of Business English',
-        label: 'Faculty of Business English',
-    },
-    { value: 'Faculty of Japanese', label: 'Faculty of Japanese' },
-    { value: 'Faculty of French', label: 'Faculty of French' },
-    { value: 'Unassigned', label: 'Unassigned' },
-];
+interface Option {
+    value: string;
+    label: string;
+}
 
-const programOptions = [
-    { value: 'Formal Program', label: 'Formal Program' },
-    { value: 'High-Quality Program', label: 'High-Quality Program' },
-    { value: 'Advanced Program', label: 'Advanced Program' },
-    { value: 'Unassigned', label: 'Unassigned' },
-];
+let facultyOptions: Option[] = [];
+let programOptions: Option[] = [];
+let statusOptions: Option[] = [];
 
 const classYearOptions = Array.from({ length: 2025 - 1990 + 1 }, (_, i) => ({
     value: `${1990 + i}`,
@@ -64,15 +55,6 @@ const genderOptions = [
     { value: 'Female', label: 'Female' },
     { value: 'Unassigned', label: 'Unassigned' },
 ];
-
-const statusOptions = [
-    { value: 'Active', label: 'Active' },
-    { value: 'Graduated', label: 'Graduated' },
-    { value: 'Leave', label: 'Leave' },
-    { value: 'Absent', label: 'Absent' },
-    { value: 'Unassigned', label: 'Unassigned' },
-];
-
 const UsersPage = () => {
     const router = useRouter();
     const [records, setRecords] = useState([]);
@@ -239,8 +221,13 @@ const UsersPage = () => {
             );
             fetchRecords({ searchQuery: '', faculty: '' }); // Re-fetch records after deletion
             setOpen(false);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error deleting record:', error);
+            setErrorMessage(
+                error.response.data.message ||
+                    'An error occurred while deleting the record.',
+            );
+            setOpen(false);
         }
     };
 
@@ -512,11 +499,75 @@ const UsersPage = () => {
         }
     };
 
+    const fetchFacultyOptions = async () => {
+        try {
+            const response = await axios.get(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/attributes?attribute=faculty`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                },
+            );
+            const data = response.data;
+            facultyOptions = data.map((faculty: any) => ({
+                value: faculty.name,
+                label: faculty.name,
+            }));
+            console.log(facultyOptions);
+        } catch (error) {
+            console.error('Error fetching faculty options:', error);
+        }
+    };
+
+    const fetchProgramOptions = async () => {
+        try {
+            const response = await axios.get(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/attributes?attribute=program`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                },
+            );
+            const data = response.data;
+            programOptions = data.map((program: any) => ({
+                value: program.name,
+                label: program.name,
+            }));
+        } catch (error) {
+            console.error('Error fetching program options:', error);
+        }
+    };
+
+    const fetchStatusOptions = async () => {
+        try {
+            const response = await axios.get(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/attributes?attribute=status`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                },
+            );
+            const data = response.data;
+            statusOptions = data.map((status: any) => ({
+                value: status.name,
+                label: status.name,
+            }));
+        } catch (error) {
+            console.error('Error fetching status options:', error);
+        }
+    };
+
     useEffect(() => {
         if (typeof window === 'undefined') return;
         if (localStorage.getItem('authToken')) {
             fetchUserProfile();
             fetchAllProfiles();
+            fetchFacultyOptions();
+            fetchProgramOptions();
+            fetchStatusOptions();
         }
     }, []);
 
@@ -715,7 +766,7 @@ const UsersPage = () => {
                                     minWidth: '200px',
                                 }}
                             >
-                                <MenuItem value="">Select Faculty</MenuItem>
+                                <MenuItem value="">Select faculty</MenuItem>
                                 {facultyOptions.map((faculty) => (
                                     <MenuItem
                                         key={faculty.label}
@@ -858,7 +909,7 @@ const UsersPage = () => {
                             open={isEditDialogOpen}
                             onClose={() => setEditDialogOpen(false)}
                         >
-                            <DialogTitle>Edit Record</DialogTitle>
+                            <DialogTitle>Edit record</DialogTitle>
                             <DialogContent>
                                 {Object.keys(editingRecord).map((field) => {
                                     if (field === 'birthday') {
@@ -1095,7 +1146,7 @@ const UsersPage = () => {
 
                     {open && (
                         <Dialog open={open} onClose={handleClose}>
-                            <DialogTitle>Confirm Deletion</DialogTitle>
+                            <DialogTitle>Confirm deletion</DialogTitle>
                             <DialogContent>
                                 Are you sure you want to delete?
                             </DialogContent>

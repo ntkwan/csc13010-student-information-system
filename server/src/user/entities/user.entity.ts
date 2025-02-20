@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { Role } from '../../auth/enums/roles.enum';
-import { Faculty, Status, Gender, Program } from '../enums/student.enum';
+import { Gender } from '../enums/student.enum';
 
 @Schema({
     timestamps: true,
@@ -69,12 +69,12 @@ export class User extends Document {
     gender: Gender;
 
     @Prop({
-        type: String,
-        enum: Object.values(Faculty),
+        type: Types.ObjectId,
+        ref: 'Faculty',
         required: true,
-        default: Faculty.NULL,
+        default: null,
     })
-    faculty: Faculty;
+    faculty: Types.ObjectId;
 
     @Prop({
         type: Number,
@@ -84,12 +84,12 @@ export class User extends Document {
     classYear: number;
 
     @Prop({
-        type: String,
-        enum: Object.values(Program),
+        type: Types.ObjectId,
+        ref: 'Program',
         required: true,
-        default: Program.NULL,
+        default: null,
     })
-    program: Program;
+    program: Types.ObjectId;
 
     @Prop({
         type: String,
@@ -105,12 +105,12 @@ export class User extends Document {
     phone: string;
 
     @Prop({
-        type: String,
-        enum: Object.values(Status),
+        type: Types.ObjectId,
+        ref: 'Status',
         required: true,
-        default: Status.NULL,
+        default: null,
     })
-    status: Status;
+    status: Types.ObjectId;
 
     @Prop({
         type: String,

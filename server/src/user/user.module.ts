@@ -6,10 +6,23 @@ import { User, UserSchema } from './entities/user.entity';
 import { UserSignUpDto } from './dtos/user-signup.dto';
 import { AccessControlService } from 'src/shared/shared.service';
 import { LoggerService } from '../logger/logger.service';
+import {
+    Faculty,
+    FacultySchema,
+    Program,
+    ProgramSchema,
+    Status,
+    StatusSchema,
+} from './entities/attributes.entity';
 
 @Module({
     imports: [
-        MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]), // Register the Mongoose schema
+        MongooseModule.forFeature([
+            { name: User.name, schema: UserSchema },
+            { name: Faculty.name, schema: FacultySchema },
+            { name: Status.name, schema: StatusSchema },
+            { name: Program.name, schema: ProgramSchema },
+        ]), // Register the Mongoose schema
         UserSignUpDto,
     ],
     controllers: [UserController],

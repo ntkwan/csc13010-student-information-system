@@ -24,7 +24,7 @@ export class LoggerService {
             minute: '2-digit',
             second: '2-digit',
             hour12: false,
-        })}] ${operation}: ${details} ${user ? `${user}\n` : ''}`;
+        })}] ${operation}: ${details} ${user ? `${user}\n` : '\n'}`;
 
         fs.appendFile(this.logFile, logEntry, (err) => {
             if (err) {

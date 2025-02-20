@@ -4,12 +4,13 @@ import {
     IsDateString,
     IsEmail,
     IsEnum,
+    IsMongoId,
     IsNotEmpty,
     IsNumber,
     IsPhoneNumber,
     IsString,
 } from 'class-validator';
-import { Faculty, Gender, Program } from '../enums/student.enum';
+import { Gender } from '../enums/student.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UserSignUpDto {
@@ -38,9 +39,8 @@ export class UserSignUpDto {
 
     @ApiProperty()
     @IsNotEmpty({ message: 'Faculty cannot be empty' })
-    @IsString()
-    @IsEnum(Faculty)
-    readonly faculty: Faculty;
+    @IsMongoId({ message: 'Invalid faculty ID' })
+    readonly faculty: string;
 
     @ApiProperty()
     @IsNotEmpty({ message: 'Class cannot be empty' })
@@ -49,9 +49,8 @@ export class UserSignUpDto {
 
     @ApiProperty()
     @IsNotEmpty({ message: 'Program cannot be empty' })
-    @IsString()
-    @IsEnum(Program)
-    readonly program: Program;
+    @IsMongoId({ message: 'Invalid program ID' })
+    readonly program: string;
 
     @ApiProperty()
     @IsNotEmpty({ message: 'Address cannot be empty' })

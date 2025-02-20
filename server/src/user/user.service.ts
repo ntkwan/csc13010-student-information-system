@@ -1,5 +1,6 @@
 import {
     BadRequestException,
+    Inject,
     Injectable,
     InternalServerErrorException,
     NotFoundException,
@@ -13,16 +14,23 @@ import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { Role } from '../auth/enums/roles.enum';
 import { UpdateUsersDto } from './dtos/user-update.dto';
-import { Status } from './enums/student.enum';
 import csvParser from 'csv-parser';
 import { Readable } from 'stream';
 import { LoggerService } from '../logger/logger.service';
+import { Faculty, Status, Program } from './entities/attributes.entity';
 @Injectable()
 export class UserService {
     constructor(
         @InjectModel(User.name)
         private readonly userModel: Model<User>,
-        private configService: ConfigService,
+        @InjectModel(Faculty.name)
+        private readonly facultyModel: Model<Faculty>,
+        @InjectModel(Program.name)
+        private readonly programModel: Model<Program>,
+        @InjectModel(Status.name)
+        private readonly statusModel: Model<Status>,
+
+        private readonly configService: ConfigService,
         private readonly loggerService: LoggerService,
     ) {}
 
@@ -35,6 +43,15 @@ export class UserService {
                 throw new BadRequestException('User not found');
             }
 
+            const foundStatus = await this.statusModel
+                .findById(user.status)
+                .exec();
+            const foundProgram = await this.programModel
+                .findById(user.program)
+                .exec();
+            const foundFaculty = await this.facultyModel
+                .findById(user.faculty)
+                .exec();
             const userProfile = {
                 username: user.username,
                 fullname: user.fullname,
@@ -42,13 +59,13 @@ export class UserService {
                     ? user.birthday.toISOString().split('T')[0]
                     : null,
                 gender: user.gender,
-                faculty: user.faculty,
+                faculty: foundFaculty.name,
                 classYear: user.classYear,
-                program: user.program,
+                program: foundProgram.name,
                 address: user.address ? user.address : null,
                 email: user.email,
                 phone: user.phone ? user.phone : null,
-                status: user.status,
+                status: foundStatus.name,
                 id: user.id,
                 role: user.role,
             };
@@ -61,8 +78,41 @@ export class UserService {
         }
     }
 
-    async findAll(): Promise<User[]> {
-        return this.userModel.find().exec();
+    async findAll() {
+        const users = await this.userModel.find().exec();
+        if (!users.length) {
+            throw new NotFoundException('No users found');
+        }
+
+        const newUsers = await Promise.all(
+            users.map(async (user) => {
+                const foundStatus = await this.statusModel
+                    .findById(user.status)
+                    .exec();
+                const foundProgram = await this.programModel
+                    .findById(user.program)
+                    .exec();
+                const foundFaculty = await this.facultyModel
+                    .findById(user.faculty)
+                    .exec();
+                return {
+                    username: user.username,
+                    fullname: user.fullname,
+                    birthday: user.birthday,
+                    gender: user.gender,
+                    faculty: foundFaculty.name,
+                    classYear: user.classYear,
+                    program: foundProgram.name,
+                    address: user.address ? user.address : null,
+                    email: user.email,
+                    phone: user.phone ? user.phone : null,
+                    status: foundStatus.name,
+                    id: user.id,
+                    role: user.role,
+                };
+            }),
+        );
+        return newUsers;
     }
 
     async findByOtp(
@@ -152,6 +202,9 @@ export class UserService {
                 password,
                 phone,
             } = userSignUpDto;
+            const defaultStatus = await this.statusModel.findOne({
+                status: 'Active',
+            });
             const hashedPassword = await this.hashPassword(password);
             const user = await this.userModel.create({
                 username: username,
@@ -160,12 +213,12 @@ export class UserService {
                 birthday: new Date(birthday),
                 fullname: fullname,
                 gender: gender,
-                faculty: faculty,
+                faculty: faculty.toString(),
                 classYear: classYear,
-                program: program,
+                program: program.toString(),
                 address: address,
                 phone: phone,
-                status: Status.ACTIVE,
+                status: defaultStatus._id.toString(),
                 otp: null,
                 otpExpiry: null,
                 role: Role.STUDENT,
@@ -187,6 +240,7 @@ export class UserService {
             throw new InternalServerErrorException(error.message);
         }
     }
+
     async updateRefreshToken(id: string, refreshToken: string): Promise<void> {
         try {
             await this.userModel
@@ -228,8 +282,18 @@ export class UserService {
     async removeByStudentId(id: string): Promise<void> {
         try {
             const result = await this.userModel
-                .findOneAndDelete({ username: id })
+                .findOne({ username: id })
                 .exec();
+
+            if (result.role === Role.ADMIN) {
+                this.loggerService.logOperation(
+                    'ERROR',
+                    'Cannot delete admin account',
+                );
+                throw new BadRequestException('Cannot delete admin account');
+            }
+
+            await this.userModel.deleteOne({ username: id }).exec();
 
             this.loggerService.logOperation(
                 'INFO',
@@ -242,7 +306,78 @@ export class UserService {
         }
     }
 
-    async createDefaultAdmin() {
+    async createDefaultAttributes(): Promise<void> {
+        try {
+            const faculties = [
+                'Faculty of Law',
+                'Faculty of Business English',
+                'Faculty of Japanese',
+                'Faculty of French',
+                'Unassigned',
+            ];
+
+            let isAllCreated = true;
+            for (const faculty of faculties) {
+                const facultyExists = await this.facultyModel
+                    .findOne({ name: faculty })
+                    .exec();
+
+                if (facultyExists === null) {
+                    await this.facultyModel.create({ name: faculty });
+                    console.log(`Faculty ${faculty} created`);
+                    isAllCreated = false;
+                }
+            }
+
+            const programs = [
+                'Formal Program',
+                'High-Quality Program',
+                'Advanced Program',
+                'Unassigned',
+            ];
+
+            for (const program of programs) {
+                const programExists = await this.programModel
+                    .findOne({ name: program })
+                    .exec();
+
+                if (programExists === null) {
+                    await this.programModel.create({ name: program });
+                    console.log(`Program ${program} created`);
+                    isAllCreated = false;
+                }
+            }
+
+            const statuses = [
+                'Active',
+                'Graduated',
+                'Leave',
+                'Absent',
+                'Unassigned',
+            ];
+
+            for (const status of statuses) {
+                const statusExists = await this.statusModel
+                    .findOne({ name: status })
+                    .exec();
+
+                if (statusExists === null) {
+                    await this.statusModel.create({ name: status });
+                    console.log(`Status ${status} created`);
+                    isAllCreated = false;
+                }
+            }
+
+            if (isAllCreated) {
+                console.log('Default attributes already exist');
+            }
+        } catch (error) {
+            console.log('Error creating default attributes: ', error.message);
+            throw new InternalServerErrorException(error.message);
+        }
+    }
+
+    async createDefaultAdmin(): Promise<void> {
         try {
             const adminExists = await this.userModel
                 .findOne({
@@ -254,6 +389,17 @@ export class UserService {
                 const adminPassword: string =
                     this.configService.get('ADMIN_PASSWORD');
                 const hashedPassword = await this.hashPassword(adminPassword);
+
+                const defaultStatus = await this.statusModel.findOne({
+                    name: 'Active',
+                });
+                const defaultProgram = await this.programModel.findOne({
+                    name: 'Unassigned',
+                });
+                const defaultFaculty = await this.facultyModel.findOne({
+                    name: 'Unassigned',
+                });
+
                 const admin = await this.userModel.create({
                     username: this.configService.get('ADMIN_USERNAME'),
                     email: this.configService.get('ADMIN_EMAIL'),
@@ -263,6 +409,9 @@ export class UserService {
                     fullname: this.configService.get('ADMIN_FULLNAME'),
                     address: 'address',
                     phone: '0123456789',
+                    program: defaultProgram._id.toString(),
+                    faculty: defaultFaculty._id.toString(),
+                    status: defaultStatus._id.toString(),
                     otp: null,
                     otpExpiry: null,
                 });
@@ -279,20 +428,20 @@ export class UserService {
         }
     }
 
-    async searchByNameOrStudentID(
-        name: string,
-        faculty?: string,
-    ): Promise<User[]> {
+    async searchByNameOrStudentID(name: string, faculty?: string) {
         try {
-            const regex = new RegExp(name, 'i'); // Case-insensitive regex search
+            const regex = new RegExp(name, 'i');
             let query: any = {
                 $or: [{ fullname: regex }, { username: regex }],
             };
 
             if (faculty) {
-                // If faculty is provided, filter by faculty first
+                const foundFaculty = await this.facultyModel.find({
+                    name: new RegExp(faculty, 'i'),
+                });
+                console.log(foundFaculty);
                 query = {
-                    faculty: new RegExp(faculty, 'i'), // Case-insensitive faculty filter
+                    faculty: foundFaculty[0]._id.toString(),
                     $or: [{ fullname: regex }, { username: regex }],
                 };
             }
@@ -305,7 +454,26 @@ export class UserService {
                 );
             }
 
-            return users;
+            const newUsers = await Promise.all(
+                users.map(async (user) => {
+                    const foundStatus = await this.statusModel
+                        .findById(user.status)
+                        .exec();
+                    const foundProgram = await this.programModel
+                        .findById(user.program)
+                        .exec();
+                    const foundFaculty = await this.facultyModel
+                        .findById(user.faculty)
+                        .exec();
+                    return {
+                        ...user.toObject(),
+                        faculty: foundFaculty.name,
+                        program: foundProgram.name,
+                        status: foundStatus.name,
+                    };
+                }),
+            );
+            return newUsers;
         } catch (error) {
             throw new InternalServerErrorException(error.message);
         }
@@ -345,6 +513,10 @@ export class UserService {
                     status: 'updated',
                 });
             } catch (error) {
+                this.loggerService.logOperation(
+                    'ERROR',
+                    `Failed to update student with student ID ${user.username}`,
+                );
                 results.push({
                     username: user.username,
                     status: 'error',
@@ -353,6 +525,10 @@ export class UserService {
             }
         }
 
+        this.loggerService.logOperation(
+            'INFO',
+            'Updated multiple student records',
+        );
         return results;
     }
 
@@ -390,14 +566,41 @@ export class UserService {
         }
 
         try {
-            const createdUsers = await this.userModel.insertMany(users);
+            const newUsers = await Promise.all(
+                users.map(async (user) => {
+                    const foundStatus = await this.statusModel
+                        .findOne({ name: user.status })
+                        .exec();
+                    const foundProgram = await this.programModel
+                        .findOne({ name: user.program })
+                        .exec();
+                    const foundFaculty = await this.facultyModel
+                        .findOne({ name: user.faculty })
+                        .exec();
+                    console.log(
+                        user.username,
+                        foundStatus._id,
+                        foundProgram._id,
+                        foundFaculty._id,
+                    );
+                    return {
+                        ...user,
+                        faculty: foundFaculty._id.toString(),
+                        program: foundProgram._id.toString(),
+                        status: foundStatus._id.toString(),
+                    };
+                }),
+            );
+
+            const createdUsers = await this.userModel.insertMany(newUsers);
             this.loggerService.logOperation(
                 'INFO',
                 'Imported users from file',
                 file.originalname,
             );
-            return createdUsers;
+            return newUsers;
         } catch (error) {
+            console.log(error.message);
             this.loggerService.logOperation('ERROR', error.message);
             throw new InternalServerErrorException(error.message);
         }
@@ -458,5 +661,19 @@ export class UserService {
             this.loggerService.logOperation('ERROR', error.message);
             throw new InternalServerErrorException(error.message);
         }
+    }
+
+    async fetchAttributeSchema(attribute: string): Promise<any> {
+        const schemaModels: Record<string, Model<any>> = {
+            faculty: this.facultyModel,
+            status: this.statusModel,
+            program: this.programModel,
+        };
+
+        if (!schemaModels[attribute]) {
+            throw new Error(`Schema for '${attribute}' not found.`);
+        }
+
+        return await schemaModels[attribute].find().exec();
     }
 }
