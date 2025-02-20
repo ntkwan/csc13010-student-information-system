@@ -2,6 +2,7 @@ graph LR
     AppModule-->AuthModule
   AppModule-->ConfigHostModule
   AppModule-->ConfigModule
+  AppModule-->LoggerModule
   AppModule-->MailerCoreModule
   AppModule-->MailerModule
   AppModule-->MongooseCoreModule
@@ -26,6 +27,10 @@ graph LR
   JwtModule-->ConfigModule
   JwtModule-->MailerCoreModule
   JwtModule-->MongooseCoreModule
+  LoggerModule-->ConfigHostModule
+  LoggerModule-->ConfigModule
+  LoggerModule-->MailerCoreModule
+  LoggerModule-->MongooseCoreModule
   MailerCoreModule-->ConfigHostModule
   MailerCoreModule-->ConfigModule
   MailerCoreModule-->MongooseCoreModule

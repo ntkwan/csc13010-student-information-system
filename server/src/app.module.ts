@@ -7,6 +7,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { AuthModule } from './auth/auth.module';
 import { SharedModule } from './shared/shared.module';
 import { UserModule } from './user/user.module';
+import { LoggerModule } from './logger/logger.module';
 
 @Module({
     imports: [
@@ -48,6 +49,7 @@ import { UserModule } from './user/user.module';
         AuthModule,
         SharedModule,
         UserModule,
+        LoggerModule,
     ],
     controllers: [AppController],
     providers: [AppService],

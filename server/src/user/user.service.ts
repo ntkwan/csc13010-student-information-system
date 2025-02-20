@@ -16,12 +16,14 @@ import { UpdateUsersDto } from './dtos/user-update.dto';
 import { Status } from './enums/student.enum';
 import csvParser from 'csv-parser';
 import { Readable } from 'stream';
+import { LoggerService } from '../logger/logger.service';
 @Injectable()
 export class UserService {
     constructor(
         @InjectModel(User.name)
         private readonly userModel: Model<User>,
         private configService: ConfigService,
+        private readonly loggerService: LoggerService,
     ) {}
 
     async getMyProfile(profileUser: User): Promise<any> {
@@ -174,8 +176,14 @@ export class UserService {
                     'This email or username is already in use',
                 );
             }
+            this.loggerService.logOperation(
+                'INFO',
+                'Create a student record with student ID',
+                user.username,
+            );
             return user;
         } catch (error) {
+            this.loggerService.logOperation('ERROR', error.message);
             throw new InternalServerErrorException(error.message);
         }
     }
@@ -218,14 +226,19 @@ export class UserService {
     }
 
     async removeByStudentId(id: string): Promise<void> {
-        const result = await this.userModel
-            .findOneAndDelete({ username: id })
-            .exec();
+        try {
+            const result = await this.userModel
+                .findOneAndDelete({ username: id })
+                .exec();
 
-        if (!result) {
-            throw new InternalServerErrorException(
-                `User with id ${id} not found`,
+            this.loggerService.logOperation(
+                'INFO',
+                'Delete a student record with student ID',
+                result.username,
             );
+        } catch (error) {
+            this.loggerService.logOperation('ERROR', error.message);
+            throw new InternalServerErrorException(error.message);
         }
     }
 
@@ -345,6 +358,7 @@ export class UserService {
 
     async importUsers(file: Express.Multer.File) {
         if (!file) {
+            this.loggerService.logOperation('ERROR', '', 'No file uploaded');
             throw new BadRequestException('No file uploaded');
         }
 
@@ -366,6 +380,10 @@ export class UserService {
                     .on('error', (err) => reject(err));
             });
         } else {
+            this.loggerService.logOperation(
+                'ERROR',
+                'Invalid file format. Use CSV or JSON',
+            );
             throw new BadRequestException(
                 'Invalid file format. Use CSV or JSON',
             );
@@ -373,16 +391,49 @@ export class UserService {
 
         try {
             const createdUsers = await this.userModel.insertMany(users);
+            this.loggerService.logOperation(
+                'INFO',
+                'Imported users from file',
+                file.originalname,
+            );
             return createdUsers;
         } catch (error) {
+            this.loggerService.logOperation('ERROR', error.message);
             throw new InternalServerErrorException(error.message);
         }
     }
 
     async exportUsersJson() {
-        const users = await this.findAll();
-        const newUsers = users.map((user) => {
-            return {
+        try {
+            const users = await this.findAll();
+            const newUsers = users.map((user) => {
+                return {
+                    username: user.username,
+                    email: user.email,
+                    fullname: user.fullname,
+                    birthday: user.birthday,
+                    gender: user.gender,
+                    faculty: user.faculty,
+                    classYear: user.classYear,
+                    program: user.program,
+                    address: user.address,
+                    phone: user.phone,
+                    status: user.status,
+                    role: user.role,
+                };
+            });
+            this.loggerService.logOperation('INFO', 'Exported users to JSON');
+            return JSON.stringify(newUsers, null, 2);
+        } catch (error) {
+            this.loggerService.logOperation('ERROR', error.message);
+            throw new InternalServerErrorException(error.message);
+        }
+    }
+
+    async exportUsersCsv() {
+        try {
+            const users = await this.findAll();
+            const newUsers = users.map((user) => ({
                 username: user.username,
                 email: user.email,
                 fullname: user.fullname,
@@ -392,35 +443,20 @@ export class UserService {
                 classYear: user.classYear,
                 program: user.program,
                 address: user.address,
-                phone: user.phone,
+                phone: `'${user.phone}`,
                 status: user.status,
                 role: user.role,
-            };
-        });
-        return JSON.stringify(newUsers, null, 2);
-    }
+            }));
 
-    async exportUsersCsv() {
-        const users = await this.findAll();
-        const newUsers = users.map((user) => ({
-            username: user.username,
-            email: user.email,
-            fullname: user.fullname,
-            birthday: user.birthday,
-            gender: user.gender,
-            faculty: user.faculty,
-            classYear: user.classYear,
-            program: user.program,
-            address: user.address,
-            phone: `'${user.phone}`,
-            status: user.status,
-            role: user.role,
-        }));
+            const json2csvParser = new Parser({
+                withBOM: true,
+            });
 
-        const json2csvParser = new Parser({
-            withBOM: true,
-        });
-
-        return json2csvParser.parse(newUsers);
+            this.loggerService.logOperation('INFO', 'Exported users to CSV');
+            return json2csvParser.parse(newUsers);
+        } catch (error) {
+            this.loggerService.logOperation('ERROR', error.message);
+            throw new InternalServerErrorException(error.message);
+        }
     }
 }

@@ -21,10 +21,10 @@ import {
     DialogContent,
     DialogTitle,
     Select,
+    Menu,
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
-import { ExitToApp } from '@mui/icons-material';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import Head from 'next/head';
@@ -33,7 +33,8 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
-import Footer from './footer';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import ListAltIcon from '@mui/icons-material/ListAlt';
 
 const facultyOptions = [
     { value: 'Faculty of Law', label: 'Faculty of Law' },
@@ -113,6 +114,15 @@ const UsersPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [facultyFilter, setFacultyFilter] = useState('');
     const [isFilteringByFaculty, setIsFilteringByFaculty] = useState(false);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+    const handleClickMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleCloseMenu = () => {
+        setAnchorEl(null);
+    };
 
     const handleSearch = () => {
         fetchRecords({
@@ -333,10 +343,6 @@ const UsersPage = () => {
         }
     };
 
-    const handleAvatarClick = () => {
-        setIsSignOutVisible(!isSignOutVisible);
-    };
-
     const fetchAllProfiles = async () => {
         setLoading(true);
         setErrorMessage('');
@@ -411,6 +417,38 @@ const UsersPage = () => {
         }
     };
 
+    const handleViewLogs = async () => {
+        try {
+            const response = await axios.get(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/logs/download`,
+                {
+                    responseType: 'blob', // Ensures file is received as a binary blob
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                },
+            );
+
+            // Create a download link
+            const blob = new Blob([response.data], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `logs-${new Intl.DateTimeFormat('en-GB', {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+            }).format(new Date())}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            handleClose(); // Close menu after download
+        } catch (error) {
+            console.error('Failed to download logs:', error);
+        }
+    };
+
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const handleImportClick = () => {
@@ -425,12 +463,14 @@ const UsersPage = () => {
         const file = event.target.files?.[0];
         if (!file) return;
 
+        event.target.value = '';
+
         // Process file (JSON or CSV)
         const formData = new FormData();
         formData.append('file', file);
 
         try {
-            axios.post(
+            await axios.post(
                 `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/import`,
                 formData,
                 {
@@ -566,48 +606,48 @@ const UsersPage = () => {
                                 border="1px solid #ccc"
                                 borderRadius="8px"
                                 padding="8px"
-                                onClick={handleAvatarClick}
-                                style={{ cursor: 'pointer' }}
+                                onClick={handleClickMenu}
+                                sx={{ cursor: 'pointer' }}
                             >
                                 <Avatar
                                     src={user?.avatar || defaultAvatar}
                                     alt={user?.username}
-                                    style={{ marginRight: '10px' }}
+                                    sx={{ marginRight: '10px' }}
                                 />
                                 <Typography
                                     variant="body1"
-                                    style={{
+                                    sx={{
                                         marginLeft: '10px',
-                                        userSelect: 'none', // Prevent text from being selected
+                                        userSelect: 'none',
                                     }}
                                 >
                                     {user?.username}
                                 </Typography>
                             </Box>
-                            {isSignOutVisible && (
-                                <Box
-                                    mt={6}
-                                    style={{
-                                        position: 'absolute',
-                                        top: '50%',
-                                        right: '0',
-                                        transform: 'translateY(-50%)',
-                                    }}
+
+                            <Menu
+                                anchorEl={anchorEl}
+                                open={Boolean(anchorEl)}
+                                onClose={handleCloseMenu}
+                                sx={{ mt: 1 }}
+                            >
+                                <MenuItem onClick={handleViewLogs}>
+                                    <ListAltIcon sx={{ marginRight: '8px' }} />
+                                    Activity logs
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={handleSignOut}
+                                    sx={{ color: 'red' }}
                                 >
-                                    <Button
-                                        variant="outlined"
-                                        color="secondary"
-                                        onClick={handleSignOut}
-                                        startIcon={
-                                            <ExitToApp
-                                                style={{ color: 'red' }}
-                                            />
-                                        }
-                                    >
-                                        Sign Out
-                                    </Button>
-                                </Box>
-                            )}
+                                    <ExitToAppIcon
+                                        sx={{
+                                            marginRight: '8px',
+                                            color: 'red',
+                                        }}
+                                    />
+                                    Sign out
+                                </MenuItem>
+                            </Menu>
                         </>
                     ) : (
                         <>
