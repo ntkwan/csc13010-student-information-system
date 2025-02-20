@@ -28,7 +28,6 @@ import { ProfileEntity } from '../auth/entities/creds.entity';
 import { UserService } from './user.service';
 import { Role } from 'src/auth/enums/roles.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { User } from './entities/user.entity';
 import { UpdateResultDto, UpdateUsersDto } from './dtos/user-update.dto';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { UserSignUpDto } from './dtos/user-signup.dto';

@@ -1,6 +1,5 @@
 import {
     BadRequestException,
-    Inject,
     Injectable,
     InternalServerErrorException,
     NotFoundException,
@@ -592,7 +591,7 @@ export class UserService {
                 }),
             );
 
-            const createdUsers = await this.userModel.insertMany(newUsers);
+            await this.userModel.insertMany(newUsers);
             this.loggerService.logOperation(
                 'INFO',
                 'Imported users from file',
