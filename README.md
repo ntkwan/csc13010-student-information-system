@@ -197,10 +197,11 @@ Once the application is running, you can interact with it through the dashboard 
 ![screenshot](screenshots/screen10.png)
 ![screenshot](screenshots/screen11.png)
 ![screenshot](screenshots/screen12.png)
+![screenshot](screenshots/screen13.png)
 
 #### Development build information
 
-![screenshot](screenshots/screen13.png)
+![screenshot](screenshots/screen20.png)
 
 #### Logging mechanism
 
