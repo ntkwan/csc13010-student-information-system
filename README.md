@@ -20,10 +20,21 @@ The system manages student data, including information such as:
 
 ## Features
 
+### v1.0
+
 - **Authentication/Authorization:** Allow user to login and recover password through email. The system includes 3 roles for authorization: `ADMIN`, `STUDENT`, `TEACHER`.
 - **Student Management:** Provide CRUD operations for student records. This includes adding new students, deleting students, updating student information, and viewing student details.
 - **Search Functionality:** Allow searching for students by full name or Student ID (MSSV).
 - **Data Validation:** Implement input validation for key fields such as email, phone number, faculty, and student status.
+
+### v2.0
+
+- **Data storage:** Using Mongoose for constructing data schema and storing directly to MongoDB.
+- **Advanced Search:** Allow search by Faculty filter
+- **Import/export records:** Allow user to import records as CSV/JSON and vice versa.
+- **Logging mechanism:** System automatically logs any meaningful operations or errors for troubleshooting issues.
+- **Development build information:** Display build version and build date at the website footer.
+- **Dynamic attributes:** Such attributes like Faculty, Program, Status is allowed to be added or audited by administrator. The system will provide 5 Faculty entities, 4 Status entities and 3 Program entities by default.
 
 ## Validation Rules (Backend)
 
@@ -147,35 +158,64 @@ Once the application is running, you can interact with it through the dashboard 
 
 ## Screenshots
 
-### Landing page
+### v1.0
+
+#### Landing page
 
 ![screenshot](screenshots/screen1.png)
 
-### Login page
+#### Login page
 
 ![screenshot](screenshots/screen2.png)
 
-### Menu
+#### Menu
 
 ![screenshot](screenshots/screen3.png)
 
-### Search a record
+#### Search a record
 
 ![screenshot](screenshots/screen4.png)
 
-### Edit a record
+#### Edit a record
 
 ![screenshot](screenshots/screen5.png)
 
-### View a record
+#### View a record
 
 ![screenshot](screenshots/screen6.png)
 
-### Add a record
+#### Add a record
 
 ![screenshot](screenshots/screen7.png)
 ![screenshot](screenshots/screen8.png)
 ![screenshot](screenshots/screen9.png)
+
+### v2.0
+
+#### Dynamic attributes
+
+![screenshot](screenshots/screen10.png)
+![screenshot](screenshots/screen11.png)
+![screenshot](screenshots/screen12.png)
+
+#### Development build information
+
+![screenshot](screenshots/screen13.png)
+
+#### Logging mechanism
+
+![screenshot](screenshots/screen14.png)
+
+#### Advanced search
+
+![screenshot](screenshots/screen15.png)
+![screenshot](screenshots/screen16.png)
+
+### Import/export records
+
+![screenshot](screenshots/screen17.png)
+![screenshot](screenshots/screen18.png)
+![screenshot](screenshots/screen19.png)
 
 ## Code convention
 
