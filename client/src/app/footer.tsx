@@ -31,7 +31,6 @@ const Footer = () => {
                 }
                 const data = await response.json();
                 setBuildInfo(data);
-                console.log(data);
             } catch (error) {
                 console.error('Error fetching build info:', error);
             }
@@ -53,10 +52,6 @@ const Footer = () => {
             }}
         >
             <Container>
-                <Typography variant="body2">
-                    © {new Date().getFullYear()} Student Information System.
-                    All rights reserved.
-                </Typography>
                 {buildInfo && (
                     <Typography
                         variant="caption"
