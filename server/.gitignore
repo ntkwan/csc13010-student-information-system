@@ -46,6 +46,8 @@ lerna-debug.log*
 .temp
 .tmp
 deps.mermaid
+build-info.json
+tsconfig.build.tsbuildinfo
 
 # Runtime data
 pids

@@ -14,7 +14,7 @@ import * as fs from 'fs';
 import { INestApplication } from '@nestjs/common';
 import { UserService } from './user/user.service';
 import * as path from 'path';
-import packageJson from '../package.json';
+import * as packageJson from '../package.json';
 
 async function generateBuildInfo() {
     const buildInfoPath = path.join(__dirname, '..', 'build-info.json');

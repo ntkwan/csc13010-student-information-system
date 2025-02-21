@@ -32,7 +32,7 @@ import { UpdateResultDto, UpdateUsersDto } from './dtos/user-update.dto';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { UserSignUpDto } from './dtos/user-signup.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import multer from 'multer';
+import * as multer from 'multer';
 
 @Controller('users')
 export class UserController {
