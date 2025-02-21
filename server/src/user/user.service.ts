@@ -202,9 +202,16 @@ export class UserService {
                 phone,
             } = userSignUpDto;
             const defaultStatus = await this.statusModel.findOne({
-                status: 'Active',
+                name: 'Active',
             });
             const hashedPassword = await this.hashPassword(password);
+            const foundProgram = await this.programModel
+                .findOne({ name: program })
+                .exec();
+            const foundFaculty = await this.facultyModel
+                .findOne({ name: faculty })
+                .exec();
+
             const user = await this.userModel.create({
                 username: username,
                 email: email,
@@ -212,9 +219,9 @@ export class UserService {
                 birthday: new Date(birthday),
                 fullname: fullname,
                 gender: gender,
-                faculty: faculty.toString(),
+                faculty: foundFaculty._id.toString(),
                 classYear: classYear,
-                program: program.toString(),
+                program: foundProgram._id.toString(),
                 address: address,
                 phone: phone,
                 status: defaultStatus._id.toString(),
@@ -576,12 +583,7 @@ export class UserService {
                     const foundFaculty = await this.facultyModel
                         .findOne({ name: user.faculty })
                         .exec();
-                    console.log(
-                        user.username,
-                        foundStatus._id,
-                        foundProgram._id,
-                        foundFaculty._id,
-                    );
+
                     return {
                         ...user,
                         faculty: foundFaculty._id.toString(),
@@ -674,5 +676,85 @@ export class UserService {
         }
 
         return await schemaModels[attribute].find().exec();
+    }
+
+    async changeAttributeName(
+        attribute: string,
+        oldName: string,
+        newName: string,
+    ) {
+        const schemaModels: Record<string, Model<any>> = {
+            faculty: this.facultyModel,
+            status: this.statusModel,
+            program: this.programModel,
+        };
+
+        if (!schemaModels[attribute]) {
+            throw new Error(`Schema for '${attribute}' not found.`);
+        }
+
+        try {
+            const isOldNameExists = await schemaModels[attribute]
+                .findOne({ name: oldName })
+                .exec();
+            if (!isOldNameExists) {
+                throw new NotFoundException(
+                    `Attribute with name '${oldName}' not found`,
+                );
+            }
+
+            const isNewNameExists = await schemaModels[attribute]
+                .findOne({ name: newName })
+                .exec();
+            if (isNewNameExists) {
+                throw new BadRequestException(
+                    `Attribute with name '${newName}' already exists`,
+                );
+            }
+
+            await schemaModels[attribute].findOneAndUpdate(
+                { name: oldName },
+                { name: newName },
+            );
+            this.loggerService.logOperation(
+                'INFO',
+                `Changed ${attribute} name from ${oldName} to ${newName}`,
+            );
+        } catch (error) {
+            this.loggerService.logOperation('ERROR', error.message);
+            throw new InternalServerErrorException(error.message);
+        }
+    }
+
+    async addAttribute(attribute: string, name: string) {
+        const schemaModels: Record<string, Model<any>> = {
+            faculty: this.facultyModel,
+            status: this.statusModel,
+            program: this.programModel,
+        };
+
+        if (!schemaModels[attribute]) {
+            throw new Error(`Schema for '${attribute}' not found.`);
+        }
+
+        try {
+            const isNameExists = await schemaModels[attribute]
+                .findOne({ name: name })
+                .exec();
+            if (isNameExists) {
+                throw new BadRequestException(
+                    `Attribute with name '${name}' already exists`,
+                );
+            }
+
+            await schemaModels[attribute].create({ name: name });
+            this.loggerService.logOperation(
+                'INFO',
+                `Added new ${attribute} with name ${name}`,
+            );
+        } catch (error) {
+            this.loggerService.logOperation('ERROR', error.message);
+            throw new InternalServerErrorException(error.message);
+        }
     }
 }

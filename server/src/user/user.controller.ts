@@ -50,7 +50,6 @@ export class UserController {
     @UseGuards(ATAuthGuard)
     @Roles(Role.ADMIN)
     async addStudent(@Request() req: any, @Res() res: Response) {
-        console.log(req.body);
         const newStudent = await this.userService.create(req.body);
         res.status(201).send({
             email: newStudent.email,
@@ -327,5 +326,73 @@ export class UserController {
         const attributes =
             await this.userService.fetchAttributeSchema(attribute);
         res.send(attributes);
+    }
+
+    @ApiOperation({ summary: 'Change name of the attribute [ADMIN]' })
+    @ApiBearerAuth('access-token')
+    @Put('attribute')
+    @ApiResponse({
+        status: 200,
+        description: 'Attribute name changed successfully',
+    })
+    @ApiQuery({
+        name: 'attribute',
+        required: true,
+        description: 'Attribute to change',
+    })
+    @ApiQuery({
+        name: 'newName',
+        required: true,
+        description: 'New name for the attribute',
+    })
+    @UseGuards(ATAuthGuard)
+    @Roles(Role.ADMIN)
+    async changeAttributeName(
+        @Query('attribute') attribute: string,
+        @Query('oldName') oldName: string,
+        @Query('newName') newName: string,
+        @Res() res: Response,
+    ) {
+        console.log(attribute, oldName, newName);
+        await this.userService.changeAttributeName(attribute, oldName, newName);
+        res.send({
+            message: `Attribute ${attribute} changed ${oldName} to ${newName}`,
+        });
+    }
+
+    @ApiOperation({ summary: 'Add new attribute [ADMIN]' })
+    @ApiBearerAuth('access-token')
+    @Post('attribute')
+    @ApiResponse({
+        status: 201,
+        description: 'Attribute added successfully',
+    })
+    @ApiQuery({
+        name: 'attribute',
+        required: true,
+        description: 'Attribute to add',
+    })
+    @ApiQuery({
+        name: 'attribute',
+        required: true,
+        description: 'Attribute to add',
+    })
+    @ApiQuery({
+        name: 'name',
+        required: true,
+        description: 'Record of the attribute',
+    })
+    @UseGuards(ATAuthGuard)
+    @Roles(Role.ADMIN)
+    async addAttribute(
+        @Query('attribute') attribute: string,
+        @Query('name') newRecord: string,
+        @Res() res: Response,
+    ) {
+        console.log(attribute, newRecord);
+        await this.userService.addAttribute(attribute, newRecord);
+        res.status(201).send({
+            message: `Attribute ${attribute} added successfully`,
+        });
     }
 }

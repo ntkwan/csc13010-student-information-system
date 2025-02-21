@@ -22,6 +22,7 @@ import {
     DialogTitle,
     Select,
     Menu,
+    Tab,
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
@@ -35,6 +36,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import ListAltIcon from '@mui/icons-material/ListAlt';
+import { get } from 'http';
 
 interface Option {
     value: string;
@@ -55,6 +57,9 @@ const genderOptions = [
     { value: 'Female', label: 'Female' },
     { value: 'Unassigned', label: 'Unassigned' },
 ];
+
+const categories = ['Student', 'Faculty', 'Program', 'Status'];
+
 const UsersPage = () => {
     const router = useRouter();
     const [records, setRecords] = useState([]);
@@ -64,7 +69,10 @@ const UsersPage = () => {
         username: string;
         avatar: string;
     } | null>(null);
-    const [isSignOutVisible, setIsSignOutVisible] = useState(false);
+    const [showCategoryRecordForm, setShowCategoryRecordForm] = useState(false);
+    const [newCategoryRecord, setNewCategoryRecord] = useState({
+        value: '',
+    });
     const [errorMessage, setErrorMessage] = useState('');
     const [showNewRecordForm, setShowNewRecordForm] = useState(false);
     const [newRecord, setNewRecord] = useState({
@@ -88,6 +96,26 @@ const UsersPage = () => {
     const [isEditDialogOpen, setEditDialogOpen] = useState(false);
     const [emailError, setEmailError] = useState(false);
     const [phoneError, setPhoneError] = useState(false);
+
+    const [selectedCategory, setSelectedCategory] = useState('Student');
+    const [categoryRecords, setCategoryRecords] = useState<any[]>([]);
+
+    useEffect(() => {
+        console.log(selectedCategory);
+        switch (selectedCategory) {
+            case 'Faculty':
+                setCategoryRecords(facultyOptions);
+                break;
+            case 'Program':
+                setCategoryRecords(programOptions);
+                break;
+            case 'Status':
+                setCategoryRecords(statusOptions);
+                break;
+        }
+        console.log(categoryRecords);
+    }, [selectedCategory]);
+
     const validateEmail = (email: any) => {
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         return emailRegex.test(email);
@@ -139,6 +167,19 @@ const UsersPage = () => {
         setPhoneError(false);
         setEditingRecord(record);
         setEditDialogOpen(true);
+    };
+
+    const [editingCategoryRecord, setEditingCategoryRecord] =
+        useState<any>(null);
+    const [updatedCategoryRecord, setUpdatedCategoryRecord] =
+        useState<any>(null);
+    const [isEditCategoryDialogOpen, setEditCategoryDialogOpen] =
+        useState(false);
+
+    const handleCategoryEditClick = (record: any) => {
+        setUpdatedCategoryRecord({ ...record });
+        setEditingCategoryRecord(record);
+        setEditCategoryDialogOpen(true);
     };
 
     const handleInputChange = (field: string, value: any) => {
@@ -199,6 +240,43 @@ const UsersPage = () => {
             console.error('Error updating record:', error);
         }
     };
+
+    const handleCategoryInputChange = (field: string, value: any) => {
+        setUpdatedCategoryRecord((prev: any) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
+
+    const handleCategorySaveChanges = async () => {
+        try {
+            await axios.put(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/attribute?attribute=${selectedCategory.toLowerCase()}&oldName=${editingCategoryRecord.value}&newName=${updatedCategoryRecord.value}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                },
+            );
+            setEditCategoryDialogOpen(false);
+            setEditingCategoryRecord(null);
+            switch (selectedCategory) {
+                case 'Faculty':
+                    fetchFacultyOptions();
+                    break;
+                case 'Program':
+                    fetchProgramOptions();
+                    break;
+                case 'Status':
+                    fetchStatusOptions();
+                    break;
+            }
+        } catch (error) {
+            console.error('Error updating record:', error);
+        }
+    };
+
     const handleClickOpen = (record: any) => {
         setSelectedRecord(record);
         setOpen(true);
@@ -358,6 +436,35 @@ const UsersPage = () => {
         }
     };
 
+    const handleAddNewCategoryRecord = async () => {
+        try {
+            await axios.post(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/attribute?attribute=${selectedCategory.toLowerCase()}&name=${newCategoryRecord.value}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                },
+            );
+            setNewCategoryRecord({ value: '' });
+            setShowCategoryRecordForm(false);
+            switch (selectedCategory) {
+                case 'Faculty':
+                    fetchFacultyOptions();
+                    break;
+                case 'Program':
+                    fetchProgramOptions();
+                    break;
+                case 'Status':
+                    fetchStatusOptions();
+                    break;
+            }
+        } catch (error) {
+            console.error('Error adding new category record:', error);
+        }
+    };
+
     const handleAddNewRecord = async () => {
         setValidationErrorMessage('');
         try {
@@ -514,7 +621,7 @@ const UsersPage = () => {
                 value: faculty.name,
                 label: faculty.name,
             }));
-            console.log(facultyOptions);
+            setCategoryRecords(facultyOptions);
         } catch (error) {
             console.error('Error fetching faculty options:', error);
         }
@@ -535,6 +642,7 @@ const UsersPage = () => {
                 value: program.name,
                 label: program.name,
             }));
+            setCategoryRecords(programOptions);
         } catch (error) {
             console.error('Error fetching program options:', error);
         }
@@ -555,6 +663,7 @@ const UsersPage = () => {
                 value: status.name,
                 label: status.name,
             }));
+            setCategoryRecords(statusOptions);
         } catch (error) {
             console.error('Error fetching status options:', error);
         }
@@ -809,101 +918,245 @@ const UsersPage = () => {
                         ></Typography>
                     )}
 
-                    <Box
-                        display="flex"
-                        justifyContent="center"
-                        alignItems="center"
-                        mb={6}
-                    >
-                        <TableContainer
-                            component={Paper}
-                            style={{
-                                width: '80%',
-                                maxWidth: '1200px',
-                                maxHeight: '600px', // Set max height for scrolling
-                                overflow: 'auto', // Enable scrolling
-                            }}
+                    <Box display="flex" justifyContent="center" gap={2} mb={3}>
+                        {categories.map((category) => (
+                            <Button
+                                key={category}
+                                variant={
+                                    selectedCategory === category
+                                        ? 'contained'
+                                        : 'outlined'
+                                }
+                                onClick={() => setSelectedCategory(category)}
+                            >
+                                {category}
+                            </Button>
+                        ))}
+                    </Box>
+                    {selectedCategory === 'Student' && (
+                        <Box
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            mb={6}
                         >
-                            <Table stickyHeader>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>ID</TableCell>
-                                        <TableCell>Student ID</TableCell>
-                                        <TableCell>Full name</TableCell>
-                                        <TableCell>Birthday</TableCell>
-                                        <TableCell>Actions</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {records.map(
-                                        (record: any, index: number) => (
-                                            <TableRow key={index}>
-                                                <TableCell>
-                                                    {record.id}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {record.username}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {record.fullname}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {
-                                                        new Date(
-                                                            record.birthday,
-                                                        )
-                                                            .toISOString()
-                                                            .split('T')[0]
-                                                    }
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Button
-                                                        variant="outlined"
-                                                        color="primary"
-                                                        onClick={() =>
-                                                            handleEditClick(
-                                                                record,
+                            <TableContainer
+                                component={Paper}
+                                style={{
+                                    width: '80%',
+                                    maxWidth: '1200px',
+                                    maxHeight: '600px', // Set max height for scrolling
+                                    overflow: 'auto', // Enable scrolling
+                                }}
+                            >
+                                <Table stickyHeader>
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>ID</TableCell>
+                                            <TableCell>Student ID</TableCell>
+                                            <TableCell>Full name</TableCell>
+                                            <TableCell>Birthday</TableCell>
+                                            <TableCell>Actions</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {records.map(
+                                            (record: any, index: number) => (
+                                                <TableRow key={index}>
+                                                    <TableCell>
+                                                        {record.id}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {record.username}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {record.fullname}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {
+                                                            new Date(
+                                                                record.birthday,
                                                             )
+                                                                .toISOString()
+                                                                .split('T')[0]
                                                         }
-                                                    >
-                                                        Edit
-                                                    </Button>
-                                                    <Button
-                                                        variant="outlined"
-                                                        color="secondary"
-                                                        onClick={() =>
-                                                            handleViewDetails(
-                                                                record,
-                                                            )
-                                                        }
-                                                        style={{
-                                                            marginLeft: '10px',
-                                                        }}
-                                                    >
-                                                        View Details
-                                                    </Button>
-                                                    <Button
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button
+                                                            variant="outlined"
+                                                            color="primary"
+                                                            onClick={() =>
+                                                                handleEditClick(
+                                                                    record,
+                                                                )
+                                                            }
+                                                        >
+                                                            Edit
+                                                        </Button>
+                                                        <Button
+                                                            variant="outlined"
+                                                            color="secondary"
+                                                            onClick={() =>
+                                                                handleViewDetails(
+                                                                    record,
+                                                                )
+                                                            }
+                                                            style={{
+                                                                marginLeft:
+                                                                    '10px',
+                                                            }}
+                                                        >
+                                                            View Details
+                                                        </Button>
+                                                        <Button
+                                                            variant="outlined"
+                                                            color="error"
+                                                            onClick={() =>
+                                                                handleClickOpen(
+                                                                    record,
+                                                                )
+                                                            }
+                                                            style={{
+                                                                marginLeft:
+                                                                    '10px',
+                                                            }}
+                                                        >
+                                                            Delete
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ),
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Box>
+                    )}
+                    {(selectedCategory === 'Faculty' ||
+                        selectedCategory === 'Program' ||
+                        selectedCategory === 'Status') && (
+                        <Box
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            mb={6}
+                        >
+                            <TableContainer
+                                component={Paper}
+                                style={{
+                                    width: '80%',
+                                    maxWidth: '1200px',
+                                    maxHeight: '600px',
+                                    overflow: 'auto',
+                                }}
+                            >
+                                <Table stickyHeader>
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell
+                                                style={{ width: '300px' }}
+                                            >
+                                                Name
+                                            </TableCell>
+                                            <TableCell
+                                                style={{ width: '200px' }}
+                                            >
+                                                Actions
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {categoryRecords.map(
+                                            (record, index) => (
+                                                <TableRow key={index}>
+                                                    <TableCell>
+                                                        {record.value}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button
+                                                            variant="outlined"
+                                                            color="primary"
+                                                            onClick={() =>
+                                                                handleCategoryEditClick(
+                                                                    record,
+                                                                )
+                                                            }
+                                                        >
+                                                            Edit
+                                                        </Button>
+                                                        <Button
+                                                            variant="outlined"
+                                                            color="secondary"
+                                                            onClick={() =>
+                                                                handleViewDetails(
+                                                                    record,
+                                                                )
+                                                            }
+                                                            style={{
+                                                                marginLeft:
+                                                                    '10px',
+                                                            }}
+                                                        >
+                                                            View Details
+                                                        </Button>
+                                                        {/*
+                                                        <Button
                                                         variant="outlined"
                                                         color="error"
-                                                        onClick={() =>
-                                                            handleClickOpen(
-                                                                record,
-                                                            )
-                                                        }
-                                                        style={{
-                                                            marginLeft: '10px',
-                                                        }}
-                                                    >
+                                                        onClick={() => handleClickOpen(record)}
+                                                        style={{ marginLeft: "10px" }}
+                                                        >
                                                         Delete
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        ),
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Box>
+                                                        </Button>
+                                                        */}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ),
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Box>
+                    )}
+                    {editingCategoryRecord && (
+                        <Dialog
+                            open={isEditCategoryDialogOpen}
+                            onClose={() => setEditCategoryDialogOpen(false)}
+                        >
+                            <DialogTitle>Edit record</DialogTitle>
+                            <DialogContent>
+                                <TextField
+                                    fullWidth
+                                    margin="dense"
+                                    label="Name"
+                                    value={updatedCategoryRecord.value || ''}
+                                    onChange={(e) =>
+                                        handleCategoryInputChange(
+                                            'value',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
+                            </DialogContent>
+                            <DialogActions>
+                                <Button
+                                    onClick={() =>
+                                        setEditCategoryDialogOpen(false)
+                                    }
+                                    color="secondary"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    onClick={handleCategorySaveChanges}
+                                    variant="contained"
+                                    color="primary"
+                                >
+                                    Save
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
+                    )}
                     {editingRecord && (
                         <Dialog
                             open={isEditDialogOpen}
@@ -1174,7 +1427,7 @@ const UsersPage = () => {
                                 {Object.entries(selectedRecord || {}).map(
                                     ([key, value]) => {
                                         if (key === 'id') return null;
-
+                                        if (key === 'label') return null;
                                         const displayKey =
                                             key === 'fullname'
                                                 ? 'Full name'
@@ -1239,6 +1492,75 @@ const UsersPage = () => {
                         </Dialog>
                     )}
 
+                    {showCategoryRecordForm && (
+                        <Dialog
+                            open={showCategoryRecordForm}
+                            onClose={() => setShowCategoryRecordForm(false)}
+                            maxWidth="md"
+                            fullWidth
+                            sx={{
+                                '& .MuiDialog-paper': {
+                                    width: '1000px',
+                                    maxHeight: '70vh',
+                                },
+                            }}
+                        >
+                            <Table>
+                                <TableBody>
+                                    <TableRow>
+                                        <TableCell
+                                            style={{ fontWeight: 'bold' }}
+                                        >
+                                            Name
+                                        </TableCell>
+                                        <TableCell>
+                                            <TextField
+                                                fullWidth
+                                                value={
+                                                    newCategoryRecord.value ||
+                                                    ''
+                                                }
+                                                onChange={(e) =>
+                                                    setNewCategoryRecord(
+                                                        (prev) => ({
+                                                            ...prev,
+                                                            value: e.target
+                                                                .value,
+                                                        }),
+                                                    )
+                                                }
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+
+                            <Box
+                                display="flex"
+                                justifyContent="center"
+                                alignItems="center"
+                                gap={2}
+                                sx={{ padding: 2 }}
+                            >
+                                <Button
+                                    variant="contained"
+                                    color="success"
+                                    onClick={handleAddNewCategoryRecord}
+                                >
+                                    Submit New Record
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    onClick={() =>
+                                        setShowCategoryRecordForm(false)
+                                    }
+                                >
+                                    Cancel
+                                </Button>
+                            </Box>
+                        </Dialog>
+                    )}
                     {showNewRecordForm && (
                         <Dialog
                             open={showNewRecordForm}
@@ -1614,26 +1936,52 @@ const UsersPage = () => {
                             </Box>
                         </Dialog>
                     )}
-                    <Box
-                        display="flex"
-                        justifyContent="center"
-                        alignItems="center"
-                        gap={2}
-                        sx={{ padding: 2 }}
-                    >
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => {
-                                setShowNewRecordForm(!showNewRecordForm);
-                                setValidationErrorMessage('');
-                                setEmailError(false);
-                                setPhoneError(false);
-                            }}
+
+                    {selectedCategory === 'Student' && (
+                        <Box
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            gap={2}
+                            sx={{ padding: 2 }}
                         >
-                            Add New Record
-                        </Button>
-                    </Box>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() => {
+                                    setShowNewRecordForm(!showNewRecordForm);
+                                    setValidationErrorMessage('');
+                                    setEmailError(false);
+                                    setPhoneError(false);
+                                }}
+                            >
+                                Add New Record
+                            </Button>
+                        </Box>
+                    )}
+                    {(selectedCategory === 'Faculty' ||
+                        selectedCategory === 'Program' ||
+                        selectedCategory === 'Status') && (
+                        <Box
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            gap={2}
+                            sx={{ padding: 2 }}
+                        >
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() => {
+                                    setShowCategoryRecordForm(
+                                        !showCategoryRecordForm,
+                                    );
+                                }}
+                            >
+                                Add New Record
+                            </Button>
+                        </Box>
+                    )}
                 </>
             )}
         </div>
