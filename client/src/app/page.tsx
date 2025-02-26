@@ -7,11 +7,8 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableContainer,
-    TableHead,
     TableRow,
     Button,
-    Paper,
     Box,
     Typography,
     MenuItem,
@@ -27,6 +24,9 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import Header from './header';
 import SearchBar from './searchBar';
+import StudentDashboard from './studentDashboard';
+import AttributesDashboard from './attributesDashboard';
+import SettingDashboard from './settingDashboard';
 
 interface CommonOption {
     value: string;
@@ -93,56 +93,8 @@ const UsersPage = () => {
 
     const [selectedCategory, setSelectedCategory] = useState('Student');
     const [categoryRecords, setCategoryRecords] = useState<any[]>([]);
-
     const [emailSuffix, setEmailSuffix] = useState('');
     const [phonePrefix, setPhonePrefix] = useState('');
-    const [error, setError] = useState('');
-
-    const validatePhoneNumberPrefix = (prefix: string) => {
-        const regex = /^\+\d+$/;
-        return regex.test(prefix);
-    };
-
-    const validateEmailSuffix = (suffix: string) => {
-        const regex = /^@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        return regex.test(suffix);
-    };
-
-    const handleSaveSettings = () => {
-        if (!validatePhoneNumberPrefix(phonePrefix)) {
-            setError("Invalid prefix. Must start with '+' followed by digits.");
-            return;
-        }
-
-        if (!validateEmailSuffix(emailSuffix)) {
-            setError(
-                "Invalid suffix. Must start with '@' followed by domain name.",
-            );
-            return;
-        }
-        setError('');
-
-        console.log(emailSuffix, phonePrefix);
-        axios
-            .put(
-                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/settings?emailSuffix=${emailSuffix}&phonePrefix=${phonePrefix}`,
-                {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-                    },
-                },
-            )
-            .then(() => {
-                console.log('Settings saved successfully');
-            })
-            .catch((error) => {
-                setError(
-                    error.response?.data?.message ||
-                        'An error occurred. Please try again.',
-                );
-            });
-    };
 
     useEffect(() => {
         console.log(selectedCategory);
@@ -210,15 +162,6 @@ const UsersPage = () => {
             ...prev,
             [field]: value,
         }));
-    };
-
-    const handleEditClick = (record: any) => {
-        setUpdatedRecord({ ...record });
-        setValidationErrorMessage('');
-        setEmailError(false);
-        setPhoneError(false);
-        setEditingRecord(record);
-        setEditDialogOpen(true);
     };
 
     const [editingCategoryRecord, setEditingCategoryRecord] =
@@ -297,6 +240,11 @@ const UsersPage = () => {
         }
     };
 
+    const handleViewDetails = (record: any) => {
+        setSelectedRecord(record);
+        setIsOpenRecord(true);
+    };
+
     const handleCategoryInputChange = (field: string, value: any) => {
         setUpdatedCategoryRecord((prev: any) => ({
             ...prev,
@@ -366,11 +314,6 @@ const UsersPage = () => {
         }
     };
 
-    const handleClickOpen = (record: any) => {
-        setSelectedRecord(record);
-        setOpen(true);
-    };
-
     const handleClose = () => {
         setSelectedRecord(null);
         setOpen(false);
@@ -396,11 +339,6 @@ const UsersPage = () => {
             );
             setOpen(false);
         }
-    };
-
-    const handleViewDetails = (record: any) => {
-        setSelectedRecord(record);
-        setIsOpenRecord(true);
     };
 
     const handleCloseDetails = () => {
@@ -750,270 +688,38 @@ const UsersPage = () => {
                         ))}
                     </Box>
                     {selectedCategory === 'Student' && (
-                        <Box
-                            display="flex"
-                            justifyContent="center"
-                            alignItems="center"
-                            mb={6}
-                        >
-                            <TableContainer
-                                component={Paper}
-                                style={{
-                                    width: '80%',
-                                    maxWidth: '1200px',
-                                    maxHeight: '600px', // Set max height for scrolling
-                                    overflow: 'auto', // Enable scrolling
-                                }}
-                            >
-                                <Table stickyHeader>
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell>Student ID</TableCell>
-                                            <TableCell>Full name</TableCell>
-                                            <TableCell>Birthday</TableCell>
-                                            <TableCell>Faculty</TableCell>
-                                            <TableCell>Status</TableCell>
-                                            <TableCell>Actions</TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {records.map(
-                                            (record: any, index: number) => (
-                                                <TableRow key={index}>
-                                                    <TableCell>
-                                                        {record.username}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {record.fullname}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {
-                                                            new Date(
-                                                                record.birthday,
-                                                            )
-                                                                .toISOString()
-                                                                .split('T')[0]
-                                                        }
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {record.faculty}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {record.status}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Button
-                                                            variant="outlined"
-                                                            color="primary"
-                                                            onClick={() =>
-                                                                handleEditClick(
-                                                                    record,
-                                                                )
-                                                            }
-                                                        >
-                                                            Edit
-                                                        </Button>
-                                                        <Button
-                                                            variant="outlined"
-                                                            color="secondary"
-                                                            onClick={() =>
-                                                                handleViewDetails(
-                                                                    record,
-                                                                )
-                                                            }
-                                                            style={{
-                                                                marginLeft:
-                                                                    '10px',
-                                                            }}
-                                                        >
-                                                            View Details
-                                                        </Button>
-                                                        <Button
-                                                            variant="outlined"
-                                                            color="error"
-                                                            onClick={() =>
-                                                                handleClickOpen(
-                                                                    record,
-                                                                )
-                                                            }
-                                                            style={{
-                                                                marginLeft:
-                                                                    '10px',
-                                                            }}
-                                                        >
-                                                            Delete
-                                                        </Button>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ),
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        </Box>
+                        <StudentDashboard
+                            records={records}
+                            handleViewDetails={handleViewDetails}
+                            setSelectedRecord={setSelectedRecord}
+                            setOpen={setOpen}
+                            setUpdatedRecord={setUpdatedRecord}
+                            setValidationErrorMessage={
+                                setValidationErrorMessage
+                            }
+                            setEmailError={setEmailError}
+                            setPhoneError={setPhoneError}
+                            setEditingRecord={setEditingRecord}
+                            setEditDialogOpen={setEditDialogOpen}
+                        ></StudentDashboard>
                     )}
                     {(selectedCategory === 'Faculty' ||
                         selectedCategory === 'Program' ||
                         selectedCategory === 'Status') && (
-                        <Box
-                            display="flex"
-                            justifyContent="center"
-                            alignItems="center"
-                            mb={6}
-                        >
-                            <TableContainer
-                                component={Paper}
-                                style={{
-                                    width: '80%',
-                                    maxWidth: '1200px',
-                                    maxHeight: '600px',
-                                    overflow: 'auto',
-                                }}
-                            >
-                                <Table stickyHeader>
-                                    <TableHead>
-                                        <TableRow>
-                                            {selectedCategory === 'Status' && (
-                                                <TableCell
-                                                    style={{ width: '300px' }}
-                                                >
-                                                    Order
-                                                </TableCell>
-                                            )}
-                                            <TableCell
-                                                style={{ width: '300px' }}
-                                            >
-                                                Name
-                                            </TableCell>
-                                            <TableCell
-                                                style={{ width: '200px' }}
-                                            >
-                                                Actions
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {categoryRecords.map(
-                                            (record, index) => (
-                                                <TableRow key={index}>
-                                                    {selectedCategory ===
-                                                        'Status' && (
-                                                        <TableCell>
-                                                            {record.order}
-                                                        </TableCell>
-                                                    )}
-                                                    <TableCell>
-                                                        {record.value}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Button
-                                                            variant="outlined"
-                                                            color="primary"
-                                                            onClick={() =>
-                                                                handleCategoryEditClick(
-                                                                    record,
-                                                                )
-                                                            }
-                                                        >
-                                                            Edit
-                                                        </Button>
-                                                        <Button
-                                                            variant="outlined"
-                                                            color="secondary"
-                                                            onClick={() =>
-                                                                handleViewDetails(
-                                                                    record,
-                                                                )
-                                                            }
-                                                            style={{
-                                                                marginLeft:
-                                                                    '10px',
-                                                            }}
-                                                        >
-                                                            View Details
-                                                        </Button>
-                                                        {/*
-                                                        <Button
-                                                        variant="outlined"
-                                                        color="error"
-                                                        onClick={() => handleClickOpen(record)}
-                                                        style={{ marginLeft: "10px" }}
-                                                        >
-                                                        Delete
-                                                        </Button>
-                                                        */}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ),
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        </Box>
+                        <AttributesDashboard
+                            categoryRecords={categoryRecords}
+                            selectedCategory={selectedCategory}
+                            handleCategoryEditClick={handleCategoryEditClick}
+                            handleViewDetails={handleViewDetails}
+                        ></AttributesDashboard>
                     )}
                     {selectedCategory === 'Settings' && (
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                            }}
-                        >
-                            <Box
-                                sx={{
-                                    border: '2px solid #1976d2',
-                                    borderRadius: '8px',
-                                    padding: '16px',
-                                    maxWidth: '400px',
-                                    backgroundColor: '#f9f9f9',
-                                }}
-                            >
-                                <Typography variant="h6" gutterBottom>
-                                    University settings
-                                </Typography>
-                                <TextField
-                                    fullWidth
-                                    label="Email Suffix"
-                                    variant="outlined"
-                                    value={emailSuffix}
-                                    onChange={(e) =>
-                                        setEmailSuffix(e.target.value)
-                                    }
-                                    sx={{ mb: 2 }}
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Phone Number Prefix"
-                                    variant="outlined"
-                                    value={phonePrefix}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        setPhonePrefix(value);
-                                        if (
-                                            value === '' ||
-                                            validatePhoneNumberPrefix(value)
-                                        ) {
-                                            setError('');
-                                        } else {
-                                            setError(
-                                                "Invalid prefix. Must start with '+' followed by digits.",
-                                            );
-                                        }
-                                    }}
-                                    error={Boolean(error)}
-                                    helperText={error}
-                                    sx={{ mb: 2 }}
-                                />
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    fullWidth
-                                    onClick={handleSaveSettings}
-                                >
-                                    Save Settings
-                                </Button>
-                            </Box>
-                        </Box>
+                        <SettingDashboard
+                            emailSuffix={emailSuffix}
+                            setEmailSuffix={setEmailSuffix}
+                            phonePrefix={phonePrefix}
+                            setPhonePrefix={setPhonePrefix}
+                        ></SettingDashboard>
                     )}
                     {editingCategoryRecord &&
                         (selectedCategory === 'Program' ||
