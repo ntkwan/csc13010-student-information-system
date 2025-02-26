@@ -19,6 +19,9 @@ export const FacultySchema = SchemaFactory.createForClass(Faculty);
 export class Status extends Document {
     @Prop({ type: String, required: true, unique: true })
     name: string;
+
+    @Prop({ type: Number, required: true, unique: false })
+    order: number;
 }
 
 export const StatusSchema = SchemaFactory.createForClass(Status);

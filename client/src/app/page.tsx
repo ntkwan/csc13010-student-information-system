@@ -28,18 +28,22 @@ import dayjs from 'dayjs';
 import Header from './header';
 import SearchBar from './searchBar';
 
-interface Option {
+interface CommonOption {
     value: string;
     label: string;
 }
 
-let facultyOptions: Option[] = [];
-let programOptions: Option[] = [];
-let statusOptions: Option[] = [];
+interface StatusOption extends CommonOption {
+    order: number;
+}
+
+let facultyOptions: CommonOption[] = [];
+let programOptions: CommonOption[] = [];
+let statusOptions: StatusOption[] = [];
 
 const classYearOptions = Array.from({ length: 2025 - 2000 + 1 }, (_, i) => ({
-    value: `${1990 + i}`,
-    label: `${1990 + i}`,
+    value: `${2000 + i}`,
+    label: `${2000 + i}`,
 }));
 
 const genderOptions = [
@@ -61,6 +65,7 @@ const UsersPage = () => {
     const [showCategoryRecordForm, setShowCategoryRecordForm] = useState(false);
     const [newCategoryRecord, setNewCategoryRecord] = useState({
         value: '',
+        order: '',
     });
     const [errorMessage, setErrorMessage] = useState('');
     const [showNewRecordForm, setShowNewRecordForm] = useState(false);
@@ -328,6 +333,39 @@ const UsersPage = () => {
         }
     };
 
+    const handleStatusCategorySaveChanges = async () => {
+        try {
+            if (updatedCategoryRecord.value) {
+                console.log(selectedCategory.toLowerCase());
+                await axios.put(
+                    `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/attribute?attribute=${selectedCategory.toLowerCase()}&oldName=${editingCategoryRecord.value}&newName=${updatedCategoryRecord.value}`,
+                    {},
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                        },
+                    },
+                );
+            }
+            if (updatedCategoryRecord.order) {
+                await axios.put(
+                    `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/attribute/status?name=${updatedCategoryRecord.value}&order=${updatedCategoryRecord.order}`,
+                    {},
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                        },
+                    },
+                );
+            }
+            setEditCategoryDialogOpen(false);
+            setEditingCategoryRecord(null);
+            fetchStatusOptions();
+        } catch (error) {
+            console.error('Error updating record:', error);
+        }
+    };
+
     const handleClickOpen = (record: any) => {
         setSelectedRecord(record);
         setOpen(true);
@@ -475,7 +513,7 @@ const UsersPage = () => {
                     },
                 },
             );
-            setNewCategoryRecord({ value: '' });
+            setNewCategoryRecord({ value: '', order: '' });
             setShowCategoryRecordForm(false);
             switch (selectedCategory) {
                 case 'Faculty':
@@ -488,6 +526,25 @@ const UsersPage = () => {
                     fetchStatusOptions();
                     break;
             }
+        } catch (error) {
+            console.error('Error adding new category record:', error);
+        }
+    };
+
+    const handleAddNewStatusCategoryRecord = async () => {
+        try {
+            await axios.post(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/attribute/status?name=${newCategoryRecord.value}&order=${newCategoryRecord.order}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                },
+            );
+            setNewCategoryRecord({ value: '', order: '' });
+            setShowCategoryRecordForm(false);
+            fetchStatusOptions();
         } catch (error) {
             console.error('Error adding new category record:', error);
         }
@@ -595,7 +652,9 @@ const UsersPage = () => {
             statusOptions = data.map((status: any) => ({
                 value: status.name,
                 label: status.name,
+                order: status.order,
             }));
+            statusOptions.sort((a, b) => b.order - a.order);
             setCategoryRecords(statusOptions);
         } catch (error) {
             console.error('Error fetching status options:', error);
@@ -709,10 +768,11 @@ const UsersPage = () => {
                                 <Table stickyHeader>
                                     <TableHead>
                                         <TableRow>
-                                            <TableCell>ID</TableCell>
                                             <TableCell>Student ID</TableCell>
                                             <TableCell>Full name</TableCell>
                                             <TableCell>Birthday</TableCell>
+                                            <TableCell>Faculty</TableCell>
+                                            <TableCell>Status</TableCell>
                                             <TableCell>Actions</TableCell>
                                         </TableRow>
                                     </TableHead>
@@ -720,9 +780,6 @@ const UsersPage = () => {
                                         {records.map(
                                             (record: any, index: number) => (
                                                 <TableRow key={index}>
-                                                    <TableCell>
-                                                        {record.id}
-                                                    </TableCell>
                                                     <TableCell>
                                                         {record.username}
                                                     </TableCell>
@@ -737,6 +794,12 @@ const UsersPage = () => {
                                                                 .toISOString()
                                                                 .split('T')[0]
                                                         }
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {record.faculty}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {record.status}
                                                     </TableCell>
                                                     <TableCell>
                                                         <Button
@@ -810,6 +873,13 @@ const UsersPage = () => {
                                 <Table stickyHeader>
                                     <TableHead>
                                         <TableRow>
+                                            {selectedCategory === 'Status' && (
+                                                <TableCell
+                                                    style={{ width: '300px' }}
+                                                >
+                                                    Order
+                                                </TableCell>
+                                            )}
                                             <TableCell
                                                 style={{ width: '300px' }}
                                             >
@@ -826,6 +896,12 @@ const UsersPage = () => {
                                         {categoryRecords.map(
                                             (record, index) => (
                                                 <TableRow key={index}>
+                                                    {selectedCategory ===
+                                                        'Status' && (
+                                                        <TableCell>
+                                                            {record.order}
+                                                        </TableCell>
+                                                    )}
                                                     <TableCell>
                                                         {record.value}
                                                     </TableCell>
@@ -939,7 +1015,50 @@ const UsersPage = () => {
                             </Box>
                         </Box>
                     )}
-                    {editingCategoryRecord && (
+                    {editingCategoryRecord &&
+                        (selectedCategory === 'Program' ||
+                            selectedCategory === 'Faculty') && (
+                            <Dialog
+                                open={isEditCategoryDialogOpen}
+                                onClose={() => setEditCategoryDialogOpen(false)}
+                            >
+                                <DialogTitle>Edit record</DialogTitle>
+                                <DialogContent>
+                                    <TextField
+                                        fullWidth
+                                        margin="dense"
+                                        label="Name"
+                                        value={
+                                            updatedCategoryRecord.value || ''
+                                        }
+                                        onChange={(e) =>
+                                            handleCategoryInputChange(
+                                                'value',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                </DialogContent>
+                                <DialogActions>
+                                    <Button
+                                        onClick={() =>
+                                            setEditCategoryDialogOpen(false)
+                                        }
+                                        color="secondary"
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        onClick={handleCategorySaveChanges}
+                                        variant="contained"
+                                        color="primary"
+                                    >
+                                        Save
+                                    </Button>
+                                </DialogActions>
+                            </Dialog>
+                        )}
+                    {editingCategoryRecord && selectedCategory === 'Status' && (
                         <Dialog
                             open={isEditCategoryDialogOpen}
                             onClose={() => setEditCategoryDialogOpen(false)}
@@ -958,6 +1077,18 @@ const UsersPage = () => {
                                         )
                                     }
                                 />
+                                <TextField
+                                    margin="dense"
+                                    fullWidth
+                                    label="Order"
+                                    value={updatedCategoryRecord.order || ''}
+                                    onChange={(e) =>
+                                        handleCategoryInputChange(
+                                            'order',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
                             </DialogContent>
                             <DialogActions>
                                 <Button
@@ -969,7 +1100,7 @@ const UsersPage = () => {
                                     Cancel
                                 </Button>
                                 <Button
-                                    onClick={handleCategorySaveChanges}
+                                    onClick={handleStatusCategorySaveChanges}
                                     variant="contained"
                                     color="primary"
                                 >
@@ -1098,6 +1229,9 @@ const UsersPage = () => {
                                                       ? programOptions
                                                       : statusOptions;
 
+                                        const isStatusField =
+                                            field === 'status';
+
                                         return (
                                             <TextField
                                                 key={field}
@@ -1113,16 +1247,60 @@ const UsersPage = () => {
                                                 value={
                                                     updatedRecord[field] || ''
                                                 }
-                                                onChange={(e) =>
+                                                onChange={(e) => {
+                                                    const newValue =
+                                                        e.target.value;
+
+                                                    if (isStatusField) {
+                                                        const currentStatusValue =
+                                                            updatedRecord.status;
+                                                        const currentOption =
+                                                            statusOptions.find(
+                                                                (option) =>
+                                                                    option.value ===
+                                                                    currentStatusValue,
+                                                            );
+                                                        const newOption =
+                                                            statusOptions.find(
+                                                                (option) =>
+                                                                    option.value ===
+                                                                    newValue,
+                                                            );
+
+                                                        if (
+                                                            currentOption &&
+                                                            newOption &&
+                                                            newOption.order <
+                                                                currentOption.order
+                                                        ) {
+                                                            setValidationErrorMessage(
+                                                                '.',
+                                                            );
+                                                            return;
+                                                        } else {
+                                                            setValidationErrorMessage(
+                                                                '',
+                                                            );
+                                                        }
+                                                    }
+
                                                     handleInputChange(
                                                         field,
-                                                        e.target.value,
-                                                    )
-                                                }
+                                                        newValue,
+                                                    );
+                                                }}
                                                 disabled={
                                                     updatedRecord[field] ===
                                                     'Unassigned'
                                                 }
+                                                {...(isStatusField &&
+                                                errorValidationMessage
+                                                    ? {
+                                                          error: true,
+                                                          helperText:
+                                                              'You can only switch from lower order to higher order status.',
+                                                      }
+                                                    : {})}
                                             >
                                                 {options
                                                     .filter(
@@ -1313,75 +1491,175 @@ const UsersPage = () => {
                         </Dialog>
                     )}
 
-                    {showCategoryRecordForm && (
-                        <Dialog
-                            open={showCategoryRecordForm}
-                            onClose={() => setShowCategoryRecordForm(false)}
-                            maxWidth="md"
-                            fullWidth
-                            sx={{
-                                '& .MuiDialog-paper': {
-                                    width: '1000px',
-                                    maxHeight: '70vh',
-                                },
-                            }}
-                        >
-                            <Table>
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell
-                                            style={{ fontWeight: 'bold' }}
-                                        >
-                                            Name
-                                        </TableCell>
-                                        <TableCell>
-                                            <TextField
-                                                fullWidth
-                                                value={
-                                                    newCategoryRecord.value ||
-                                                    ''
-                                                }
-                                                onChange={(e) =>
-                                                    setNewCategoryRecord(
-                                                        (prev) => ({
-                                                            ...prev,
-                                                            value: e.target
-                                                                .value,
-                                                        }),
-                                                    )
-                                                }
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
-
-                            <Box
-                                display="flex"
-                                justifyContent="center"
-                                alignItems="center"
-                                gap={2}
-                                sx={{ padding: 2 }}
+                    {showCategoryRecordForm &&
+                        (selectedCategory === 'Program' ||
+                            selectedCategory === 'Faculty') && (
+                            <Dialog
+                                open={showCategoryRecordForm}
+                                onClose={() => setShowCategoryRecordForm(false)}
+                                maxWidth="md"
+                                fullWidth
+                                sx={{
+                                    '& .MuiDialog-paper': {
+                                        width: '1000px',
+                                        maxHeight: '70vh',
+                                    },
+                                }}
                             >
-                                <Button
-                                    variant="contained"
-                                    color="success"
-                                    onClick={handleAddNewCategoryRecord}
+                                <Table>
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell
+                                                style={{ fontWeight: 'bold' }}
+                                            >
+                                                Name
+                                            </TableCell>
+                                            <TableCell>
+                                                <TextField
+                                                    fullWidth
+                                                    value={
+                                                        newCategoryRecord.value ||
+                                                        ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        setNewCategoryRecord(
+                                                            (prev) => ({
+                                                                ...prev,
+                                                                value: e.target
+                                                                    .value,
+                                                            }),
+                                                        )
+                                                    }
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+
+                                <Box
+                                    display="flex"
+                                    justifyContent="center"
+                                    alignItems="center"
+                                    gap={2}
+                                    sx={{ padding: 2 }}
                                 >
-                                    Submit New Record
-                                </Button>
-                                <Button
-                                    variant="outlined"
-                                    color="error"
-                                    onClick={() =>
-                                        setShowCategoryRecordForm(false)
-                                    }
+                                    <Button
+                                        variant="contained"
+                                        color="success"
+                                        onClick={handleAddNewCategoryRecord}
+                                    >
+                                        Submit New Record
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        color="error"
+                                        onClick={() =>
+                                            setShowCategoryRecordForm(false)
+                                        }
+                                    >
+                                        Cancel
+                                    </Button>
+                                </Box>
+                            </Dialog>
+                        )}
+                    {showCategoryRecordForm &&
+                        selectedCategory === 'Status' && (
+                            <Dialog
+                                open={showCategoryRecordForm}
+                                onClose={() => setShowCategoryRecordForm(false)}
+                                maxWidth="md"
+                                fullWidth
+                                sx={{
+                                    '& .MuiDialog-paper': {
+                                        width: '1000px',
+                                        maxHeight: '70vh',
+                                    },
+                                }}
+                            >
+                                <Table>
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell
+                                                style={{ fontWeight: 'bold' }}
+                                            >
+                                                Name
+                                            </TableCell>
+                                            <TableCell>
+                                                <TextField
+                                                    fullWidth
+                                                    value={
+                                                        newCategoryRecord.value ||
+                                                        ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        setNewCategoryRecord(
+                                                            (prev) => ({
+                                                                ...prev,
+                                                                value: e.target
+                                                                    .value,
+                                                            }),
+                                                        )
+                                                    }
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell
+                                                style={{ fontWeight: 'bold' }}
+                                            >
+                                                Order
+                                            </TableCell>
+                                            <TableCell>
+                                                <TextField
+                                                    fullWidth
+                                                    type="number"
+                                                    value={
+                                                        newCategoryRecord.order ||
+                                                        ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        setNewCategoryRecord(
+                                                            (prev) => ({
+                                                                ...prev,
+                                                                order: e.target
+                                                                    .value,
+                                                            }),
+                                                        )
+                                                    }
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+
+                                <Box
+                                    display="flex"
+                                    justifyContent="center"
+                                    alignItems="center"
+                                    gap={2}
+                                    sx={{ padding: 2 }}
                                 >
-                                    Cancel
-                                </Button>
-                            </Box>
-                        </Dialog>
-                    )}
+                                    <Button
+                                        variant="contained"
+                                        color="success"
+                                        onClick={
+                                            handleAddNewStatusCategoryRecord
+                                        }
+                                    >
+                                        Submit New Record
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        color="error"
+                                        onClick={() =>
+                                            setShowCategoryRecordForm(false)
+                                        }
+                                    >
+                                        Cancel
+                                    </Button>
+                                </Box>
+                            </Dialog>
+                        )}
                     {showNewRecordForm && (
                         <Dialog
                             open={showNewRecordForm}

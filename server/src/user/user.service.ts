@@ -362,21 +362,36 @@ export class UserService {
             }
 
             const statuses = [
-                'Active',
-                'Graduated',
-                'Leave',
-                'Absent',
-                'Unassigned',
+                {
+                    name: 'Active',
+                    order: 2,
+                },
+                {
+                    name: 'Graduated',
+                    order: 3,
+                },
+                {
+                    name: 'Leave',
+                    order: 3,
+                },
+                {
+                    name: 'Absent',
+                    order: 3,
+                },
+                {
+                    name: 'Unassigned',
+                    order: 1,
+                },
             ];
 
             for (const status of statuses) {
                 const statusExists = await this.statusModel
-                    .findOne({ name: status })
+                    .findOne({ name: status.name })
                     .exec();
 
                 if (statusExists === null) {
                     await this.statusModel.create({ name: status });
-                    console.log(`Status ${status} created`);
+                    console.log(`Status ${status.name} created`);
                     isAllCreated = false;
                 }
             }
@@ -395,7 +410,9 @@ export class UserService {
 
                 if (settingExists === null) {
                     await this.settingModel.create(setting);
-                    console.log(`Setting ${setting} created`);
+                    console.log(
+                        `Setting ${setting.emailSuffix} & ${setting.phonePrefix} created`,
+                    );
                     isAllCreated = false;
                 }
             }
@@ -590,10 +607,10 @@ export class UserService {
             }
 
             const existedUsername = await this.userModel
-                .findOne({ username: updates.username })
+                .find({ username: updates.username })
                 .exec();
 
-            if (existedUsername) {
+            if (existedUsername.length > 1) {
                 this.loggerService.logOperation(
                     'ERROR',
                     `Student with student ID ${updates.username} already exists`,
@@ -796,7 +813,7 @@ export class UserService {
         attribute: string,
         oldName: string,
         newName: string,
-    ) {
+    ): Promise<void> {
         const schemaModels: Record<string, Model<any>> = {
             faculty: this.facultyModel,
             status: this.statusModel,
@@ -821,9 +838,7 @@ export class UserService {
                 .findOne({ name: newName })
                 .exec();
             if (isNewNameExists) {
-                throw new BadRequestException(
-                    `Attribute with name '${newName}' already exists`,
-                );
+                return;
             }
 
             await schemaModels[attribute].findOneAndUpdate(
@@ -843,7 +858,6 @@ export class UserService {
     async addAttribute(attribute: string, name: string) {
         const schemaModels: Record<string, Model<any>> = {
             faculty: this.facultyModel,
-            status: this.statusModel,
             program: this.programModel,
         };
 
@@ -865,6 +879,52 @@ export class UserService {
             this.loggerService.logOperation(
                 'INFO',
                 `Added new ${attribute} with name ${name}`,
+            );
+        } catch (error) {
+            this.loggerService.logOperation('ERROR', error.message);
+            throw new InternalServerErrorException(error.message);
+        }
+    }
+
+    async changeStatusOrder(name, order) {
+        try {
+            const status = await this.statusModel.findOne({ name }).exec();
+            if (!status) {
+                throw new NotFoundException(
+                    `Status with name '${name}' not found`,
+                );
+            }
+            const oldOrder = status.order;
+            if (oldOrder === order) {
+                throw new BadRequestException(
+                    `Status with name '${name}' already has order ${order}`,
+                );
+            }
+
+            await this.statusModel.findOneAndUpdate({ name }, { order }).exec();
+            this.loggerService.logOperation(
+                'INFO',
+                `Changed status order for ${name} from ${oldOrder} to ${order}`,
+            );
+        } catch (error) {
+            this.loggerService.logOperation('ERROR', error.message);
+            throw new InternalServerErrorException(error.message);
+        }
+    }
+
+    async addStatusAttribute(name, order) {
+        try {
+            const status = await this.statusModel.findOne({ name }).exec();
+            if (status) {
+                throw new BadRequestException(
+                    `Status with name '${name}' already exists`,
+                );
+            }
+
+            await this.statusModel.create({ name, order });
+            this.loggerService.logOperation(
+                'INFO',
+                `Added new status with name ${name} and order ${order}`,
             );
         } catch (error) {
             this.loggerService.logOperation('ERROR', error.message);

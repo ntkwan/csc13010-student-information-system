@@ -442,4 +442,64 @@ export class UserController {
             message: `Attribute ${attribute} added successfully`,
         });
     }
+
+    @ApiOperation({ summary: 'Change order of status attribute [ADMIN]' })
+    @ApiBearerAuth('access-token')
+    @Put('attribute/status')
+    @ApiResponse({
+        status: 200,
+        description: 'Order of the status attribute changed successfully',
+    })
+    @ApiQuery({
+        name: 'name',
+        required: true,
+        description: 'Status name',
+    })
+    @ApiQuery({
+        name: 'order',
+        required: true,
+        description: 'New order of the status',
+    })
+    @UseGuards(ATAuthGuard)
+    @Roles(Role.ADMIN)
+    async changeStatusOrder(
+        @Query('name') name: string,
+        @Query('order') order: number,
+        @Res() res: Response,
+    ) {
+        await this.userService.changeStatusOrder(name, order);
+        res.send({
+            message: `Status ${name} order changed to ${order}`,
+        });
+    }
+
+    @ApiOperation({ summary: 'Add status attribute [ADMIN]' })
+    @ApiBearerAuth('access-token')
+    @Post('attribute/status')
+    @ApiResponse({
+        status: 201,
+        description: 'Status attribute added successfully',
+    })
+    @ApiQuery({
+        name: 'name',
+        required: true,
+        description: 'Status name',
+    })
+    @ApiQuery({
+        name: 'order',
+        required: true,
+        description: 'Order of the status',
+    })
+    @UseGuards(ATAuthGuard)
+    @Roles(Role.ADMIN)
+    async addStatusAttribute(
+        @Query('name') name: string,
+        @Query('order') order: number,
+        @Res() res: Response,
+    ) {
+        await this.userService.addStatusAttribute(name, order);
+        res.status(201).send({
+            message: `Status ${name} added successfully`,
+        });
+    }
 }
