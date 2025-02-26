@@ -33,3 +33,16 @@ export class Program extends Document {
 }
 
 export const ProgramSchema = SchemaFactory.createForClass(Program);
+
+@Schema({
+    timestamps: true,
+    collection: 'settings',
+})
+export class Setting extends Document {
+    @Prop({ type: String, required: true, unique: true })
+    phonePrefix: string;
+
+    @Prop({ type: String, required: true, unique: true })
+    emailSuffix: string;
+}
+export const SettingSchema = SchemaFactory.createForClass(Setting);

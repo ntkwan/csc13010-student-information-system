@@ -16,7 +16,12 @@ import { UpdateUsersDto } from './dtos/user-update.dto';
 import csvParser from 'csv-parser';
 import { Readable } from 'stream';
 import { LoggerService } from '../logger/logger.service';
-import { Faculty, Status, Program } from './entities/attributes.entity';
+import {
+    Faculty,
+    Status,
+    Program,
+    Setting,
+} from './entities/attributes.entity';
 @Injectable()
 export class UserService {
     constructor(
@@ -28,6 +33,8 @@ export class UserService {
         private readonly programModel: Model<Program>,
         @InjectModel(Status.name)
         private readonly statusModel: Model<Status>,
+        @InjectModel(Setting.name)
+        private readonly settingModel: Model<Setting>,
 
         private readonly configService: ConfigService,
         private readonly loggerService: LoggerService,
@@ -374,6 +381,25 @@ export class UserService {
                 }
             }
 
+            const settings = [
+                {
+                    emailSuffix: '@student.university.edu.vn',
+                    phonePrefix: '+84',
+                },
+            ];
+
+            for (const setting of settings) {
+                const settingExists = await this.settingModel
+                    .findOne({ emailSuffix: setting.emailSuffix })
+                    .exec();
+
+                if (settingExists === null) {
+                    await this.settingModel.create(setting);
+                    console.log(`Setting ${setting} created`);
+                    isAllCreated = false;
+                }
+            }
+
             if (isAllCreated) {
                 console.log('Default attributes already exist');
             }
@@ -501,6 +527,58 @@ export class UserService {
         }
     }
 
+    async updateUniversitySettings(
+        phonePrefix: string,
+        emailSuffix: string,
+    ): Promise<void> {
+        try {
+            const setting = await this.settingModel.find().exec();
+            const oldPhonePrefix = setting[0].phonePrefix;
+            const oldEmailSuffix = setting[0].emailSuffix;
+
+            if (
+                oldPhonePrefix === phonePrefix &&
+                oldEmailSuffix === emailSuffix
+            ) {
+                throw new InternalServerErrorException(
+                    'Settings are already up to date',
+                );
+            }
+
+            console.log(oldPhonePrefix, oldEmailSuffix);
+            const formattedPhonePrefix = `+${phonePrefix.trim()}`;
+            console.log(formattedPhonePrefix, emailSuffix);
+            await this.settingModel
+                .findOneAndUpdate(
+                    {},
+                    {
+                        emailSuffix: emailSuffix,
+                        phonePrefix: formattedPhonePrefix,
+                    },
+                )
+                .exec();
+
+            const res = await this.settingModel.find().exec();
+            console.log(res[0]);
+            this.loggerService.logOperation(
+                'INFO',
+                `Updated university settings: ${oldEmailSuffix} -> ${emailSuffix}, ${oldPhonePrefix} -> ${phonePrefix}`,
+            );
+        } catch (error) {
+            throw new InternalServerErrorException(error.message);
+        }
+    }
+
+    async getUniversitySettings() {
+        try {
+            const setting = await this.settingModel.find().exec();
+            console.log(setting[0]);
+            return setting[0];
+        } catch (error) {
+            throw new InternalServerErrorException(error.message);
+        }
+    }
+
     async updateMultipleUsersByStudentID(records: UpdateUsersDto[]) {
         const results = [];
         for (const { id, updates } of records) {
@@ -511,9 +589,45 @@ export class UserService {
                 );
             }
 
+            const existedUsername = await this.userModel
+                .findOne({ username: updates.username })
+                .exec();
+
+            if (existedUsername) {
+                this.loggerService.logOperation(
+                    'ERROR',
+                    `Student with student ID ${updates.username} already exists`,
+                );
+                results.push({
+                    username: updates.username,
+                    status: 'error',
+                    message: 'Student ID already exists',
+                });
+                throw new BadRequestException('Student ID already exists');
+            }
+
             try {
-                Object.assign(user, updates);
+                const foundStatus = await this.statusModel
+                    .findOne({ name: updates.status })
+                    .exec();
+                const foundProgram = await this.programModel
+                    .findOne({ name: updates.program })
+                    .exec();
+                const foundFaculty = await this.facultyModel
+                    .findOne({ name: updates.faculty })
+                    .exec();
+                const newUpdates = {
+                    ...updates,
+                    faculty: foundFaculty._id.toString(),
+                    program: foundProgram._id.toString(),
+                    status: foundStatus._id.toString(),
+                };
+                Object.assign(user, newUpdates);
                 await user.save();
+                this.loggerService.logOperation(
+                    'INFO',
+                    `Updated student with student ID ${user.username}`,
+                );
                 results.push({
                     username: user.username,
                     status: 'updated',

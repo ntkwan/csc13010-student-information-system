@@ -11,6 +11,8 @@ import {
     FacultySchema,
     Program,
     ProgramSchema,
+    Setting,
+    SettingSchema,
     Status,
     StatusSchema,
 } from './entities/attributes.entity';
@@ -22,6 +24,7 @@ import {
             { name: Faculty.name, schema: FacultySchema },
             { name: Status.name, schema: StatusSchema },
             { name: Program.name, schema: ProgramSchema },
+            { name: Setting.name, schema: SettingSchema },
         ]), // Register the Mongoose schema
         UserSignUpDto,
     ],

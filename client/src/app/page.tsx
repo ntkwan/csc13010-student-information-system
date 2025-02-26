@@ -57,7 +57,7 @@ const genderOptions = [
     { value: 'Unassigned', label: 'Unassigned' },
 ];
 
-const categories = ['Student', 'Faculty', 'Program', 'Status'];
+const categories = ['Student', 'Faculty', 'Program', 'Status', 'Settings'];
 
 const UsersPage = () => {
     const router = useRouter();
@@ -99,6 +99,56 @@ const UsersPage = () => {
     const [selectedCategory, setSelectedCategory] = useState('Student');
     const [categoryRecords, setCategoryRecords] = useState<any[]>([]);
 
+    const [emailSuffix, setEmailSuffix] = useState('');
+    const [phonePrefix, setPhonePrefix] = useState('');
+    const [error, setError] = useState('');
+
+    const validatePhoneNumberPrefix = (prefix: string) => {
+        const regex = /^\+\d+$/;
+        return regex.test(prefix);
+    };
+
+    const validateEmailSuffix = (suffix: string) => {
+        const regex = /^@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return regex.test(suffix);
+    };
+
+    const handleSaveSettings = () => {
+        if (!validatePhoneNumberPrefix(phonePrefix)) {
+            setError("Invalid prefix. Must start with '+' followed by digits.");
+            return;
+        }
+
+        if (!validateEmailSuffix(emailSuffix)) {
+            setError(
+                "Invalid suffix. Must start with '@' followed by domain name.",
+            );
+            return;
+        }
+        setError('');
+
+        console.log(emailSuffix, phonePrefix);
+        axios
+            .put(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/settings?emailSuffix=${emailSuffix}&phonePrefix=${phonePrefix}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                },
+            )
+            .then(() => {
+                console.log('Settings saved successfully');
+            })
+            .catch((error) => {
+                setError(
+                    error.response?.data?.message ||
+                        'An error occurred. Please try again.',
+                );
+            });
+    };
+
     useEffect(() => {
         console.log(selectedCategory);
         switch (selectedCategory) {
@@ -114,11 +164,6 @@ const UsersPage = () => {
         }
         console.log(categoryRecords);
     }, [selectedCategory]);
-
-    const validateEmail = (email: any) => {
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        return emailRegex.test(email);
-    };
 
     const [searchQuery, setSearchQuery] = useState('');
     const [facultyFilter, setFacultyFilter] = useState('');
@@ -140,13 +185,46 @@ const UsersPage = () => {
         });
     };
 
-    const validatePhone = (phone: any) => {
-        const phoneRegex = /^\d{10}$/; // For a 10-digit phone number
-        return phoneRegex.test(phone);
+    const validateEmail = (email: any) => {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!email) {
+            return false;
+        }
+
+        if (emailSuffix) {
+            const suffix = emailSuffix.split('@')[1];
+            const emailParts = email.split('@');
+            if (emailParts.length === 2) {
+                const domain = emailParts[1];
+                if (domain !== suffix) {
+                    return false;
+                }
+            }
+        }
+
+        return emailRegex.test(email);
+    };
+
+    const escapeRegExp = (str: string): string => {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    };
+
+    const validatePhone = (phone: string): boolean => {
+        if (!phone) return false;
+
+        const trimmedPhone = phone.trim();
+
+        if (!phonePrefix) return false;
+
+        const escapedPrefix = escapeRegExp(phonePrefix);
+        const regex = new RegExp(`^${escapedPrefix}(\\d{9,})$`);
+
+        return regex.test(trimmedPhone);
     };
 
     const handleValidation = (field: string, value: string) => {
         if (field === 'email') {
+            console.log(value);
             setEmailError(!validateEmail(value));
         }
         if (field === 'phone') {
@@ -232,11 +310,15 @@ const UsersPage = () => {
                     },
                 },
             );
+
             setEditDialogOpen(false);
             setEditingRecord(null);
             fetchRecords({ searchQuery: '', faculty: '' });
-        } catch (error) {
-            console.error('Error updating record:', error);
+        } catch (error: any) {
+            setValidationErrorMessage(
+                error.response?.data?.message ||
+                    'An error occurred. Please try again.',
+            );
         }
     };
 
@@ -324,7 +406,6 @@ const UsersPage = () => {
         searchQuery: string;
         faculty: string;
     }) => {
-        console.log('hi', searchItems);
         setLoading(true);
         setErrorMessage('');
 
@@ -668,6 +749,24 @@ const UsersPage = () => {
         }
     };
 
+    const fetchUniversitySettings = async () => {
+        try {
+            const response = await axios.get(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/settings`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                },
+            );
+            const data = response.data;
+            setEmailSuffix(data.emailSuffix);
+            setPhonePrefix(data.phonePrefix);
+        } catch (error) {
+            console.error('Error fetching university settings:', error);
+        }
+    };
+
     useEffect(() => {
         if (typeof window === 'undefined') return;
         if (localStorage.getItem('authToken')) {
@@ -676,6 +775,7 @@ const UsersPage = () => {
             fetchFacultyOptions();
             fetchProgramOptions();
             fetchStatusOptions();
+            fetchUniversitySettings();
         }
     }, []);
 
@@ -704,15 +804,22 @@ const UsersPage = () => {
                 alignItems="center"
                 mb={4}
             >
-                <Typography
-                    variant="h4"
-                    style={{ cursor: 'pointer', userSelect: 'none' }}
+                <Box
+                    sx={{
+                        border: '2px solid #1976d2',
+                        borderRadius: '8px',
+                        padding: '8px 16px',
+                        display: 'inline-block',
+                        cursor: 'pointer',
+                    }}
                     onClick={() => router.push('/')}
                 >
-                    {isLoggedIn
-                        ? 'Student Information System'
-                        : 'Welcome to Student Information System'}
-                </Typography>
+                    <Typography variant="h5" style={{ userSelect: 'none' }}>
+                        {isLoggedIn
+                            ? 'Student Information System'
+                            : 'Welcome to Student Information System'}
+                    </Typography>
+                </Box>
 
                 <input
                     type="file"
@@ -1117,6 +1224,70 @@ const UsersPage = () => {
                             </TableContainer>
                         </Box>
                     )}
+                    {selectedCategory === 'Settings' && (
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    border: '2px solid #1976d2',
+                                    borderRadius: '8px',
+                                    padding: '16px',
+                                    maxWidth: '400px',
+                                    backgroundColor: '#f9f9f9',
+                                }}
+                            >
+                                <Typography variant="h6" gutterBottom>
+                                    University settings
+                                </Typography>
+                                <TextField
+                                    fullWidth
+                                    label="Email Suffix"
+                                    variant="outlined"
+                                    value={emailSuffix}
+                                    onChange={(e) =>
+                                        setEmailSuffix(e.target.value)
+                                    }
+                                    sx={{ mb: 2 }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Phone Number Prefix"
+                                    variant="outlined"
+                                    value={phonePrefix}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setPhonePrefix(value);
+                                        if (
+                                            value === '' ||
+                                            validatePhoneNumberPrefix(value)
+                                        ) {
+                                            setError('');
+                                        } else {
+                                            setError(
+                                                "Invalid prefix. Must start with '+' followed by digits.",
+                                            );
+                                        }
+                                    }}
+                                    error={Boolean(error)}
+                                    helperText={error}
+                                    sx={{ mb: 2 }}
+                                />
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    fullWidth
+                                    onClick={handleSaveSettings}
+                                >
+                                    Save Settings
+                                </Button>
+                            </Box>
+                        </Box>
+                    )}
                     {editingCategoryRecord && (
                         <Dialog
                             open={isEditCategoryDialogOpen}
@@ -1222,7 +1393,7 @@ const UsersPage = () => {
                                                 error={emailError}
                                                 helperText={
                                                     emailError
-                                                        ? 'Invalid email format'
+                                                        ? `The suffix must be ${emailSuffix.split('@')[1]}`
                                                         : ''
                                                 }
                                             />
@@ -1251,7 +1422,7 @@ const UsersPage = () => {
                                                 error={phoneError}
                                                 helperText={
                                                     phoneError
-                                                        ? 'Phone number must be 10 digits'
+                                                        ? `Phone number must be 10 digits or start with ${phonePrefix}`
                                                         : ''
                                                 }
                                             />
@@ -1641,7 +1812,7 @@ const UsersPage = () => {
                                                         error={emailError}
                                                         helperText={
                                                             emailError
-                                                                ? 'Invalid email format'
+                                                                ? `The suffix must be ${emailSuffix.split('@')[1]}`
                                                                 : ''
                                                         }
                                                     />
@@ -1661,7 +1832,7 @@ const UsersPage = () => {
                                                         error={phoneError}
                                                         helperText={
                                                             phoneError
-                                                                ? 'Phone number must be 10 digits'
+                                                                ? `Phone number must be 10 digits or start with ${phonePrefix}`
                                                                 : ''
                                                         }
                                                     />

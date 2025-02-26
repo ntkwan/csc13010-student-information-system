@@ -240,6 +240,53 @@ export class UserController {
         return await this.userService.updateMultipleUsersByStudentID(users);
     }
 
+    @ApiOperation({ summary: 'Update university settings [ADMIN]' })
+    @ApiBearerAuth('access-token')
+    @Put('settings')
+    @ApiResponse({
+        status: 200,
+        description: 'Settings updated successfully',
+    })
+    @ApiQuery({
+        name: 'phonePrefix',
+        required: false,
+        description: 'Phone prefix',
+    })
+    @ApiQuery({
+        name: 'emailSuffix',
+        required: false,
+        description: 'Email suffix',
+    })
+    @UseGuards(ATAuthGuard)
+    @Roles(Role.ADMIN)
+    async updateSettings(
+        @Res() res: Response,
+        @Query('phonePrefix') phonePrefix?: string,
+        @Query('emailSuffix') emailSuffix?: string,
+    ) {
+        await this.userService.updateUniversitySettings(
+            phonePrefix,
+            emailSuffix,
+        );
+        res.status(200).send({
+            message: 'Settings updated successfully',
+        });
+    }
+
+    @ApiOperation({ summary: 'Get university settings [ADMIN]' })
+    @ApiBearerAuth('access-token')
+    @Get('settings')
+    @ApiResponse({
+        status: 200,
+        description: 'Settings fetched successfully',
+    })
+    @UseGuards(ATAuthGuard)
+    @Roles(Role.ADMIN)
+    async getSettings(@Res() res: Response) {
+        const settings = await this.userService.getUniversitySettings();
+        res.send(settings);
+    }
+
     @ApiOperation({ summary: 'Import users from JSON/CSV file [ADMIN]' })
     @ApiBearerAuth('access-token')
     @Post('import')
