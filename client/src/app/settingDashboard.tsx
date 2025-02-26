@@ -15,6 +15,7 @@ const SettingDashboard = (props: SettingDashboardProps) => {
     const { emailSuffix, phonePrefix, setEmailSuffix, setPhonePrefix } = props;
 
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
 
     const validatePhoneNumberPrefix = (prefix: string) => {
         const regex = /^\+\d+$/;
@@ -39,6 +40,8 @@ const SettingDashboard = (props: SettingDashboardProps) => {
             return;
         }
         setError('');
+        // Clear previous success message
+        setSuccessMessage('');
 
         axios
             .put(
@@ -52,6 +55,7 @@ const SettingDashboard = (props: SettingDashboardProps) => {
             )
             .then(() => {
                 console.log('Settings saved successfully');
+                setSuccessMessage('Settings saved successfully');
             })
             .catch((error) => {
                 setError(
@@ -86,7 +90,11 @@ const SettingDashboard = (props: SettingDashboardProps) => {
                     label="Email Suffix"
                     variant="outlined"
                     value={emailSuffix}
-                    onChange={(e) => setEmailSuffix(e.target.value)}
+                    onChange={(e) => {
+                        setEmailSuffix(e.target.value);
+                        // Clear success message when user edits input
+                        setSuccessMessage('');
+                    }}
                     sx={{ mb: 2 }}
                 />
                 <TextField
@@ -104,6 +112,8 @@ const SettingDashboard = (props: SettingDashboardProps) => {
                                 "Invalid prefix. Must start with '+' followed by digits.",
                             );
                         }
+                        // Clear success message when user edits input
+                        setSuccessMessage('');
                     }}
                     error={Boolean(error)}
                     helperText={error}
@@ -117,6 +127,15 @@ const SettingDashboard = (props: SettingDashboardProps) => {
                 >
                     Save Settings
                 </Button>
+                {successMessage && (
+                    <Typography
+                        variant="body2"
+                        color="success.main"
+                        sx={{ mt: 2, textAlign: 'center' }}
+                    >
+                        {successMessage}
+                    </Typography>
+                )}
             </Box>
         </Box>
     );
