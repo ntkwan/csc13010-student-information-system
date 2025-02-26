@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     TextField,
     Table,
@@ -12,7 +12,6 @@ import {
     TableRow,
     Button,
     Paper,
-    Avatar,
     Box,
     Typography,
     MenuItem,
@@ -20,22 +19,14 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    Select,
-    Menu,
-    Tab,
 } from '@mui/material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
-import Head from 'next/head';
-
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import ListAltIcon from '@mui/icons-material/ListAlt';
+import Header from './header';
+import SearchBar from './searchBar';
 
 interface Option {
     value: string;
@@ -46,7 +37,7 @@ let facultyOptions: Option[] = [];
 let programOptions: Option[] = [];
 let statusOptions: Option[] = [];
 
-const classYearOptions = Array.from({ length: 2025 - 1990 + 1 }, (_, i) => ({
+const classYearOptions = Array.from({ length: 2025 - 2000 + 1 }, (_, i) => ({
     value: `${1990 + i}`,
     label: `${1990 + i}`,
 }));
@@ -60,7 +51,6 @@ const genderOptions = [
 const categories = ['Student', 'Faculty', 'Program', 'Status', 'Settings'];
 
 const UsersPage = () => {
-    const router = useRouter();
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(false);
     const [errorValidationMessage, setValidationErrorMessage] = useState('');
@@ -164,26 +154,6 @@ const UsersPage = () => {
         }
         console.log(categoryRecords);
     }, [selectedCategory]);
-
-    const [searchQuery, setSearchQuery] = useState('');
-    const [facultyFilter, setFacultyFilter] = useState('');
-    const [isFilteringByFaculty, setIsFilteringByFaculty] = useState(false);
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-    const handleClickMenu = (event: React.MouseEvent<HTMLDivElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleCloseMenu = () => {
-        setAnchorEl(null);
-    };
-
-    const handleSearch = () => {
-        fetchRecords({
-            searchQuery,
-            faculty: isFilteringByFaculty ? facultyFilter : '',
-        });
-    };
 
     const validateEmail = (email: any) => {
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -400,8 +370,6 @@ const UsersPage = () => {
         setIsOpenRecord(false);
     };
 
-    const defaultAvatar = 'https://robohash.org/mail@ashallendesign.co.uk';
-
     const fetchRecords = async (searchItems: {
         searchQuery: string;
         faculty: string;
@@ -465,26 +433,6 @@ const UsersPage = () => {
             console.error('Error fetching profile:', error);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleSignOut = async () => {
-        try {
-            await axios.post(
-                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/auth/sign-out`,
-                {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-                    },
-                },
-            );
-
-            if (typeof window !== 'undefined')
-                localStorage.removeItem('authToken');
-            setUser(null);
-        } catch (error) {
-            console.error('Error signing out:', error);
         }
     };
 
@@ -591,101 +539,6 @@ const UsersPage = () => {
         }
     };
 
-    const handleViewLogs = async () => {
-        try {
-            const response = await axios.get(
-                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/logs/download`,
-                {
-                    responseType: 'blob', // Ensures file is received as a binary blob
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-                    },
-                },
-            );
-
-            // Create a download link
-            const blob = new Blob([response.data], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `logs-${new Intl.DateTimeFormat('en-GB', {
-                year: 'numeric',
-                month: 'numeric',
-                day: 'numeric',
-            }).format(new Date())}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-
-            handleClose(); // Close menu after download
-        } catch (error) {
-            console.error('Failed to download logs:', error);
-        }
-    };
-
-    const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-    const handleImportClick = () => {
-        if (fileInputRef.current) {
-            fileInputRef.current.click();
-        }
-    };
-
-    const handleFileUpload = async (
-        event: React.ChangeEvent<HTMLInputElement>,
-    ) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        event.target.value = '';
-
-        // Process file (JSON or CSV)
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-            await axios.post(
-                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/import`,
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-                        'Content-Type': 'multipart/form-data',
-                    },
-                },
-            );
-            fetchAllProfiles();
-        } catch (error) {
-            console.error('Import failed:', error);
-        }
-    };
-
-    const handleExport = async (format: 'json' | 'csv') => {
-        try {
-            const response = await axios.get(
-                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/export/${format}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-                        'Content-Type': 'multipart/form-data',
-                    },
-                    responseType: 'blob', // Important for handling file responses
-                },
-            );
-
-            const blob = new Blob([response.data]); // Create a blob from response
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `users.${format}`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        } catch (error) {
-            console.error('Export failed:', error);
-        }
-    };
-
     const fetchFacultyOptions = async () => {
         try {
             const response = await axios.get(
@@ -786,222 +639,20 @@ const UsersPage = () => {
 
     return (
         <div style={{ padding: '20px' }}>
-            <Head>
-                <title>
-                    {isLoggedIn
-                        ? 'Student Information System'
-                        : 'Welcome to the Student Information System'}
-                </title>
-                <meta
-                    name="For administrator to manage school records efficiently"
-                    content="Student Information System"
-                />
-            </Head>
-
-            <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={4}
-            >
-                <Box
-                    sx={{
-                        border: '2px solid #1976d2',
-                        borderRadius: '8px',
-                        padding: '8px 16px',
-                        display: 'inline-block',
-                        cursor: 'pointer',
-                    }}
-                    onClick={() => router.push('/')}
-                >
-                    <Typography variant="h5" style={{ userSelect: 'none' }}>
-                        {isLoggedIn
-                            ? 'Student Information System'
-                            : 'Welcome to Student Information System'}
-                    </Typography>
-                </Box>
-
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    style={{ display: 'none' }}
-                    accept=".json,.csv"
-                    onChange={handleFileUpload}
-                />
-
-                <Box
-                    display="flex"
-                    alignItems="center"
-                    style={{ position: 'relative' }}
-                >
-                    {isLoggedIn ? (
-                        <>
-                            <Box display="flex" mr={2} gap={2} mt={2} mb={2}>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    startIcon={<CloudUploadIcon />}
-                                    onClick={handleImportClick}
-                                >
-                                    JSON/CSV
-                                </Button>
-
-                                <Button
-                                    variant="contained"
-                                    color="secondary"
-                                    startIcon={<CloudDownloadIcon />}
-                                    onClick={() => handleExport('json')}
-                                >
-                                    JSON
-                                </Button>
-
-                                <Button
-                                    variant="contained"
-                                    color="secondary"
-                                    startIcon={<CloudDownloadIcon />}
-                                    onClick={() => handleExport('csv')}
-                                >
-                                    CSV
-                                </Button>
-                            </Box>
-
-                            <Box
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                                border="1px solid #ccc"
-                                borderRadius="8px"
-                                padding="8px"
-                                onClick={handleClickMenu}
-                                sx={{ cursor: 'pointer' }}
-                            >
-                                <Avatar
-                                    src={user?.avatar || defaultAvatar}
-                                    alt={user?.username}
-                                    sx={{ marginRight: '10px' }}
-                                />
-                                <Typography
-                                    variant="body1"
-                                    sx={{
-                                        marginLeft: '10px',
-                                        userSelect: 'none',
-                                    }}
-                                >
-                                    {user?.username}
-                                </Typography>
-                            </Box>
-
-                            <Menu
-                                anchorEl={anchorEl}
-                                open={Boolean(anchorEl)}
-                                onClose={handleCloseMenu}
-                                sx={{ mt: 1 }}
-                            >
-                                <MenuItem onClick={handleViewLogs}>
-                                    <ListAltIcon sx={{ marginRight: '8px' }} />
-                                    Activity logs
-                                </MenuItem>
-                                <MenuItem
-                                    onClick={handleSignOut}
-                                    sx={{ color: 'red' }}
-                                >
-                                    <ExitToAppIcon
-                                        sx={{
-                                            marginRight: '8px',
-                                            color: 'red',
-                                        }}
-                                    />
-                                    Sign out
-                                </MenuItem>
-                            </Menu>
-                        </>
-                    ) : (
-                        <>
-                            <Button
-                                variant="outlined"
-                                color="primary"
-                                onClick={() => router.push('/login')}
-                                style={{ marginRight: '10px' }}
-                            >
-                                Sign In
-                            </Button>
-                        </>
-                    )}
-                </Box>
-            </Box>
+            <Header
+                isLoggedIn={!!isLoggedIn}
+                fetchAllProfiles={fetchAllProfiles}
+                user={user}
+                setUser={setUser}
+            ></Header>
 
             {isLoggedIn && (
                 <>
-                    <Box
-                        mb={6}
-                        display="flex"
-                        justifyContent="center"
-                        alignItems="center"
-                        style={{ width: '100%' }}
-                    >
-                        <Box
-                            width="50%"
-                            minWidth="300px"
-                            display="flex"
-                            gap={2}
-                        >
-                            <TextField
-                                label="Search by student ID or full name"
-                                variant="outlined"
-                                fullWidth
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                onKeyPress={(e) =>
-                                    e.key === 'Enter' && handleSearch()
-                                }
-                            />
-                            <Button
-                                variant="contained"
-                                style={{ height: '35px', marginTop: '10px' }}
-                                onClick={() =>
-                                    setIsFilteringByFaculty(
-                                        !isFilteringByFaculty,
-                                    )
-                                }
-                            >
-                                {isFilteringByFaculty ? 'Cancel' : 'Faculty'}
-                            </Button>
-                        </Box>
-
-                        {isFilteringByFaculty && (
-                            <Select
-                                value={facultyFilter}
-                                onChange={(e) =>
-                                    setFacultyFilter(e.target.value)
-                                }
-                                displayEmpty
-                                variant="outlined"
-                                style={{
-                                    marginLeft: '10px',
-                                    minWidth: '200px',
-                                }}
-                            >
-                                <MenuItem value="">Select faculty</MenuItem>
-                                {facultyOptions.map((faculty) => (
-                                    <MenuItem
-                                        key={faculty.label}
-                                        value={faculty.value}
-                                    >
-                                        {faculty.value}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        )}
-
-                        <Button
-                            variant="contained"
-                            onClick={handleSearch}
-                            disabled={loading}
-                            style={{ marginLeft: '10px' }}
-                        >
-                            Search
-                        </Button>
-                    </Box>
+                    <SearchBar
+                        fetchRecords={fetchRecords}
+                        loading={loading}
+                        facultyOptions={facultyOptions}
+                    ></SearchBar>
 
                     {errorMessage && (
                         <Typography
