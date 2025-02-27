@@ -9,7 +9,8 @@ on:
             - 'README.md'
             - 'LICENSE'
 jobs:
-    create-dotenv:
+    unit-test:
+        runs-on: ubuntu-22.04
         env:
             ENV: development
             SERVER_PORT: ${{ secrets.SERVER_PORT }}
@@ -32,10 +33,20 @@ jobs:
             MONGO_APPNAME: ${{ secrets.MONGO_APPNAME }}
             MONGO_PORT: ${{ secrets.MONGO_PORT }}
 
-        runs-on: ubuntu-22.04
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '22'
+
+            - name: Install dependencies (server)
+              run: cd server && pnpm install
 
             - name: Create .env file (server)
               run: |
@@ -63,28 +74,11 @@ jobs:
                   echo "MONGO_APPNAME=${MONGO_APPNAME}" >> .env
                   echo "MONGO_PORT=${MONGO_PORT}" >> .env
                   ls -la
+
             - name: Display .env file (server)
               run: |
                   cat  server/.env
                   ls -la server
-
-    unit-test:
-        runs-on: ubuntu-22.04
-
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-
-            - name: Set up Node.js
-              uses: actions/setup-node@v2
-              with:
-                  node-version: '22'
-
-            - name: Install dependencies (server)
-              run: cd server && pnpm install
 
             - name: Build server
               run: cd server && pnpm run start:dev
