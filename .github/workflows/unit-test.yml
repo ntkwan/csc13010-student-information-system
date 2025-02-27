@@ -37,15 +37,11 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
 
-            - name: Set permissions for .env file
-              run: |
-                  cd server
-                  chmod 755 .env
-
             - name: Create .env file (server)
               run: |
                   cd server
                   touch .env
+                  chmod 755 .env
                   echo "hi" > .env
                   echo "SERVER_PORT=${SERVER_PORT}" >> .env
                   echo "SALT=${SALT}" >> .env
