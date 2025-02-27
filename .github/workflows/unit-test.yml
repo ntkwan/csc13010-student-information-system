@@ -33,35 +33,35 @@ env:
 jobs:
     create-dotenv:
         runs-on: ubuntu-22.04
-
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
 
             - name: Create .env file (server)
               run: |
-                  pwd
-                  touch server/.env
-                  echo "ENV=${ENV}" >> server/.env
-                  echo "SERVER_PORT=${SERVER_PORT}" >> server/.env
-                  echo "SALT=${SALT}" >> server/.env
-                  echo "AT_SECRET=${AT_SECRET}" >> server/.env
-                  echo "RT_SECRET=${RT_SECRET}" >> server/.env
-                  echo "JWT_EXPIRATION_TIME=${JWT_EXPIRATION_TIME}" >> server/.env
-                  echo "MAIL_HOST=${MAIL_HOST}" >> server/.env
-                  echo "MAIL_USER=${MAIL_USER}" >> server/.env
-                  echo "MAIL_PASSWORD=${MAIL_PASSWORD}" >> server/.env
-                  echo "MAIL_PORT=${MAIL_PORT}" >> server/.env
-                  echo "MAIL_FROM=${MAIL_FROM}" >> server/.env
-                  echo "ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> server/.env
-                  echo "ADMIN_USERNAME=${ADMIN_USERNAME}" >> server/.env
-                  echo "ADMIN_EMAIL=${ADMIN_EMAIL}" >> server/.env
-                  echo "ADMIN_FULLNAME=${ADMIN_FULLNAME}" >> server/.env
-                  echo "MONGO_USERNAME=${MONGO_USERNAME}" >> server/.env
-                  echo "MONGO_PASSWORD=${MONGO_PASSWORD}" >> server/.env
-                  echo "MONGO_DATABASE=${MONGO_DATABASE}" >> server/.env
-                  echo "MONGO_APPNAME=${MONGO_APPNAME}" >> server/.env
-                  echo "MONGO_PORT=${MONGO_PORT}" >> server/.env
+                  pwd &
+                  ls -la &
+                  cd server &
+                  echo "ENV=${ENV}" > .env &
+                  echo "SERVER_PORT=${SERVER_PORT}" >> .env &
+                  echo "SALT=${SALT}" >> .env &
+                  echo "AT_SECRET=${AT_SECRET}" >> .env &
+                  echo "RT_SECRET=${RT_SECRET}" >> .env &
+                  echo "JWT_EXPIRATION_TIME=${JWT_EXPIRATION_TIME}" >> .env &
+                  echo "MAIL_HOST=${MAIL_HOST}" >> .env &
+                  echo "MAIL_USER=${MAIL_USER}" >> .env &
+                  echo "MAIL_PASSWORD=${MAIL_PASSWORD}" >> .env &
+                  echo "MAIL_PORT=${MAIL_PORT}" >> .env &
+                  echo "MAIL_FROM=${MAIL_FROM}" >> .env &
+                  echo "ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> .env &
+                  echo "ADMIN_USERNAME=${ADMIN_USERNAME}" >> .env &
+                  echo "ADMIN_EMAIL=${ADMIN_EMAIL}" >> .env &
+                  echo "ADMIN_FULLNAME=${ADMIN_FULLNAME}" >> .env &
+                  echo "MONGO_USERNAME=${MONGO_USERNAME}" >> .env &
+                  echo "MONGO_PASSWORD=${MONGO_PASSWORD}" >> .env &
+                  echo "MONGO_DATABASE=${MONGO_DATABASE}" >> .env &
+                  echo "MONGO_APPNAME=${MONGO_APPNAME}" >> .env &
+                  echo "MONGO_PORT=${MONGO_PORT}" >> .env &
 
     unit-test:
         runs-on: ubuntu-22.04
