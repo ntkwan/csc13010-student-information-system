@@ -40,27 +40,27 @@ jobs:
             - name: Create .env file (server)
               run: |
                   cd server
-                  touch .env
-                  echo "hi" > .env
-                  echo "SERVER_PORT=${SERVER_PORT}" >> .env
-                  echo "SALT=${SALT}" >> .env
-                  echo "AT_SECRET=${AT_SECRET}" >> .env
-                  echo "RT_SECRET=${RT_SECRET}" >> .env
-                  echo "JWT_EXPIRATION_TIME=${JWT_EXPIRATION_TIME}" >> .env
-                  echo "MAIL_HOST=${MAIL_HOST}" >> .env
-                  echo "MAIL_USER=${MAIL_USER}" >> .env
-                  echo "MAIL_PASSWORD=${MAIL_PASSWORD}" >> .env
-                  echo "MAIL_PORT=${MAIL_PORT}" >> .env
-                  echo "MAIL_FROM=${MAIL_FROM}" >> .env
-                  echo "ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> .env
-                  echo "ADMIN_USERNAME=${ADMIN_USERNAME}" >> .env
-                  echo "ADMIN_EMAIL=${ADMIN_EMAIL}" >> .env
-                  echo "ADMIN_FULLNAME=${ADMIN_FULLNAME}" >> .env
-                  echo "MONGO_USERNAME=${MONGO_USERNAME}" >> .env
-                  echo "MONGO_PASSWORD=${MONGO_PASSWORD}" >> .env
-                  echo "MONGO_DATABASE=${MONGO_DATABASE}" >> .env
-                  echo "MONGO_APPNAME=${MONGO_APPNAME}" >> .env
-                  echo "MONGO_PORT=${MONGO_PORT}" >> .env
+                  sudo touch .env
+                  sudo echo "hi" > .env
+                  sudo echo "SERVER_PORT=${SERVER_PORT}" >> .env
+                  sudo echo "SALT=${SALT}" >> .env
+                  sudo echo "AT_SECRET=${AT_SECRET}" >> .env
+                  sudo echo "RT_SECRET=${RT_SECRET}" >> .env
+                  sudo echo "JWT_EXPIRATION_TIME=${JWT_EXPIRATION_TIME}" >> .env
+                  sudo echo "MAIL_HOST=${MAIL_HOST}" >> .env
+                  sudo echo "MAIL_USER=${MAIL_USER}" >> .env
+                  sudo echo "MAIL_PASSWORD=${MAIL_PASSWORD}" >> .env
+                  sudo echo "MAIL_PORT=${MAIL_PORT}" >> .env
+                  sudo echo "MAIL_FROM=${MAIL_FROM}" >> .env
+                  sudo echo "ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> .env
+                  sudo echo "ADMIN_USERNAME=${ADMIN_USERNAME}" >> .env
+                  sudo echo "ADMIN_EMAIL=${ADMIN_EMAIL}" >> .env
+                  sudo echo "ADMIN_FULLNAME=${ADMIN_FULLNAME}" >> .env
+                  sudo echo "MONGO_USERNAME=${MONGO_USERNAME}" >> .env
+                  sudo echo "MONGO_PASSWORD=${MONGO_PASSWORD}" >> .env
+                  sudo echo "MONGO_DATABASE=${MONGO_DATABASE}" >> .env
+                  sudo echo "MONGO_APPNAME=${MONGO_APPNAME}" >> .env
+                  sudo echo "MONGO_PORT=${MONGO_PORT}" >> .env
                   ls
             - name: Display .env file (server)
               run: |
