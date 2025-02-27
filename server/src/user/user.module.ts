@@ -4,7 +4,7 @@ import { UserController } from './user.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './entities/user.entity';
 import { UserSignUpDto } from './dtos/user-signup.dto';
-import { AccessControlService } from '../../src/shared/shared.service';
+import { AccessControlService } from '../shared/shared.service';
 import { LoggerService } from '../logger/logger.service';
 import {
     Faculty,

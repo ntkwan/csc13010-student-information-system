@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { BadRequestException } from '@nestjs/common';
-import { Role } from '../../src/auth/enums/roles.enum';
+import { Role } from '../auth/enums/roles.enum';
 import { Response } from 'express';
 import { UpdateUsersDto } from './dtos/user-update.dto';
 import { ATAuthGuard } from '../auth/guards/at-auth.guard';

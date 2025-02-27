@@ -1,4 +1,4 @@
-name: Run unit tests & check coverage
+name: Run unit tests & coverage
 
 on:
     push:
@@ -8,31 +8,60 @@ on:
         paths-ignore:
             - 'README.md'
             - 'LICENSE'
+env:
+    ENV: development
+    SERVER_PORT: ${{ secrets.SERVER_PORT }}
+    SALT: ${{ secrets.SALT }}
+    AT_SECRET: ${{ secrets.AT_SECRET }}
+    RT_SECRET: ${{ secrets.RT_SECRET }}
+    JWT_EXPIRATION_TIME: ${{ secrets.JWT_EXPIRATION_TIME }}
+    MAIL_HOST: ${{ secrets.MAIL_HOST }}
+    MAIL_USER: ${{ secrets.MAIL_USER }}
+    MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+    MAIL_PORT: ${{ secrets.MAIL_PORT }}
+    MAIL_FROM: ${{ secrets.MAIL_FROM }}
+    ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+    ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+    ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+    ADMIN_FULLNAME: ${{ secrets.ADMIN_FULLNAME }}
+    MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
+    MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+    MONGO_DATABASE: ${{ secrets.MONGO_DATABASE }}
+    MONGO_APPNAME: ${{ secrets.MONGO_APPNAME }}
+    MONGO_PORT: ${{ secrets.MONGO_PORT }}
 
 jobs:
+    create-dotenv:
+        runs-on: ubuntu-22.04
+
+        steps:
+            - name: Create .env file (server)
+              run: |
+                  touch server/.env
+                  echo "ENV=${ENV}" >> server/.env
+                  echo "SERVER_PORT=${SERVER_PORT}" >> server/.env
+                  echo "SALT=${SALT}" >> server/.env
+                  echo "AT_SECRET=${AT_SECRET}" >> server/.env
+                  echo "RT_SECRET=${RT_SECRET}" >> server/.env
+                  echo "JWT_EXPIRATION_TIME=${JWT_EXPIRATION_TIME}" >> server/.env
+                  echo "MAIL_HOST=${MAIL_HOST}" >> server/.env
+                  echo "MAIL_USER=${MAIL_USER}" >> server/.env
+                  echo "MAIL_PASSWORD=${MAIL_PASSWORD}" >> server/.env
+                  echo "MAIL_PORT=${MAIL_PORT}" >> server/.env
+                  echo "MAIL_FROM=${MAIL_FROM}" >> server/.env
+                  echo "ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> server/.env
+                  echo "ADMIN_USERNAME=${ADMIN_USERNAME}" >> server/.env
+                  echo "ADMIN_EMAIL=${ADMIN_EMAIL}" >> server/.env
+                  echo "ADMIN_FULLNAME=${ADMIN_FULLNAME}" >> server/.env
+                  echo "MONGO_USERNAME=${MONGO_USERNAME}" >> server/.env
+                  echo "MONGO_PASSWORD=${MONGO_PASSWORD}" >> server/.env
+                  echo "MONGO_DATABASE=${MONGO_DATABASE}" >> server/.env
+                  echo "MONGO_APPNAME=${MONGO_APPNAME}" >> server/.env
+                  echo "MONGO_PORT=${MONGO_PORT}" >> server/.env
+
     unit-test:
         runs-on: ubuntu-22.04
-        env:
-            ENV: development
-            SERVER_PORT: ${{ secrets.SERVER_PORT }}
-            SALT: ${{ secrets.SALT }}
-            AT_SECRET: ${{ secrets.AT_SECRET }}
-            RT_SECRET: ${{ secrets.RT_SECRET }}
-            JWT_EXPIRATION_TIME: ${{ secrets.JWT_EXPIRATION_TIME }}
-            MAIL_HOST: ${{ secrets.MAIL_HOST }}
-            MAIL_USER: ${{ secrets.MAIL_USER }}
-            MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
-            MAIL_PORT: ${{ secrets.MAIL_PORT }}
-            MAIL_FROM: ${{ secrets.MAIL_FROM }}
-            ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-            ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
-            ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
-            ADMIN_FULLNAME: ${{ secrets.ADMIN_FULLNAME }}
-            MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
-            MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
-            MONGO_DATABASE: ${{ secrets.MONGO_DATABASE }}
-            MONGO_APPNAME: ${{ secrets.MONGO_APPNAME }}
-            MONGO_PORT: ${{ secrets.MONGO_PORT }}
+
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
@@ -48,10 +77,13 @@ jobs:
             - name: Install dependencies (server)
               run: cd server && pnpm install
 
-            - name: Run unit tests (NestJS with Jest)
+            - name: Build server
+              run: cd server && pnpm run start:dev
+
+            - name: Run unit tests (with Jest)
               run: cd server && pnpm test
 
-            - name: Run test coverage (NestJS with Jest)
+            - name: Run test coverage (with Jest)
               run: cd server && pnpm test:cov
 
             - name: Install jq and bc

@@ -7,7 +7,7 @@ import { UserModule } from '../user/user.module';
 import { PassportModule } from '@nestjs/passport';
 import { AccessTokenStrategy } from './strategies/at.strategy';
 import { RefreshTokenStrategy } from './strategies/rt.strategy';
-import { AccessControlService } from '../../src/shared/shared.service';
+import { AccessControlService } from '../shared/shared.service';
 
 @Module({
     imports: [
