@@ -10,7 +10,7 @@ import {
     IsPhoneNumber,
     IsString,
 } from 'class-validator';
-import { Gender } from 'src/user/enums/student.enum';
+import { Gender } from '../../user/enums/student.enum';
 
 export class CredEntity {
     @ApiProperty()

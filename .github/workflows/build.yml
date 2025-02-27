@@ -30,3 +30,6 @@ jobs:
 
             - name: Run Prettier (server)
               run: cd server && pnpm format
+    unit-test:
+        runs-on: ubuntu-22.04
+        steps:

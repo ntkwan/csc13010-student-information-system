@@ -26,10 +26,10 @@ import {
 } from '@nestjs/swagger';
 import { ProfileEntity } from '../auth/entities/creds.entity';
 import { UserService } from './user.service';
-import { Role } from 'src/auth/enums/roles.enum';
-import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from '../../src/auth/enums/roles.enum';
+import { Roles } from '../../src/auth/decorators/roles.decorator';
 import { UpdateResultDto, UpdateUsersDto } from './dtos/user-update.dto';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { RolesGuard } from '../../src/auth/guards/roles.guard';
 import { UserSignUpDto } from './dtos/user-signup.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
@@ -222,7 +222,6 @@ export class UserController {
     async updateUsers(
         @Body() users: UpdateUsersDto[],
     ): Promise<UpdateResultDto[]> {
-        console.log(users);
         if (!Array.isArray(users) || users.length === 0) {
             throw new BadRequestException(
                 'Input must be a non-empty array of records',
@@ -400,7 +399,6 @@ export class UserController {
         @Query('newName') newName: string,
         @Res() res: Response,
     ) {
-        console.log(attribute, oldName, newName);
         await this.userService.changeAttributeName(attribute, oldName, newName);
         res.send({
             message: `Attribute ${attribute} changed ${oldName} to ${newName}`,
@@ -436,7 +434,6 @@ export class UserController {
         @Query('name') newRecord: string,
         @Res() res: Response,
     ) {
-        console.log(attribute, newRecord);
         await this.userService.addAttribute(attribute, newRecord);
         res.status(201).send({
             message: `Attribute ${attribute} added successfully`,

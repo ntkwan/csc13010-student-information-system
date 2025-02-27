@@ -149,7 +149,7 @@ export class UserService {
     }
 
     async findByEmail(email: string): Promise<User> {
-        const user = await this.userModel.findOne({ email }).exec();
+        const user = await this.userModel.findOne({ email: email }).exec();
         if (!user) {
             throw new InternalServerErrorException(`User ${email} not found`);
         }
@@ -168,11 +168,6 @@ export class UserService {
 
     async validatePassword(password: string, user: User): Promise<boolean> {
         try {
-            console.log(
-                password,
-                user.password,
-                await bcrypt.compare(password, user.password),
-            );
             return await bcrypt.compare(password, user.password);
         } catch (error) {
             throw new InternalServerErrorException(error.message);
@@ -208,9 +203,11 @@ export class UserService {
                 password,
                 phone,
             } = userSignUpDto;
-            const defaultStatus = await this.statusModel.findOne({
-                name: 'Active',
-            });
+            const defaultStatus = await this.statusModel
+                .findOne({
+                    name: 'Active',
+                })
+                .exec();
             const hashedPassword = await this.hashPassword(password);
             const foundProgram = await this.programModel
                 .findOne({ name: program })
@@ -226,12 +223,21 @@ export class UserService {
                 birthday: new Date(birthday),
                 fullname: fullname,
                 gender: gender,
-                faculty: foundFaculty._id.toString(),
+                faculty:
+                    typeof foundFaculty._id !== 'string'
+                        ? foundFaculty._id.toString()
+                        : foundFaculty._id,
                 classYear: classYear,
-                program: foundProgram._id.toString(),
+                program:
+                    typeof foundProgram._id !== 'string'
+                        ? foundProgram._id.toString()
+                        : foundProgram._id,
                 address: address,
                 phone: phone,
-                status: defaultStatus._id.toString(),
+                status:
+                    typeof defaultStatus._id !== 'string'
+                        ? defaultStatus._id.toString()
+                        : defaultStatus._id,
                 otp: null,
                 otpExpiry: null,
                 role: Role.STUDENT,
@@ -254,10 +260,13 @@ export class UserService {
         }
     }
 
-    async updateRefreshToken(id: string, refreshToken: string): Promise<void> {
+    async updateRefreshToken(
+        username: string,
+        refreshToken: string,
+    ): Promise<void> {
         try {
             await this.userModel
-                .findOneAndUpdate({ _id: id }, { refreshToken })
+                .findOneAndUpdate({ username: username }, { refreshToken })
                 .exec();
         } catch (error) {
             throw new InternalServerErrorException(error.message);
@@ -478,54 +487,46 @@ export class UserService {
     }
 
     async searchByNameOrStudentID(name: string, faculty?: string) {
-        try {
-            const regex = new RegExp(name, 'i');
-            let query: any = {
+        const regex = new RegExp(name, 'i');
+        let query: any = {
+            $or: [{ fullname: regex }, { username: regex }],
+        };
+
+        if (faculty) {
+            const foundFaculty = await this.facultyModel.find({
+                name: new RegExp(faculty, 'i'),
+            });
+            query = {
+                faculty: foundFaculty[0]._id.toString(),
                 $or: [{ fullname: regex }, { username: regex }],
             };
-
-            if (faculty) {
-                const foundFaculty = await this.facultyModel.find({
-                    name: new RegExp(faculty, 'i'),
-                });
-                console.log(foundFaculty);
-                query = {
-                    faculty: foundFaculty[0]._id.toString(),
-                    $or: [{ fullname: regex }, { username: regex }],
-                };
-            }
-
-            const users = await this.userModel.find(query);
-
-            if (!users.length) {
-                throw new NotFoundException(
-                    'No users found matching the criteria',
-                );
-            }
-
-            const newUsers = await Promise.all(
-                users.map(async (user) => {
-                    const foundStatus = await this.statusModel
-                        .findById(user.status)
-                        .exec();
-                    const foundProgram = await this.programModel
-                        .findById(user.program)
-                        .exec();
-                    const foundFaculty = await this.facultyModel
-                        .findById(user.faculty)
-                        .exec();
-                    return {
-                        ...user.toObject(),
-                        faculty: foundFaculty.name,
-                        program: foundProgram.name,
-                        status: foundStatus.name,
-                    };
-                }),
-            );
-            return newUsers;
-        } catch (error) {
-            throw new InternalServerErrorException(error.message);
         }
+
+        const users = await this.userModel.find(query);
+        if (!users.length) {
+            throw new NotFoundException('No users found matching the criteria');
+        }
+
+        const newUsers = await Promise.all(
+            users.map(async (user) => {
+                const foundStatus = await this.statusModel
+                    .findById(user.status)
+                    .exec();
+                const foundProgram = await this.programModel
+                    .findById(user.program)
+                    .exec();
+                const foundFaculty = await this.facultyModel
+                    .findById(user.faculty)
+                    .exec();
+                return {
+                    ...user.toObject(),
+                    faculty: foundFaculty.name,
+                    program: foundProgram.name,
+                    status: foundStatus.name,
+                };
+            }),
+        );
+        return newUsers;
     }
 
     async updateRole(id: string, role: string): Promise<void> {
@@ -562,9 +563,7 @@ export class UserService {
                 );
             }
 
-            console.log(oldPhonePrefix, oldEmailSuffix);
             const formattedPhonePrefix = `+${phonePrefix.trim()}`;
-            console.log(formattedPhonePrefix, emailSuffix);
             await this.settingModel
                 .findOneAndUpdate(
                     {},
@@ -576,7 +575,6 @@ export class UserService {
                 .exec();
 
             const res = await this.settingModel.find().exec();
-            console.log(res[0]);
             this.loggerService.logOperation(
                 'INFO',
                 `Updated university settings: ${oldEmailSuffix} -> ${emailSuffix}, ${oldPhonePrefix} -> ${phonePrefix}`,
@@ -589,7 +587,6 @@ export class UserService {
     async getUniversitySettings() {
         try {
             const setting = await this.settingModel.find().exec();
-            console.log(setting[0]);
             return setting[0];
         } catch (error) {
             throw new InternalServerErrorException(error.message);

@@ -29,8 +29,6 @@ export class AppService {
         const buildInfoPath = path.join(__dirname, '..', 'build-info.json');
         if (fs.existsSync(buildInfoPath)) {
             buildInfo = JSON.parse(fs.readFileSync(buildInfoPath, 'utf8'));
-        } else {
-            buildInfo = { version: 'unknown', buildDate: 'unknown' };
         }
         return buildInfo;
     }

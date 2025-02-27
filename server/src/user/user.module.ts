@@ -4,7 +4,7 @@ import { UserController } from './user.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './entities/user.entity';
 import { UserSignUpDto } from './dtos/user-signup.dto';
-import { AccessControlService } from 'src/shared/shared.service';
+import { AccessControlService } from '../../src/shared/shared.service';
 import { LoggerService } from '../logger/logger.service';
 import {
     Faculty,
@@ -25,7 +25,7 @@ import {
             { name: Status.name, schema: StatusSchema },
             { name: Program.name, schema: ProgramSchema },
             { name: Setting.name, schema: SettingSchema },
-        ]), // Register the Mongoose schema
+        ]),
         UserSignUpDto,
     ],
     controllers: [UserController],

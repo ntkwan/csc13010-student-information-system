@@ -30,7 +30,7 @@ export class AppController {
         schema: {
             example: {
                 version: '1.0.0',
-                buildDate: '2021-07-07T00:00:00.000Z',
+                buildDate: '2021-07-07',
             },
         },
     })

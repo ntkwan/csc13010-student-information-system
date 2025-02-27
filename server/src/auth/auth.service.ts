@@ -25,78 +25,70 @@ export class AuthService {
     ) {}
 
     public async signIn(user: UserLoginDto): Promise<any> {
-        try {
-            if (!user) {
-                throw new BadRequestException('Invalid credentials');
-            }
-
-            const foundUser = await this.usersService.findByEmail(
-                user.username || user.email,
-            );
-            if (!foundUser) {
-                throw new NotFoundException('User not found');
-            }
-
-            const isValidPassword: boolean =
-                await this.usersService.validatePassword(
-                    user.password,
-                    foundUser,
-                );
-
-            if (!isValidPassword) {
-                throw new UnauthorizedException('Wrong password');
-            }
-
-            if (
-                foundUser.role === Role.STUDENT ||
-                foundUser.role === Role.TEACHER
-            ) {
-                throw new UnauthorizedException(
-                    'User has no permission to access this resource, this is for admins only',
-                );
-            }
-
-            const payloadAccessToken = {
-                id: foundUser.id,
-                username: foundUser.username,
-                role: foundUser.role,
-            };
-
-            const accessToken = await this.jwtService.signAsync(
-                payloadAccessToken,
-                {
-                    secret: this.configService.get('AT_SECRET'),
-                    expiresIn: '1h',
-                },
-            );
-
-            const payloadRefreshToken = {
-                sub: foundUser.id,
-                email: foundUser.email,
-                role: foundUser.role,
-            };
-
-            const refreshToken = await this.jwtService.signAsync(
-                payloadRefreshToken,
-                {
-                    secret: this.configService.get('RT_SECRET'),
-                    expiresIn: '7d',
-                },
-            );
-
-            await this.usersService.updateRefreshToken(
-                foundUser.id,
-                refreshToken,
-            );
-            await this.usersService.updateOtp(foundUser.id, null, null);
-
-            return {
-                refreshToken,
-                accessToken,
-            };
-        } catch (error) {
-            throw new BadRequestException(error.message);
+        if (!user) {
+            throw new BadRequestException('Invalid credentials');
         }
+
+        const foundUser = await this.usersService.findByEmail(user.email);
+
+        if (!foundUser) {
+            throw new NotFoundException('User not found');
+        }
+
+        const isValidPassword: boolean =
+            await this.usersService.validatePassword(user.password, foundUser);
+
+        if (!isValidPassword) {
+            throw new UnauthorizedException('Wrong password');
+        }
+
+        if (
+            foundUser.role === Role.STUDENT ||
+            foundUser.role === Role.TEACHER
+        ) {
+            throw new BadRequestException(
+                'User has no permission to access this resource, this is for admins only',
+            );
+        }
+
+        const payloadAccessToken = {
+            id: foundUser.id,
+            username: foundUser.username,
+            role: foundUser.role,
+        };
+
+        const accessToken = await this.jwtService.signAsync(
+            payloadAccessToken,
+            {
+                secret: this.configService.get('AT_SECRET'),
+                expiresIn: '1h',
+            },
+        );
+
+        const payloadRefreshToken = {
+            sub: foundUser.id,
+            email: foundUser.email,
+            role: foundUser.role,
+        };
+
+        const refreshToken = await this.jwtService.signAsync(
+            payloadRefreshToken,
+            {
+                secret: this.configService.get('RT_SECRET'),
+                expiresIn: '7d',
+            },
+        );
+
+        await this.usersService.updateRefreshToken(
+            foundUser.username,
+            refreshToken,
+        );
+        await this.usersService.updateOtp(foundUser.id, null, null);
+
+        return {
+            refreshToken,
+            accessToken,
+        };
     }
 
     public async signUp(user: UserSignUpDto): Promise<User> {
@@ -114,7 +106,7 @@ export class AuthService {
 
     public async logOut(user: any): Promise<void> {
         try {
-            await this.usersService.updateRefreshToken(user.id, null);
+            await this.usersService.updateRefreshToken(user.username, null);
         } catch (error) {
             throw new InternalServerErrorException('Error logging out', {
                 cause: error.message,
@@ -154,7 +146,7 @@ export class AuthService {
                 expiresIn: '7d',
             });
 
-            await this.usersService.updateRefreshToken(user.id, newRT);
+            await this.usersService.updateRefreshToken(user.username, newRT);
 
             return {
                 refreshToken: newRT,
@@ -235,7 +227,6 @@ export class AuthService {
 
             if (!user) throw new BadRequestException('Invalid OTP');
 
-            console.log(newPassword, confirmPassword);
             if (newPassword !== confirmPassword) {
                 throw new BadRequestException('Passwords do not match');
             }
@@ -248,9 +239,7 @@ export class AuthService {
             await this.usersService.updatePassword(email, newPassword);
             return;
         } catch (error) {
-            throw new InternalServerErrorException(error.message, {
-                cause: error.message,
-            });
+            throw new NotFoundException(error.message);
         }
     }
 

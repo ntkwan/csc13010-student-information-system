@@ -21,7 +21,7 @@ async function generateBuildInfo() {
 
     const buildInfo = {
         version: packageJson.version,
-        buildDate: new Date().toISOString(),
+        buildDate: new Date().toISOString().split('T')[0],
     };
 
     fs.writeFileSync(buildInfoPath, JSON.stringify(buildInfo, null, 2));
