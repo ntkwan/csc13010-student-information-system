@@ -62,7 +62,7 @@ jobs:
                   echo "MONGO_APPNAME=${MONGO_APPNAME}" >> .env
                   echo "MONGO_PORT=${MONGO_PORT}" >> .env
             - name: Display .env file (server)
-              run: cat .env
+              run: cat  server/.env
 
     unit-test:
         runs-on: ubuntu-22.04
