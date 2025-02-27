@@ -177,9 +177,6 @@ describe('AuthService', () => {
     describe('resetPassword', () => {
         let authService: AuthService;
         let userService: UserService;
-        let jwtService: JwtService;
-        let configService: ConfigService;
-        let mailerService: MailerService;
 
         beforeEach(async () => {
             const module: TestingModule = await Test.createTestingModule({
@@ -213,11 +210,8 @@ describe('AuthService', () => {
                 ],
             }).compile();
 
-            configService = module.get<ConfigService>(ConfigService);
-            jwtService = module.get<JwtService>(JwtService);
             authService = module.get<AuthService>(AuthService);
             userService = module.get<UserService>(UserService);
-            mailerService = module.get<MailerService>(MailerService);
         });
 
         it('should throw an error if OTP is invalid', async () => {

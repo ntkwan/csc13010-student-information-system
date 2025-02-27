@@ -574,7 +574,6 @@ export class UserService {
                 )
                 .exec();
 
-            const res = await this.settingModel.find().exec();
             this.loggerService.logOperation(
                 'INFO',
                 `Updated university settings: ${oldEmailSuffix} -> ${emailSuffix}, ${oldPhonePrefix} -> ${phonePrefix}`,

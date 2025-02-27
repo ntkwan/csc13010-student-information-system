@@ -1,8 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LoggerController } from './logger.controller';
 import { LoggerService } from './logger.service';
-import { Role } from '../auth/enums/roles.enum';
-import { ATAuthGuard } from '../auth/guards/at-auth.guard';
 import { Response } from 'express';
 
 jest.mock('../auth/guards/at-auth.guard', () => ({

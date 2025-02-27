@@ -4,7 +4,6 @@ import { AppService } from './app.service';
 import { getConnectionToken } from '@nestjs/mongoose';
 
 describe('AppController', () => {
-    let appController: AppController;
     let appService: AppService;
 
     beforeEach(async () => {
@@ -20,7 +19,6 @@ describe('AppController', () => {
             ],
         }).compile();
 
-        appController = module.get<AppController>(AppController);
         appService = module.get<AppService>(AppService);
     });
 
