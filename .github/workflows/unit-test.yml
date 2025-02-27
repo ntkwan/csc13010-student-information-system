@@ -41,7 +41,7 @@ jobs:
               run: |
                   cd server
                   touch .env
-                  echo "ENV=${ENV}" > .env
+                  echo "hi" > .env
                   echo "SERVER_PORT=${SERVER_PORT}" >> .env
                   echo "SALT=${SALT}" >> .env
                   echo "AT_SECRET=${AT_SECRET}" >> .env
