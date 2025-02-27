@@ -2,9 +2,9 @@ name: Run unit tests & coverage
 
 on:
     push:
-        branches: ['main']
+        branches: ['main', 'ci']
     pull_request:
-        branches: ['main']
+        branches: ['main', 'ci']
         paths-ignore:
             - 'README.md'
             - 'LICENSE'
@@ -61,6 +61,7 @@ jobs:
                   echo "MONGO_DATABASE=${MONGO_DATABASE}" >> .env
                   echo "MONGO_APPNAME=${MONGO_APPNAME}" >> .env
                   echo "MONGO_PORT=${MONGO_PORT}" >> .env
+                  cat .env
 
     unit-test:
         runs-on: ubuntu-22.04
