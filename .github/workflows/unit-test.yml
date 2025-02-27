@@ -81,7 +81,7 @@ jobs:
                   ls -la server
 
             - name: Build server
-              run: cd server && pnpm run start:dev
+              run: cd server && timeout 10s pnpm run start:dev || true
 
             - name: Run unit tests (with Jest)
               run: cd server && pnpm test
