@@ -1,4 +1,5 @@
-name: Build Packages
+name: Lint
+
 on:
     push:
         branches: ['main']
@@ -7,8 +8,9 @@ on:
         paths-ignore:
             - 'README.md'
             - 'LICENSE'
+
 jobs:
-    lint-prettier:
+    server-linting:
         runs-on: ubuntu-22.04
         steps:
             - name: Checkout repository
@@ -28,8 +30,22 @@ jobs:
             - name: Run ESLint (server)
               run: cd server && pnpm lint
 
-            - name: Run Prettier (server)
-              run: cd server && pnpm format
-    unit-test:
+    client-linting:
         runs-on: ubuntu-22.04
         steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '22'
+
+            - name: Install dependencies (client)
+              run: cd client && pnpm install
+
+            - name: Run ESLint (client)
+              run: cd client && pnpm run lint
