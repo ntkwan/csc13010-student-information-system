@@ -12,6 +12,27 @@ on:
 jobs:
     unit-test:
         runs-on: ubuntu-22.04
+        env:
+            ENV: development
+            SERVER_PORT: ${{ secrets.SERVER_PORT }}
+            SALT: ${{ secrets.SALT }}
+            AT_SECRET: ${{ secrets.AT_SECRET }}
+            RT_SECRET: ${{ secrets.RT_SECRET }}
+            JWT_EXPIRATION_TIME: ${{ secrets.JWT_EXPIRATION_TIME }}
+            MAIL_HOST: ${{ secrets.MAIL_HOST }}
+            MAIL_USER: ${{ secrets.MAIL_USER }}
+            MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+            MAIL_PORT: ${{ secrets.MAIL_PORT }}
+            MAIL_FROM: ${{ secrets.MAIL_FROM }}
+            ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+            ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+            ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+            ADMIN_FULLNAME: ${{ secrets.ADMIN_FULLNAME }}
+            MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
+            MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+            MONGO_DATABASE: ${{ secrets.MONGO_DATABASE }}
+            MONGO_APPNAME: ${{ secrets.MONGO_APPNAME }}
+            MONGO_PORT: ${{ secrets.MONGO_PORT }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
