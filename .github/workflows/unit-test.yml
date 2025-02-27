@@ -1,0 +1,59 @@
+name: Run unit tests & check coverage
+
+on:
+    push:
+        branches: ['main']
+    pull_request:
+        branches: ['main']
+        paths-ignore:
+            - 'README.md'
+            - 'LICENSE'
+
+jobs:
+    unit-test:
+        runs-on: ubuntu-22.04
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '22'
+
+            - name: Install dependencies (server)
+              run: cd server && pnpm install
+
+            - name: Run unit tests (NestJS with Jest)
+              run: cd server && pnpm test
+
+            - name: Run test coverage (NestJS with Jest)
+              run: cd server && pnpm test:cov
+
+            - name: Install jq and bc
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y jq bc
+
+            - name: Display test coverage summary nicely
+              run: cat server/coverage/coverage-summary.json | jq .
+
+            - name: Check coverage threshold (70% lines)
+              run: |
+                  COVERAGE=$(cat server/coverage/coverage-summary.json | jq '.total.lines.pct')
+                  echo "Line coverage: $COVERAGE%"
+                  if (( $(echo "$COVERAGE < 70" | bc -l) )); then
+                    echo "Coverage is below threshold of 70%!"
+                    exit 1
+                  else
+                    echo "Coverage meets threshold."
+                  fi
+
+            - name: Upload coverage report
+              uses: actions/upload-artifact@v3
+              with:
+                  name: coverage-report
+                  path: server/coverage
