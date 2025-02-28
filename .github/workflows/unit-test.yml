@@ -52,8 +52,6 @@ jobs:
               run: |
                   cd server
                   touch .env
-                  chmod 755 .env
-                  echo "hi" > .env
                   echo "SERVER_PORT=${SERVER_PORT}" >> .env
                   echo "SALT=${SALT}" >> .env
                   echo "AT_SECRET=${AT_SECRET}" >> .env
@@ -75,11 +73,6 @@ jobs:
                   echo "MONGO_PORT=${MONGO_PORT}" >> .env
                   ls -la
 
-            - name: Display .env file (server)
-              run: |
-                  cat  server/.env
-                  ls -la server
-
             - name: Build server
               run: cd server && timeout 10s pnpm run start:dev || true
 
@@ -95,11 +88,11 @@ jobs:
                   sudo apt-get install -y jq bc
 
             - name: Display test coverage summary nicely
-              run: cat server/coverage/coverage-final.json | jq .
+              run: cat server/coverage/coverage-summary.json | jq .
 
             - name: Check coverage threshold (70% lines)
               run: |
-                  COVERAGE=$(cat server/coverage/coverage-final.json | jq '.total.lines.pct')
+                  COVERAGE=$(cat server/coverage/coverage-summary.json | jq '.total.lines.pct')
                   echo "Line coverage: $COVERAGE%"
                   if (( $(echo "$COVERAGE < 70" | bc -l) )); then
                     echo "Coverage is below threshold of 70%!"
