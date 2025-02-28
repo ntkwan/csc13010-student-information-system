@@ -43,7 +43,7 @@ describe('AppController', () => {
         it('should return default build info if file does not exist', async () => {
             const buildInfo = await appService.getBuildInfo();
             expect(buildInfo).toEqual({
-                version: '2.0',
+                version: '3.0',
                 buildDate: new Date().toISOString().split('T')[0],
             });
         });
