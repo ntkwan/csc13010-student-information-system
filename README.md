@@ -156,7 +156,9 @@ Once the application is running, you can interact with it through the dashboard 
 - Updating student information
 - Searching for students
 
-## docs/screenshots
+## Unit testing
+
+## Screenshots
 
 ### v1.0
 

@@ -8,6 +8,9 @@ on:
         paths-ignore:
             - 'README.md'
             - 'LICENSE'
+permissions:
+    contents: write
+
 jobs:
     unit-test:
         runs-on: ubuntu-22.04
@@ -100,3 +103,33 @@ jobs:
                   else
                     echo "Coverage meets threshold."
                   fi
+                  mv coverage/lcov-report coverage_report
+
+            - name: Upload Coverage Report as Artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: coverage_report
+                  path: coverage_report
+
+    deploy:
+        needs: coverage
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v3
+
+            - name: Download Coverage Report Artifact
+              uses: actions/download-artifact@v3
+              with:
+                  name: coverage_report
+                  path: coverage_report
+
+            - name: Deploy to GitHub Pages
+              uses: JamesIves/github-pages-deploy-action@v4
+              with:
+                  branch: gh-pages
+                  folder: coverage_report  \
+                  clean: true
