@@ -112,7 +112,7 @@ jobs:
                   path: coverage_report
 
     deploy:
-        needs: coverage
+        needs: unit-test
         runs-on: ubuntu-latest
         permissions:
             contents: write
@@ -131,5 +131,5 @@ jobs:
               uses: JamesIves/github-pages-deploy-action@v4
               with:
                   branch: gh-pages
-                  folder: coverage_report  \
+                  folder: coverage_report
                   clean: true
