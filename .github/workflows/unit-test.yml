@@ -103,6 +103,7 @@ jobs:
                   else
                     echo "Coverage meets threshold."
                   fi
+                  ls coverage
                   mv coverage/lcov-report coverage_report
 
             - name: Upload Coverage Report as Artifact
