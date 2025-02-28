@@ -506,12 +506,12 @@ describe('UserService', () => {
             fakeUser.save = jest.fn().mockResolvedValue({});
             const records = [
                 {
-                    id: '67b773e17e375218ae0d70d6',
+                    id: '1',
                     updates: {
-                        username: 'user1',
+                        username: 'user_1',
                         status: 'Active',
                         program: 'CS',
-                        faculty: '67b773e17e375218ae0d70d6',
+                        faculty: '2',
                     },
                 },
             ];
