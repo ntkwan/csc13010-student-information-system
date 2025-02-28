@@ -603,10 +603,10 @@ export class UserService {
             }
 
             const existedUsername = await this.userModel
-                .find({ username: updates.username })
+                .findOne({ username: updates.username })
                 .exec();
 
-            if (existedUsername.length > 1) {
+            if (existedUsername && existedUsername._id.toString() !== id) {
                 this.loggerService.logOperation(
                     'ERROR',
                     `Student with student ID ${updates.username} already exists`,

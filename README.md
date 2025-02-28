@@ -156,67 +156,88 @@ Once the application is running, you can interact with it through the dashboard 
 - Updating student information
 - Searching for students
 
-## Screenshots
+## docs/screenshots
 
 ### v1.0
 
 #### Landing page
 
-![screenshot](screenshots/screen1.png)
+![screenshot](docs/screenshots/screen1.png)
 
 #### Login page
 
-![screenshot](screenshots/screen2.png)
+![screenshot](docs/screenshots/screen2.png)
 
 #### Menu
 
-![screenshot](screenshots/screen3.png)
+![screenshot](docs/screenshots/screen3.png)
 
 #### Search a record
 
-![screenshot](screenshots/screen4.png)
+![screenshot](docs/screenshots/screen4.png)
 
 #### Edit a record
 
-![screenshot](screenshots/screen5.png)
+![screenshot](docs/screenshots/screen5.png)
 
 #### View a record
 
-![screenshot](screenshots/screen6.png)
+![screenshot](docs/screenshots/screen6.png)
 
 #### Add a record
 
-![screenshot](screenshots/screen7.png)
-![screenshot](screenshots/screen8.png)
-![screenshot](screenshots/screen9.png)
+![screenshot](docs/screenshots/screen7.png)
+![screenshot](docs/screenshots/screen8.png)
+![screenshot](docs/screenshots/screen9.png)
 
 ### v2.0
 
 #### Dynamic attributes
 
-![screenshot](screenshots/screen10.png)
-![screenshot](screenshots/screen11.png)
-![screenshot](screenshots/screen12.png)
-![screenshot](screenshots/screen13.png)
+![screenshot](docs/screenshots/screen10.png)
+![screenshot](docs/screenshots/screen11.png)
+![screenshot](docs/screenshots/screen12.png)
+![screenshot](docs/screenshots/screen13.png)
 
 #### Development build information
 
-![screenshot](screenshots/screen20.png)
+![screenshot](docs/screenshots/screen20.png)
 
 #### Logging mechanism
 
-![screenshot](screenshots/screen14.png)
+![screenshot](docs/screenshots/screen14.png)
 
 #### Advanced search
 
-![screenshot](screenshots/screen15.png)
-![screenshot](screenshots/screen16.png)
+![screenshot](docs/screenshots/screen15.png)
+![screenshot](docs/screenshots/screen16.png)
 
-### Import/export records
+#### Import/export records
 
-![screenshot](screenshots/screen17.png)
-![screenshot](screenshots/screen18.png)
-![screenshot](screenshots/screen19.png)
+![screenshot](docs/screenshots/screen17.png)
+![screenshot](docs/screenshots/screen18.png)
+![screenshot](docs/screenshots/screen19.png)
+
+### v3.0
+
+#### Configurable status rules
+
+![screenshot](docs/screenshots/screen21.png)
+![screenshot](docs/screenshots/screen22.png)
+
+#### Configurable phone number prefix
+
+![screenshot](docs/screenshots/screen24.png)
+![screenshot](docs/screenshots/screen23.png)
+
+#### Configurable email suffix
+
+![screenshot](docs/screenshots/screen24.png)
+![screenshot](docs/screenshots/screen25.png)
+
+#### Unique student ID
+
+![screenshot](docs/screenshots/screen26.png)
 
 ## Code convention
 

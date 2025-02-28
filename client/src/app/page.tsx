@@ -192,6 +192,7 @@ const UsersPage = () => {
     };
 
     const handleSaveChanges = async () => {
+        setValidationErrorMessage('');
         try {
             if (
                 !validateEmail(updatedRecord.email) ||
@@ -1000,7 +1001,7 @@ const UsersPage = () => {
                                                     'Unassigned'
                                                 }
                                                 {...(isStatusField &&
-                                                errorValidationMessage
+                                                errorValidationMessage === '.'
                                                     ? {
                                                           error: true,
                                                           helperText:
