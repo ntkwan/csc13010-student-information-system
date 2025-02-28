@@ -87,7 +87,7 @@ jobs:
                   sudo apt-get update
                   sudo apt-get install -y jq bc
 
-            - name: Display test coverage summary nicely
+            - name: Display test coverage summary
               run: cat server/coverage/coverage-summary.json | jq .
 
             - name: Check coverage threshold (70% lines)
