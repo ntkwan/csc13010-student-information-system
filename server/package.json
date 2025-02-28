@@ -91,6 +91,12 @@
             "**/*.(t|j)s"
         ],
         "coverageDirectory": "../coverage",
+        "coverageReporters": [
+            "json-summary",
+            "lcov",
+            "text",
+            "clover"
+        ],
         "testEnvironment": "node"
     }
 }
