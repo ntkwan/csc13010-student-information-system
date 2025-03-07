@@ -1,7 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import {
-    TextField,
     Table,
     TableBody,
     TableCell,
@@ -12,12 +11,12 @@ import {
     Paper,
     Box,
 } from '@mui/material';
+import ItemViewDetails from './itemViewDetails';
 
 interface AttributesDashboardProps {
     categoryRecords: any[];
     selectedCategory: string;
     handleCategoryEditClick: (record: any) => void;
-    handleViewDetails: (record: any) => void;
 }
 
 const AttributesDashboard = (props: AttributesDashboardProps) => {
@@ -25,10 +24,17 @@ const AttributesDashboard = (props: AttributesDashboardProps) => {
         categoryRecords,
         selectedCategory,
         handleCategoryEditClick,
-        handleViewDetails,
     } = props;
+    const [isOpenRecord, setIsOpenRecord] = useState(false);
+    const [selectedRecord, setSelectedRecord] = useState<any>(null);
+
+    const handleViewDetails = (record: any) => {
+        setSelectedRecord(record);
+        setIsOpenRecord(true);
+    };
 
     return (
+        <>
         <Box display="flex" justifyContent="center" alignItems="center" mb={6}>
             <TableContainer
                 component={Paper}
@@ -101,6 +107,13 @@ const AttributesDashboard = (props: AttributesDashboardProps) => {
                 </Table>
             </TableContainer>
         </Box>
+        <ItemViewDetails
+            isOpenRecord={isOpenRecord}
+            selectedRecord={selectedRecord}
+            setSelectedRecord={setSelectedRecord}
+            setIsOpenRecord={setIsOpenRecord}
+        ></ItemViewDetails>
+        </>
     );
 };
 
