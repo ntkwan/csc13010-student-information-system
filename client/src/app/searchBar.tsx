@@ -1,15 +1,23 @@
 'use client';
-import { TextField, Button, Box, MenuItem, Select } from '@mui/material';
+import {
+    TextField,
+    Button,
+    Box,
+    MenuItem,
+    Select,
+    Typography,
+} from '@mui/material';
 import { useState } from 'react';
 
 interface SearchBarProps {
     loading: boolean;
     fetchRecords: (params: { searchQuery: string; faculty: string }) => void;
+    errorMessage: string;
     facultyOptions: { label: string; value: string }[];
 }
 
 const SearchBar = (props: SearchBarProps) => {
-    const { loading, fetchRecords, facultyOptions } = props;
+    const { loading, fetchRecords, facultyOptions, errorMessage } = props;
 
     const [isFilteringByFaculty, setIsFilteringByFaculty] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -80,6 +88,29 @@ const SearchBar = (props: SearchBarProps) => {
                     Search
                 </Button>
             </Box>
+
+            {errorMessage && (
+                <Typography
+                    color="error"
+                    variant="body2"
+                    style={{
+                        alignContent: 'center',
+                        marginBottom: '50px',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                >
+                    {errorMessage}
+                </Typography>
+            )}
+
+            {!errorMessage && (
+                <Typography
+                    variant="body2"
+                    style={{ marginBottom: '118px' }}
+                ></Typography>
+            )}
         </>
     );
 };

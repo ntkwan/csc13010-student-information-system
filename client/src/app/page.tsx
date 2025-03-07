@@ -312,30 +312,8 @@ const UsersPage = () => {
                         fetchRecords={fetchRecords}
                         loading={loading}
                         facultyOptions={facultyOptions}
+                        errorMessage={errorMessage}
                     ></SearchBar>
-
-                    {errorMessage && (
-                        <Typography
-                            color="error"
-                            variant="body2"
-                            style={{
-                                alignContent: 'center',
-                                marginBottom: '50px',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                            }}
-                        >
-                            {errorMessage}
-                        </Typography>
-                    )}
-
-                    {!errorMessage && (
-                        <Typography
-                            variant="body2"
-                            style={{ marginBottom: '118px' }}
-                        ></Typography>
-                    )}
 
                     <NavBar
                         selectedCategory={selectedCategory}

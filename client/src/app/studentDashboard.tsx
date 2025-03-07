@@ -154,7 +154,7 @@ const StudentDashboard = (props: StudentDashboardProps) => {
                                                 marginLeft: '10px',
                                             }}
                                         >
-                                            View Details
+                                            Details
                                         </Button>
                                         <Button
                                             variant="outlined"
@@ -167,6 +167,18 @@ const StudentDashboard = (props: StudentDashboardProps) => {
                                             }}
                                         >
                                             Delete
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            color="success"
+                                            onClick={() =>
+                                                handleClickOpen(record)
+                                            }
+                                            style={{
+                                                marginLeft: '10px',
+                                            }}
+                                        >
+                                            Export
                                         </Button>
                                     </TableCell>
                                 </TableRow>

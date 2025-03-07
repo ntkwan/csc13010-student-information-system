@@ -90,7 +90,7 @@ const AttributesDashboard = (props: AttributesDashboardProps) => {
                                                 marginLeft: '10px',
                                             }}
                                         >
-                                            View Details
+                                            Details
                                         </Button>
                                         {/*
                                     <Button
