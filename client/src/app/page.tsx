@@ -2,17 +2,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import {
-    TextField,
-    Table,
-    TableBody,
-    TableCell,
-    TableRow,
-    Button,
-    Box,
-    Typography,
-    Dialog,
-} from '@mui/material';
+import { Typography } from '@mui/material';
 import axios from 'axios';
 import Header from './header';
 import SearchBar from './searchBar';
@@ -47,16 +37,9 @@ const genderOptions = [
     { value: 'Unassigned', label: 'Unassigned' },
 ];
 
-
 const UsersPage = () => {
     const [loading, setLoading] = useState(false);
     const [errorValidationMessage, setValidationErrorMessage] = useState('');
-    const [user, setUser] = useState<{
-        username: string;
-        avatar: string;
-    } | null>(null);
-    const [showCategoryRecordForm, setShowCategoryRecordForm] = useState(false);
-
     const [errorMessage, setErrorMessage] = useState('');
     const [emailError, setEmailError] = useState(false);
     const [phoneError, setPhoneError] = useState(false);
@@ -64,8 +47,11 @@ const UsersPage = () => {
     const [emailSuffix, setEmailSuffix] = useState('');
     const [phonePrefix, setPhonePrefix] = useState('');
     const [records, setRecords] = useState([]);
-
     const [categoryRecords, setCategoryRecords] = useState<any[]>([]);
+    const [user, setUser] = useState<{
+        username: string;
+        avatar: string;
+    } | null>(null);
 
     useEffect(() => {
         switch (selectedCategory) {
@@ -117,7 +103,6 @@ const UsersPage = () => {
 
         return regex.test(trimmedPhone);
     };
-
 
     const fetchRecords = async (searchItems: {
         searchQuery: string;
@@ -295,8 +280,6 @@ const UsersPage = () => {
         }
     };
 
-
-
     useEffect(() => {
         if (typeof window === 'undefined') return;
         if (localStorage.getItem('authToken')) {
@@ -363,7 +346,9 @@ const UsersPage = () => {
                         <StudentManager
                             records={records}
                             fetchRecords={fetchRecords}
-                            setValidationErrorMessage={setValidationErrorMessage}
+                            setValidationErrorMessage={
+                                setValidationErrorMessage
+                            }
                             errorValidationMessage={errorValidationMessage}
                             phoneError={phoneError}
                             emailError={emailError}
@@ -398,11 +383,8 @@ const UsersPage = () => {
                             setEmailSuffix={setEmailSuffix}
                             phonePrefix={phonePrefix}
                             setPhonePrefix={setPhonePrefix}
-                        >
-                        </SettingDashboard>
+                        ></SettingDashboard>
                     )}
-
-
 
                     {selectedCategory === 'Student' && (
                         <StudentNewForm
@@ -417,13 +399,14 @@ const UsersPage = () => {
                             classYearOptions={classYearOptions}
                             programOptions={programOptions}
                             errorValidationMessage={errorValidationMessage}
-                            setValidationErrorMessage={setValidationErrorMessage}
+                            setValidationErrorMessage={
+                                setValidationErrorMessage
+                            }
                             validateEmail={validateEmail}
                             validatePhone={validatePhone}
                             fetchAllProfiles={fetchAllProfiles}
                         ></StudentNewForm>
                     )}
-
 
                     {(selectedCategory === 'Faculty' ||
                         selectedCategory === 'Program' ||

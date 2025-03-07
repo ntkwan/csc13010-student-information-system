@@ -13,17 +13,15 @@ const NavBar = (props: NavBarProps) => {
     const { selectedCategory, setSelectedCategory } = props;
     return (
         <Box display="flex" justifyContent="center" gap={2} mb={3}>
-        {categories.map((category) => (
-            <Button
-                key={category}
-                variant={
-                    selectedCategory === category
-                        ? 'contained'
-                        : 'outlined'
-                }
-                onClick={() => setSelectedCategory(category)}
-            >
-                {category}
+            {categories.map((category) => (
+                <Button
+                    key={category}
+                    variant={
+                        selectedCategory === category ? 'contained' : 'outlined'
+                    }
+                    onClick={() => setSelectedCategory(category)}
+                >
+                    {category}
                 </Button>
             ))}
         </Box>

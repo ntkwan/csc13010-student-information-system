@@ -94,105 +94,114 @@ const StudentDashboard = (props: StudentDashboardProps) => {
 
     return (
         <>
-        <Box display="flex" justifyContent="center" alignItems="center" mb={6}>
-            <TableContainer
-                component={Paper}
-                style={{
-                    width: '80%',
-                    maxWidth: '1200px',
-                    maxHeight: '600px', // Set max height for scrolling
-                    overflow: 'auto', // Enable scrolling
-                }}
+            <Box
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                mb={6}
             >
-                <Table stickyHeader>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Student ID</TableCell>
-                            <TableCell>Full name</TableCell>
-                            <TableCell>Birthday</TableCell>
-                            <TableCell>Faculty</TableCell>
-                            <TableCell>Status</TableCell>
-                            <TableCell>Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {records.map((record: any, index: number) => (
-                            <TableRow key={index}>
-                                <TableCell>{record.username}</TableCell>
-                                <TableCell>{record.fullname}</TableCell>
-                                <TableCell>
-                                    {
-                                        new Date(record.birthday)
-                                            .toISOString()
-                                            .split('T')[0]
-                                    }
-                                </TableCell>
-                                <TableCell>{record.faculty}</TableCell>
-                                <TableCell>{record.status}</TableCell>
-                                <TableCell>
-                                    <Button
-                                        variant="outlined"
-                                        color="primary"
-                                        onClick={() => handleEditClick(record)}
-                                    >
-                                        Edit
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        color="secondary"
-                                        onClick={() =>
-                                            handleViewDetails(record)
-                                        }
-                                        style={{
-                                            marginLeft: '10px',
-                                        }}
-                                    >
-                                        View Details
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        color="error"
-                                        onClick={() => handleClickOpen(record)}
-                                        style={{
-                                            marginLeft: '10px',
-                                        }}
-                                    >
-                                        Delete
-                                    </Button>
-                                </TableCell>
+                <TableContainer
+                    component={Paper}
+                    style={{
+                        width: '80%',
+                        maxWidth: '1200px',
+                        maxHeight: '600px', // Set max height for scrolling
+                        overflow: 'auto', // Enable scrolling
+                    }}
+                >
+                    <Table stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Student ID</TableCell>
+                                <TableCell>Full name</TableCell>
+                                <TableCell>Birthday</TableCell>
+                                <TableCell>Faculty</TableCell>
+                                <TableCell>Status</TableCell>
+                                <TableCell>Actions</TableCell>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </Box>
+                        </TableHead>
+                        <TableBody>
+                            {records.map((record: any, index: number) => (
+                                <TableRow key={index}>
+                                    <TableCell>{record.username}</TableCell>
+                                    <TableCell>{record.fullname}</TableCell>
+                                    <TableCell>
+                                        {
+                                            new Date(record.birthday)
+                                                .toISOString()
+                                                .split('T')[0]
+                                        }
+                                    </TableCell>
+                                    <TableCell>{record.faculty}</TableCell>
+                                    <TableCell>{record.status}</TableCell>
+                                    <TableCell>
+                                        <Button
+                                            variant="outlined"
+                                            color="primary"
+                                            onClick={() =>
+                                                handleEditClick(record)
+                                            }
+                                        >
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            color="secondary"
+                                            onClick={() =>
+                                                handleViewDetails(record)
+                                            }
+                                            style={{
+                                                marginLeft: '10px',
+                                            }}
+                                        >
+                                            View Details
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            color="error"
+                                            onClick={() =>
+                                                handleClickOpen(record)
+                                            }
+                                            style={{
+                                                marginLeft: '10px',
+                                            }}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Box>
 
-        <ItemViewDetails
-            isOpenRecord={isOpenRecord}
-            setSelectedRecord={setSelectedRecord}
-            setIsOpenRecord={setIsOpenRecord}
-            selectedRecord={selectedRecord}
-        />
+            <ItemViewDetails
+                isOpenRecord={isOpenRecord}
+                setSelectedRecord={setSelectedRecord}
+                setIsOpenRecord={setIsOpenRecord}
+                selectedRecord={selectedRecord}
+            />
 
-        {open && (
-            <Dialog open={open} onClose={handleCloseDelete}>
-                <DialogTitle>Confirm deletion</DialogTitle>
-                <DialogContent>
-                    Are you sure you want to delete?
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseDelete} color="primary">
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={() => handleDelete(selectedRecord)}
-                        color="error"
-                    >
-                        Delete
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        )}
+            {open && (
+                <Dialog open={open} onClose={handleCloseDelete}>
+                    <DialogTitle>Confirm deletion</DialogTitle>
+                    <DialogContent>
+                        Are you sure you want to delete?
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCloseDelete} color="primary">
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={() => handleDelete(selectedRecord)}
+                            color="error"
+                        >
+                            Delete
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            )}
         </>
     );
 };

@@ -1,11 +1,22 @@
-'use client'
+'use client';
 
-import { TextField, MenuItem, Dialog, Table, TableBody, TableCell, TableRow, Box, Button, Typography } from "@mui/material";
-import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import axios from "axios";
-import dayjs from "dayjs";
-import { useState } from "react";
+import {
+    TextField,
+    MenuItem,
+    Dialog,
+    Table,
+    TableBody,
+    TableCell,
+    TableRow,
+    Box,
+    Button,
+    Typography,
+} from '@mui/material';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import axios from 'axios';
+import dayjs from 'dayjs';
+import { useState } from 'react';
 
 interface StudentNewFormProps {
     emailError: boolean;
@@ -104,7 +115,11 @@ const StudentNewForm = (props: StudentNewFormProps) => {
         }
     };
 
-    const renderField = (field: string, value: string, handleChange: (field: string, value: string) => void) => {
+    const renderField = (
+        field: string,
+        value: string,
+        handleChange: (field: string, value: string) => void,
+    ) => {
         switch (field) {
             case 'email':
                 return (
@@ -113,7 +128,11 @@ const StudentNewForm = (props: StudentNewFormProps) => {
                         value={value || ''}
                         onChange={(e) => handleChange('email', e.target.value)}
                         error={emailError}
-                        helperText={emailError ? `The suffix must be ${emailSuffix.split('@')[1]}` : ''}
+                        helperText={
+                            emailError
+                                ? `The suffix must be ${emailSuffix.split('@')[1]}`
+                                : ''
+                        }
                     />
                 );
             case 'phone':
@@ -123,7 +142,11 @@ const StudentNewForm = (props: StudentNewFormProps) => {
                         value={value || ''}
                         onChange={(e) => handleChange('phone', e.target.value)}
                         error={phoneError}
-                        helperText={phoneError ? `Phone number must be 10 digits or start with ${phonePrefix}` : ''}
+                        helperText={
+                            phoneError
+                                ? `Phone number must be 10 digits or start with ${phonePrefix}`
+                                : ''
+                        }
                     />
                 );
             case 'birthday':
@@ -131,7 +154,12 @@ const StudentNewForm = (props: StudentNewFormProps) => {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
                             value={value ? dayjs(value) : null}
-                            onChange={(date: any) => handleChange('birthday', date ? date.format('YYYY-MM-DD') : '')}
+                            onChange={(date: any) =>
+                                handleChange(
+                                    'birthday',
+                                    date ? date.format('YYYY-MM-DD') : '',
+                                )
+                            }
                             slotProps={{ textField: { fullWidth: true } }}
                         />
                     </LocalizationProvider>
@@ -144,11 +172,16 @@ const StudentNewForm = (props: StudentNewFormProps) => {
                         value={value || ''}
                         onChange={(e) => handleChange('gender', e.target.value)}
                     >
-                        {genderOptions.filter(option => option.value !== 'Unassigned').map(option => (
-                            <MenuItem key={option.value} value={option.value}>
-                                {option.label}
-                            </MenuItem>
-                        ))}
+                        {genderOptions
+                            .filter((option) => option.value !== 'Unassigned')
+                            .map((option) => (
+                                <MenuItem
+                                    key={option.value}
+                                    value={option.value}
+                                >
+                                    {option.label}
+                                </MenuItem>
+                            ))}
                     </TextField>
                 );
             case 'faculty':
@@ -157,13 +190,20 @@ const StudentNewForm = (props: StudentNewFormProps) => {
                         select
                         fullWidth
                         value={value || ''}
-                        onChange={(e) => handleChange('faculty', e.target.value)}
+                        onChange={(e) =>
+                            handleChange('faculty', e.target.value)
+                        }
                     >
-                        {facultyOptions.filter(option => option.value !== 'Unassigned').map(option => (
-                            <MenuItem key={option.value} value={option.value}>
-                                {option.label}
-                            </MenuItem>
-                        ))}
+                        {facultyOptions
+                            .filter((option) => option.value !== 'Unassigned')
+                            .map((option) => (
+                                <MenuItem
+                                    key={option.value}
+                                    value={option.value}
+                                >
+                                    {option.label}
+                                </MenuItem>
+                            ))}
                     </TextField>
                 );
             case 'classYear':
@@ -172,13 +212,20 @@ const StudentNewForm = (props: StudentNewFormProps) => {
                         select
                         fullWidth
                         value={value || ''}
-                        onChange={(e) => handleChange('classYear', e.target.value)}
+                        onChange={(e) =>
+                            handleChange('classYear', e.target.value)
+                        }
                     >
-                        {classYearOptions.filter(option => option.value !== 'Unassigned').map(option => (
-                            <MenuItem key={option.value} value={option.value}>
-                                {option.label}
-                            </MenuItem>
-                        ))}
+                        {classYearOptions
+                            .filter((option) => option.value !== 'Unassigned')
+                            .map((option) => (
+                                <MenuItem
+                                    key={option.value}
+                                    value={option.value}
+                                >
+                                    {option.label}
+                                </MenuItem>
+                            ))}
                     </TextField>
                 );
             case 'program':
@@ -187,13 +234,20 @@ const StudentNewForm = (props: StudentNewFormProps) => {
                         select
                         fullWidth
                         value={value || ''}
-                        onChange={(e) => handleChange('program', e.target.value)}
+                        onChange={(e) =>
+                            handleChange('program', e.target.value)
+                        }
                     >
-                        {programOptions.filter(option => option.value !== 'Unassigned').map(option => (
-                            <MenuItem key={option.value} value={option.value}>
-                                {option.label}
-                            </MenuItem>
-                        ))}
+                        {programOptions
+                            .filter((option) => option.value !== 'Unassigned')
+                            .map((option) => (
+                                <MenuItem
+                                    key={option.value}
+                                    value={option.value}
+                                >
+                                    {option.label}
+                                </MenuItem>
+                            ))}
                     </TextField>
                 );
             default:
@@ -209,20 +263,34 @@ const StudentNewForm = (props: StudentNewFormProps) => {
 
     const renderDisplayKey = (key: string) => {
         switch (key) {
-            case 'fullname': return 'Full name';
-            case 'username': return 'Student ID';
-            case 'birthday': return 'Birthday';
-            case 'gender': return 'Gender';
-            case 'faculty': return 'Faculty';
-            case 'classYear': return 'Class Year';
-            case 'program': return 'Program';
-            case 'address': return 'Address';
-            case 'email': return 'Email';
-            case 'phone': return 'Phone number';
-            case 'status': return 'Status';
-            case 'role': return 'Role';
-            case 'password': return 'Default password';
-            default: return key;
+            case 'fullname':
+                return 'Full name';
+            case 'username':
+                return 'Student ID';
+            case 'birthday':
+                return 'Birthday';
+            case 'gender':
+                return 'Gender';
+            case 'faculty':
+                return 'Faculty';
+            case 'classYear':
+                return 'Class Year';
+            case 'program':
+                return 'Program';
+            case 'address':
+                return 'Address';
+            case 'email':
+                return 'Email';
+            case 'phone':
+                return 'Phone number';
+            case 'status':
+                return 'Status';
+            case 'role':
+                return 'Role';
+            case 'password':
+                return 'Default password';
+            default:
+                return key;
         }
     };
 
@@ -239,7 +307,6 @@ const StudentNewForm = (props: StudentNewFormProps) => {
             [field]: value,
         }));
     };
-
 
     return (
         <>
@@ -263,7 +330,11 @@ const StudentNewForm = (props: StudentNewFormProps) => {
                                     {renderDisplayKey(field)}
                                 </TableCell>
                                 <TableCell>
-                                    {renderField(field, (newRecord as any)[field], handleValidation)}
+                                    {renderField(
+                                        field,
+                                        (newRecord as any)[field],
+                                        handleValidation,
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -330,9 +401,8 @@ const StudentNewForm = (props: StudentNewFormProps) => {
                     Add New Record
                 </Button>
             </Box>
-
         </>
     );
-}
+};
 
 export default StudentNewForm;

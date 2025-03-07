@@ -1,6 +1,13 @@
 'use client';
 
-import { TextField, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import {
+    TextField,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+} from '@mui/material';
 
 interface AttributesEditFormProps {
     editingCategoryRecord: boolean;
@@ -35,9 +42,47 @@ const AttributesEditForm = (props: AttributesEditFormProps) => {
 
     return (
         <>
-        {editingCategoryRecord &&
-            (selectedCategory === 'Program' ||
-                selectedCategory === 'Faculty') && (
+            {editingCategoryRecord &&
+                (selectedCategory === 'Program' ||
+                    selectedCategory === 'Faculty') && (
+                    <Dialog
+                        open={isEditCategoryDialogOpen}
+                        onClose={() => setEditCategoryDialogOpen(false)}
+                    >
+                        <DialogTitle>Edit record</DialogTitle>
+                        <DialogContent>
+                            <TextField
+                                fullWidth
+                                margin="dense"
+                                label="Name"
+                                value={updatedCategoryRecord.value || ''}
+                                onChange={(e) =>
+                                    handleCategoryInputChange(
+                                        'value',
+                                        e.target.value,
+                                    )
+                                }
+                            />
+                        </DialogContent>
+                        <DialogActions>
+                            <Button
+                                onClick={() => setEditCategoryDialogOpen(false)}
+                                color="secondary"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleCategorySaveChanges}
+                                variant="contained"
+                                color="primary"
+                            >
+                                Save
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+                )}
+
+            {editingCategoryRecord && selectedCategory === 'Status' && (
                 <Dialog
                     open={isEditCategoryDialogOpen}
                     onClose={() => setEditCategoryDialogOpen(false)}
@@ -48,9 +93,7 @@ const AttributesEditForm = (props: AttributesEditFormProps) => {
                             fullWidth
                             margin="dense"
                             label="Name"
-                            value={
-                                updatedCategoryRecord.value || ''
-                            }
+                            value={updatedCategoryRecord.value || ''}
                             onChange={(e) =>
                                 handleCategoryInputChange(
                                     'value',
@@ -58,18 +101,28 @@ const AttributesEditForm = (props: AttributesEditFormProps) => {
                                 )
                             }
                         />
+                        <TextField
+                            margin="dense"
+                            fullWidth
+                            label="Order"
+                            value={updatedCategoryRecord.order || ''}
+                            onChange={(e) =>
+                                handleCategoryInputChange(
+                                    'order',
+                                    e.target.value,
+                                )
+                            }
+                        />
                     </DialogContent>
                     <DialogActions>
                         <Button
-                            onClick={() =>
-                                setEditCategoryDialogOpen(false)
-                            }
+                            onClick={() => setEditCategoryDialogOpen(false)}
                             color="secondary"
                         >
                             Cancel
                         </Button>
                         <Button
-                            onClick={handleCategorySaveChanges}
+                            onClick={handleStatusCategorySaveChanges}
                             variant="contained"
                             color="primary"
                         >
@@ -77,59 +130,7 @@ const AttributesEditForm = (props: AttributesEditFormProps) => {
                         </Button>
                     </DialogActions>
                 </Dialog>
-        )}
-
-{editingCategoryRecord && selectedCategory === 'Status' && (
-                        <Dialog
-                            open={isEditCategoryDialogOpen}
-                            onClose={() => setEditCategoryDialogOpen(false)}
-                        >
-                            <DialogTitle>Edit record</DialogTitle>
-                            <DialogContent>
-                                <TextField
-                                    fullWidth
-                                    margin="dense"
-                                    label="Name"
-                                    value={updatedCategoryRecord.value || ''}
-                                    onChange={(e) =>
-                                        handleCategoryInputChange(
-                                            'value',
-                                            e.target.value,
-                                        )
-                                    }
-                                />
-                                <TextField
-                                    margin="dense"
-                                    fullWidth
-                                    label="Order"
-                                    value={updatedCategoryRecord.order || ''}
-                                    onChange={(e) =>
-                                        handleCategoryInputChange(
-                                            'order',
-                                            e.target.value,
-                                        )
-                                    }
-                                />
-                            </DialogContent>
-                            <DialogActions>
-                                <Button
-                                    onClick={() =>
-                                        setEditCategoryDialogOpen(false)
-                                    }
-                                    color="secondary"
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    onClick={handleStatusCategorySaveChanges}
-                                    variant="contained"
-                                    color="primary"
-                                >
-                                    Save
-                                </Button>
-                            </DialogActions>
-                        </Dialog>
-                    )}
+            )}
         </>
     );
 };

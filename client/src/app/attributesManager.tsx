@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from "react";
-import AttributesDashboard from "./attributesDashboard";
-import AttributesEditForm from "./attributesEditForm";
-import axios from "axios";
+import { useState } from 'react';
+import AttributesDashboard from './attributesDashboard';
+import AttributesEditForm from './attributesEditForm';
+import axios from 'axios';
 
 interface AttributesManagerProps {
     selectedCategory: string;
@@ -11,7 +11,7 @@ interface AttributesManagerProps {
     fetchFacultyOptions: () => void;
     fetchProgramOptions: () => void;
     fetchStatusOptions: () => void;
-};
+}
 
 const AttributesManager = (props: AttributesManagerProps) => {
     const {
@@ -20,9 +20,10 @@ const AttributesManager = (props: AttributesManagerProps) => {
         fetchFacultyOptions,
         fetchProgramOptions,
         fetchStatusOptions,
-     } = props;
+    } = props;
 
-    const [updatedCategoryRecord, setUpdatedCategoryRecord] = useState<any>(null);
+    const [updatedCategoryRecord, setUpdatedCategoryRecord] =
+        useState<any>(null);
     const [editingCategoryRecord, setEditingCategoryRecord] =
         useState<any>(null);
 
@@ -109,7 +110,9 @@ const AttributesManager = (props: AttributesManagerProps) => {
                 isEditCategoryDialogOpen={isEditCategoryDialogOpen}
                 setEditCategoryDialogOpen={setEditCategoryDialogOpen}
                 handleCategorySaveChanges={handleCategorySaveChanges}
-                handleStatusCategorySaveChanges={handleStatusCategorySaveChanges}
+                handleStatusCategorySaveChanges={
+                    handleStatusCategorySaveChanges
+                }
                 setUpdatedCategoryRecord={setUpdatedCategoryRecord}
                 updatedCategoryRecord={updatedCategoryRecord}
                 setEditingCategoryRecord={setEditingCategoryRecord}

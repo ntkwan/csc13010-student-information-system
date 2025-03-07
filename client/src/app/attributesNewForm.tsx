@@ -1,8 +1,17 @@
 'use client';
 
-import { Dialog, Table, TableBody, TableRow, TableCell, TextField, Box, Button } from "@mui/material";
-import axios from "axios";
-import { useState } from "react";
+import {
+    Dialog,
+    Table,
+    TableBody,
+    TableRow,
+    TableCell,
+    TextField,
+    Box,
+    Button,
+} from '@mui/material';
+import axios from 'axios';
+import { useState } from 'react';
 
 interface AttributesNewFormProps {
     selectedCategory: string;
@@ -10,7 +19,6 @@ interface AttributesNewFormProps {
     fetchProgramOptions: () => void;
     fetchStatusOptions: () => void;
 }
-
 
 const AttributesNewForm = (props: AttributesNewFormProps) => {
     const {
@@ -77,7 +85,7 @@ const AttributesNewForm = (props: AttributesNewFormProps) => {
         <>
             {(selectedCategory === 'Program' ||
                 selectedCategory === 'Faculty') && (
-                    <Dialog
+                <Dialog
                     open={showCategoryRecordForm}
                     onClose={() => setShowCategoryRecordForm(false)}
                     maxWidth="md"
@@ -92,24 +100,18 @@ const AttributesNewForm = (props: AttributesNewFormProps) => {
                     <Table>
                         <TableBody>
                             <TableRow>
-                                <TableCell
-                                    style={{ fontWeight: 'bold' }}
-                                >
+                                <TableCell style={{ fontWeight: 'bold' }}>
                                     Name
                                 </TableCell>
                                 <TableCell>
                                     <TextField
                                         fullWidth
-                                        value={
-                                            newCategoryRecord.value ||
-                                            ''
-                                        }
+                                        value={newCategoryRecord.value || ''}
                                         onChange={(e) =>
                                             setNewCategoryRecord(
                                                 (prev: any) => ({
                                                     ...prev,
-                                                    value: e.target
-                                                        .value,
+                                                    value: e.target.value,
                                                 }),
                                             )
                                         }
@@ -136,9 +138,7 @@ const AttributesNewForm = (props: AttributesNewFormProps) => {
                         <Button
                             variant="outlined"
                             color="error"
-                            onClick={() =>
-                                setShowCategoryRecordForm(false)
-                            }
+                            onClick={() => setShowCategoryRecordForm(false)}
                         >
                             Cancel
                         </Button>
@@ -147,99 +147,83 @@ const AttributesNewForm = (props: AttributesNewFormProps) => {
             )}
             {selectedCategory === 'Status' && (
                 <Dialog
-                        open={showCategoryRecordForm}
-                        onClose={() => setShowCategoryRecordForm(false)}
-                        maxWidth="md"
-                        fullWidth
-                        sx={{
-                            '& .MuiDialog-paper': {
+                    open={showCategoryRecordForm}
+                    onClose={() => setShowCategoryRecordForm(false)}
+                    maxWidth="md"
+                    fullWidth
+                    sx={{
+                        '& .MuiDialog-paper': {
                             width: '1000px',
                             maxHeight: '70vh',
-                            },
-                        }}
-                    >
-                        <Table>
-                            <TableBody>
-                                <TableRow>
-                                    <TableCell
-                                        style={{ fontWeight: 'bold' }}
-                                    >
-                                        Name
-                                    </TableCell>
-                                    <TableCell>
-                                        <TextField
-                                            fullWidth
-                                            value={
-                                                newCategoryRecord.value ||
-                                                    ''
-                                                }
-                                                onChange={(e) =>
-                                                    setNewCategoryRecord(
-                                                        (prev: any) => ({
-                                                            ...prev,
-                                                            value: e.target
-                                                                    .value,
-                                                        }),
-                                                    )
-                                                }
-                                            />
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell
-                                        style={{ fontWeight: 'bold' }}
-                                    >
-                                        Order
-                                    </TableCell>
-                                    <TableCell>
-                                        <TextField
-                                            fullWidth
-                                            type="number"
-                                            value={
-                                                newCategoryRecord.order ||
-                                                ''
-                                            }
-                                            onChange={(e) =>
-                                                setNewCategoryRecord(
-                                                    (prev: any) => ({
-                                                        ...prev,
-                                                        order: e.target
-                                                            .value,
-                                                    }),
-                                                )
-                                            }
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
+                        },
+                    }}
+                >
+                    <Table>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell style={{ fontWeight: 'bold' }}>
+                                    Name
+                                </TableCell>
+                                <TableCell>
+                                    <TextField
+                                        fullWidth
+                                        value={newCategoryRecord.value || ''}
+                                        onChange={(e) =>
+                                            setNewCategoryRecord(
+                                                (prev: any) => ({
+                                                    ...prev,
+                                                    value: e.target.value,
+                                                }),
+                                            )
+                                        }
+                                    />
+                                </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell style={{ fontWeight: 'bold' }}>
+                                    Order
+                                </TableCell>
+                                <TableCell>
+                                    <TextField
+                                        fullWidth
+                                        type="number"
+                                        value={newCategoryRecord.order || ''}
+                                        onChange={(e) =>
+                                            setNewCategoryRecord(
+                                                (prev: any) => ({
+                                                    ...prev,
+                                                    order: e.target.value,
+                                                }),
+                                            )
+                                        }
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
 
-                            <Box
-                                display="flex"
-                                justifyContent="center"
-                                alignItems="center"
-                                gap={2}
-                                sx={{ padding: 2 }}
-                            >
-                                <Button
-                                    variant="contained"
-                                    color="success"
-                                    onClick={
-                                        handleAddNewStatusCategoryRecord
-                                    }
-                                >
-                                    Submit New Record
-                                </Button>
-                                <Button
-                                    variant="outlined"
-                                    color="error"
-                                    onClick={() =>
-                                        setShowCategoryRecordForm(false)
-                                    }
-                                >
-                                    Cancel
-                                </Button>
-                            </Box>
+                    <Box
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        gap={2}
+                        sx={{ padding: 2 }}
+                    >
+                        <Button
+                            variant="contained"
+                            color="success"
+                            onClick={handleAddNewStatusCategoryRecord}
+                        >
+                            Submit New Record
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => setShowCategoryRecordForm(false)}
+                        >
+                            Cancel
+                        </Button>
+                    </Box>
                 </Dialog>
             )}
             <Box
@@ -253,9 +237,7 @@ const AttributesNewForm = (props: AttributesNewFormProps) => {
                     variant="contained"
                     color="primary"
                     onClick={() => {
-                        setShowCategoryRecordForm(
-                            !showCategoryRecordForm,
-                        );
+                        setShowCategoryRecordForm(!showCategoryRecordForm);
                     }}
                 >
                     Add New Record

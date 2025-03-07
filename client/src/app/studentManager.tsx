@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from "react";
-import StudentDashboard from "./studentDashboard";
-import StudentEditForm from "./studentEditForm";
-import axios from "axios";
-
+import { useState } from 'react';
+import StudentDashboard from './studentDashboard';
+import StudentEditForm from './studentEditForm';
+import axios from 'axios';
 
 interface StudentManagerProps {
     records: any[];
-    fetchRecords: (searchItems: { searchQuery: string, faculty: string }) => void;
+    fetchRecords: (searchItems: {
+        searchQuery: string;
+        faculty: string;
+    }) => void;
     setValidationErrorMessage: (message: string) => void;
     errorValidationMessage: string;
     phoneError: boolean;
@@ -54,7 +56,12 @@ const StudentManager = (props: StudentManagerProps) => {
 
     const handleSaveChanges = async () => {
         setValidationErrorMessage('');
-        console.log(validateEmail(updatedRecord.email), validatePhone(updatedRecord.phone), updatedRecord.email, updatedRecord.phone);
+        console.log(
+            validateEmail(updatedRecord.email),
+            validatePhone(updatedRecord.phone),
+            updatedRecord.email,
+            updatedRecord.phone,
+        );
         try {
             if (
                 !validateEmail(updatedRecord.email) ||
@@ -104,21 +111,19 @@ const StudentManager = (props: StudentManagerProps) => {
     };
 
     return (
-    <>
-        <StudentDashboard
-            records={records}
-            setUpdatedRecord={setUpdatedRecord}
-            setValidationErrorMessage={
-                setValidationErrorMessage
-            }
-            setEmailError={setEmailError}
-            setPhoneError={setPhoneError}
-            setEditingRecord={setEditingRecord}
-            setEditDialogOpen={setEditDialogOpen}
-            setErrorMessage={setErrorMessage}
-            fetchRecords={fetchRecords}
-        ></StudentDashboard>
-        <StudentEditForm
+        <>
+            <StudentDashboard
+                records={records}
+                setUpdatedRecord={setUpdatedRecord}
+                setValidationErrorMessage={setValidationErrorMessage}
+                setEmailError={setEmailError}
+                setPhoneError={setPhoneError}
+                setEditingRecord={setEditingRecord}
+                setEditDialogOpen={setEditDialogOpen}
+                setErrorMessage={setErrorMessage}
+                fetchRecords={fetchRecords}
+            ></StudentDashboard>
+            <StudentEditForm
                 isEditDialogOpen={isEditDialogOpen}
                 setEditDialogOpen={setEditDialogOpen}
                 validateEmail={validateEmail}
@@ -141,8 +146,8 @@ const StudentManager = (props: StudentManagerProps) => {
                 setPhoneError={setPhoneError}
                 setUpdatedRecord={setUpdatedRecord}
             ></StudentEditForm>
-    </>
+        </>
     );
-}
+};
 
 export default StudentManager;

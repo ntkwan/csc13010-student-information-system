@@ -172,15 +172,37 @@ const Header = (props: HeaderProps) => {
                         border: '2px solid #1976d2',
                         borderRadius: '8px',
                         padding: '8px 16px',
-                        display: 'inline-block',
+                        display: 'flex', // Change to flex for alignment
+                        alignItems: 'center', // Center vertically
                         cursor: 'pointer',
                     }}
                     onClick={() => router.push('/')}
                 >
-                    <Typography variant="h5" style={{ userSelect: 'none' }}>
-                        {isLoggedIn
-                            ? 'Student Information System'
-                            : 'Welcome to Student Information System'}
+                    <img
+                        src="https://hcmus.edu.vn/wp-content/uploads/2023/04/Logo-chinh-e1681638380305.png"
+                        alt="University Logo"
+                        style={{ marginRight: '10px', height: '50px' }} // Adjust height as needed
+                    />
+                    <Typography style={{ userSelect: 'none' }}>
+                        <>
+                            <Typography
+                                variant="h6" // Larger size
+                                component="span"
+                                style={{ fontWeight: 'bold' }} // Bold text
+                            >
+                                University of Science, VNU-HCM
+                            </Typography>
+                            <br />
+                            {isLoggedIn ? (
+                                <Typography>
+                                    Student Information System
+                                </Typography>
+                            ) : (
+                                <Typography>
+                                    Welcome to Student Information System
+                                </Typography>
+                            )}
+                        </>
                     </Typography>
                 </Box>
 
