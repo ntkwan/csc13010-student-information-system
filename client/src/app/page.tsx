@@ -27,6 +27,7 @@ import SearchBar from './searchBar';
 import StudentDashboard from './studentDashboard';
 import AttributesDashboard from './attributesDashboard';
 import SettingDashboard from './settingDashboard';
+import NavBar from './navBar';
 
 interface CommonOption {
     value: string;
@@ -52,7 +53,6 @@ const genderOptions = [
     { value: 'Unassigned', label: 'Unassigned' },
 ];
 
-const categories = ['Student', 'Faculty', 'Program', 'Status', 'Settings'];
 
 const UsersPage = () => {
     const [records, setRecords] = useState([]);
@@ -109,7 +109,6 @@ const UsersPage = () => {
                 setCategoryRecords(statusOptions);
                 break;
         }
-        console.log(categoryRecords);
     }, [selectedCategory]);
 
     const validateEmail = (email: any) => {
@@ -285,7 +284,6 @@ const UsersPage = () => {
     const handleStatusCategorySaveChanges = async () => {
         try {
             if (updatedCategoryRecord.value) {
-                console.log(selectedCategory.toLowerCase());
                 await axios.put(
                     `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/attribute?attribute=${selectedCategory.toLowerCase()}&oldName=${editingCategoryRecord.value}&newName=${updatedCategoryRecord.value}`,
                     {},
@@ -370,7 +368,7 @@ const UsersPage = () => {
             } else {
                 setRecords(response.data);
             }
-        } catch (error) {
+        } catch (error: any) {
             if (axios.isAxiosError(error) && error.response?.status === 404) {
                 setErrorMessage(
                     'No users found matching your search criteria.',
@@ -659,7 +657,9 @@ const UsersPage = () => {
                             style={{
                                 alignContent: 'center',
                                 marginBottom: '50px',
-                                marginLeft: '800px',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
                             }}
                         >
                             {errorMessage}
@@ -673,21 +673,10 @@ const UsersPage = () => {
                         ></Typography>
                     )}
 
-                    <Box display="flex" justifyContent="center" gap={2} mb={3}>
-                        {categories.map((category) => (
-                            <Button
-                                key={category}
-                                variant={
-                                    selectedCategory === category
-                                        ? 'contained'
-                                        : 'outlined'
-                                }
-                                onClick={() => setSelectedCategory(category)}
-                            >
-                                {category}
-                            </Button>
-                        ))}
-                    </Box>
+                    <NavBar
+                        selectedCategory={selectedCategory}
+                        setSelectedCategory={setSelectedCategory}
+                    ></NavBar>
                     {selectedCategory === 'Student' && (
                         <StudentDashboard
                             records={records}
