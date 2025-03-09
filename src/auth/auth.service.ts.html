@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">55.55% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>47/94</span>
+                <span class='fraction'>50/90</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">53.33% </span>
+                <span class="strong">68.75% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>8/15</span>
+                <span class='fraction'>11/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">55.55% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>5/10</span>
+                <span class='fraction'>5/9</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">48.31% </span>
+                <span class="strong">54.11% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>43/89</span>
+                <span class='fraction'>46/85</span>
             </div>
         
             
@@ -311,17 +311,7 @@
 <a name='L246'></a><a href='#L246'>246</a>
 <a name='L247'></a><a href='#L247'>247</a>
 <a name='L248'></a><a href='#L248'>248</a>
-<a name='L249'></a><a href='#L249'>249</a>
-<a name='L250'></a><a href='#L250'>250</a>
-<a name='L251'></a><a href='#L251'>251</a>
-<a name='L252'></a><a href='#L252'>252</a>
-<a name='L253'></a><a href='#L253'>253</a>
-<a name='L254'></a><a href='#L254'>254</a>
-<a name='L255'></a><a href='#L255'>255</a>
-<a name='L256'></a><a href='#L256'>256</a>
-<a name='L257'></a><a href='#L257'>257</a>
-<a name='L258'></a><a href='#L258'>258</a>
-<a name='L259'></a><a href='#L259'>259</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
+<a name='L249'></a><a href='#L249'>249</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -333,6 +323,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
@@ -345,17 +336,19 @@
 <span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -563,19 +556,6 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -595,23 +575,26 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Role } from './enums/roles.enum';
+import { UserRepository } from '../user/repositories/user.repository';
 &nbsp;
 @Injectable()
 export class AuthService {
     constructor(
         private readonly usersService: UserService,
+        private readonly userRepository: UserRepository,
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
         private readonly mailerService: MailerService,
     ) {}
 &nbsp;
     public async signIn(user: UserLoginDto): Promise&lt;any&gt; {
-        <span class="missing-if-branch" title="if path not taken" >I</span>if (!user) {
-<span class="cstat-no" title="statement not covered" >            throw new BadRequestException('Invalid credentials');</span>
+        if (!user.username || !user.password) {
+            throw new NotFoundException('Invalid credentials');
         }
 &nbsp;
-        const foundUser = await this.usersService.findByEmail(user.email);
-&nbsp;
+        const foundUser = await this.userRepository.findOne({
+            email: user.username,
+        });
         if (!foundUser) {
             throw new NotFoundException('User not found');
         }
@@ -697,7 +680,7 @@ export class AuthService {
 &nbsp;
     public <span class="fstat-no" title="function not covered" >async </span>getNewTokens(id: string, refreshToken: string): Promise&lt;any&gt; {
 <span class="cstat-no" title="statement not covered" >        try {</span>
-            const user = <span class="cstat-no" title="statement not covered" >await this.usersService.findById(id);</span>
+            const user = <span class="cstat-no" title="statement not covered" >await this.userRepository.findById(id);</span>
 <span class="cstat-no" title="statement not covered" >            <span class="missing-if-branch" title="if path not taken" >I</span>if (!user) {</span>
 <span class="cstat-no" title="statement not covered" >                throw new BadRequestException('User not found');</span>
             }
@@ -742,7 +725,7 @@ export class AuthService {
 &nbsp;
     public async forgotPassword(email: string): Promise&lt;void&gt; {
         try {
-            const user = await this.usersService.findByEmail(email);
+            const user = await this.userRepository.find(email);
             if (!user) throw new NotFoundException('User not found');
 &nbsp;
             const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
@@ -780,7 +763,7 @@ export class AuthService {
 &nbsp;
 <span class="fstat-no" title="function not covered" >    async </span>verifyOtp(email: string, otp: string): Promise&lt;void&gt; {
 <span class="cstat-no" title="statement not covered" >        try {</span>
-            const user = <span class="cstat-no" title="statement not covered" >await this.usersService.findByOtpOnly(email, otp);</span>
+            const user = <span class="cstat-no" title="statement not covered" >await this.userRepository.find({ email, otp });</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >            <span class="missing-if-branch" title="if path not taken" >I</span>if (!user) <span class="cstat-no" title="statement not covered" >throw new BadRequestException('Invalid OTP');</span></span>
 &nbsp;
@@ -804,7 +787,7 @@ export class AuthService {
         confirmPassword: string,
     ): Promise&lt;void&gt; {
         try {
-            const user = await this.usersService.findByOtpOnly(email, otp);
+            const user = await this.userRepository.find({ email, otp });
 &nbsp;
             if (!user) throw new BadRequestException('Invalid OTP');
 &nbsp;
@@ -823,19 +806,6 @@ export class AuthService {
             throw new NotFoundException(error.message);
         }
     }
-&nbsp;
-<span class="fstat-no" title="function not covered" >    async </span>changeRole(user: User, id: string, role: string): Promise&lt;void&gt; {
-<span class="cstat-no" title="statement not covered" >        try {</span>
-<span class="cstat-no" title="statement not covered" >            <span class="missing-if-branch" title="if path not taken" >I</span>if (user.id === id) {</span>
-<span class="cstat-no" title="statement not covered" >                throw new BadRequestException('Cannot change your own role');</span>
-            }
-&nbsp;
-<span class="cstat-no" title="statement not covered" >            await this.usersService.updateRole(id, role);</span>
-        } catch (error) {
-<span class="cstat-no" title="statement not covered" >            console.log(error.message);</span>
-<span class="cstat-no" title="statement not covered" >            throw new InternalServerErrorException(error.message);</span>
-        }
-    }
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -844,7 +814,7 @@ export class AuthService {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-03-08T00:02:50.164Z
+                at 2025-03-09T11:44:40.383Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
