@@ -119,6 +119,13 @@ export class User extends Document {
         default: Role.STUDENT,
     })
     role: Role;
+
+    @Prop({
+        type: Date,
+        required: true,
+        default: new Date(),
+    })
+    createdAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

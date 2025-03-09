@@ -7,12 +7,21 @@ import axios from 'axios';
 interface SettingDashboardProps {
     emailSuffix: string;
     phonePrefix: string;
+    creationDeleteWindow: number;
     setEmailSuffix: (emailSuffix: string) => void;
     setPhonePrefix: (phonePrefix: string) => void;
+    setCreationDeleteWindow: (creationDeleteWindow: number) => void;
 }
 
 const SettingDashboard = (props: SettingDashboardProps) => {
-    const { emailSuffix, phonePrefix, setEmailSuffix, setPhonePrefix } = props;
+    const {
+        emailSuffix,
+        phonePrefix,
+        creationDeleteWindow,
+        setEmailSuffix,
+        setPhonePrefix,
+        setCreationDeleteWindow,
+    } = props;
 
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
@@ -45,7 +54,7 @@ const SettingDashboard = (props: SettingDashboardProps) => {
 
         axios
             .put(
-                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/settings?emailSuffix=${emailSuffix}&phonePrefix=${phonePrefix}`,
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/settings?emailSuffix=${emailSuffix}&phonePrefix=${phonePrefix}&creationDeleteWindow=${creationDeleteWindow}`,
                 {},
                 {
                     headers: {
@@ -117,6 +126,16 @@ const SettingDashboard = (props: SettingDashboardProps) => {
                     }}
                     error={Boolean(error)}
                     helperText={error}
+                    sx={{ mb: 2 }}
+                />
+                <TextField
+                    fullWidth
+                    label="Creation Delete Window"
+                    variant="outlined"
+                    value={creationDeleteWindow}
+                    onChange={(e) => {
+                        setCreationDeleteWindow(Number(e.target.value));
+                    }}
                     sx={{ mb: 2 }}
                 />
                 <Button

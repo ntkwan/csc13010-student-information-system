@@ -675,14 +675,20 @@ describe('UserService', () => {
             );
 
             // Act
-            await service.updateUniversitySettings('84', 'new.com');
+            await service.updateUniversitySettings('84', 'new.com', '10');
 
             // Assert
             expect(userRepository.updateSetting).toHaveBeenCalledWith(
                 {},
-                { phonePrefix: '+84', emailSuffix: 'new.com' },
+                {
+                    phonePrefix: '+84',
+                    emailSuffix: 'new.com',
+                    creationDeleteWindow: 10,
+                },
             );
-            expect(loggerService.logOperation).toHaveBeenCalled();
+            expect(loggerService.logOperation).toHaveBeenCalledWith(
+                'Updated university settings: +84 -> 84, old.com -> new.com, 10 -> 10',
+            );
         });
     });
 

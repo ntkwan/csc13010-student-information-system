@@ -47,5 +47,8 @@ export class Setting extends Document {
 
     @Prop({ type: String, required: true, unique: true })
     emailSuffix: string;
+
+    @Prop({ type: Number, required: true, unique: true })
+    creationDeleteWindow: number;
 }
 export const SettingSchema = SchemaFactory.createForClass(Setting);

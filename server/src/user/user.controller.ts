@@ -256,16 +256,23 @@ export class UserController {
         required: false,
         description: 'Email suffix',
     })
+    @ApiQuery({
+        name: 'creationDeleteWindow',
+        required: false,
+        description: 'Creation delete window',
+    })
     @UseGuards(ATAuthGuard)
     @Roles(Role.ADMIN)
     async updateSettings(
         @Res() res: Response,
         @Query('phonePrefix') phonePrefix?: string,
         @Query('emailSuffix') emailSuffix?: string,
+        @Query('creationDeleteWindow') creationDeleteWindow?: string,
     ) {
         await this.userService.updateUniversitySettings(
             phonePrefix,
             emailSuffix,
+            creationDeleteWindow,
         );
         res.status(200).send({
             message: 'Settings updated successfully',

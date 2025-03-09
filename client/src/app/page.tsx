@@ -2,7 +2,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Typography } from '@mui/material';
 import axios from 'axios';
 import Header from './header';
 import SearchBar from './searchBar';
@@ -46,6 +45,7 @@ const UsersPage = () => {
     const [selectedCategory, setSelectedCategory] = useState('Student');
     const [emailSuffix, setEmailSuffix] = useState('');
     const [phonePrefix, setPhonePrefix] = useState('');
+    const [creationDeleteWindow, setCreationDeleteWindow] = useState(0);
     const [records, setRecords] = useState([]);
     const [categoryRecords, setCategoryRecords] = useState<any[]>([]);
     const [user, setUser] = useState<{
@@ -275,6 +275,7 @@ const UsersPage = () => {
             const data = response.data;
             setEmailSuffix(data.emailSuffix);
             setPhonePrefix(data.phonePrefix);
+            setCreationDeleteWindow(data.creationDeleteWindow);
         } catch (error) {
             console.error('Error fetching university settings:', error);
         }
@@ -361,6 +362,8 @@ const UsersPage = () => {
                             setEmailSuffix={setEmailSuffix}
                             phonePrefix={phonePrefix}
                             setPhonePrefix={setPhonePrefix}
+                            creationDeleteWindow={creationDeleteWindow}
+                            setCreationDeleteWindow={setCreationDeleteWindow}
                         ></SettingDashboard>
                     )}
 

@@ -34,7 +34,7 @@ const LoginPage = () => {
         try {
             const response = await axios.post(
                 `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/auth/sign-in`,
-                { email, password },
+                { username: email, password },
             );
             const { accessToken, refreshToken } = response.data;
 

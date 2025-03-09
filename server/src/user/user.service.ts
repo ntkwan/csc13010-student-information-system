@@ -218,6 +218,20 @@ export class UserService {
             throw new BadRequestException('Cannot delete admin account');
         }
 
+        const setting = await this.userRepository.findAllSetting();
+        const creationDeleteWindow = setting[0].creationDeleteWindow; // in minutes
+        const currentDate = new Date();
+        const creationDate = new Date(result.createdAt);
+        const diffTime = Math.abs(
+            currentDate.getTime() - creationDate.getTime(),
+        );
+        const diffMinutes = Math.round(diffTime / (1000 * 60));
+        if (diffMinutes > creationDeleteWindow) {
+            throw new BadRequestException(
+                `This account is allowed to be deleted after ${creationDeleteWindow} minutes. After that, no action can be taken.`,
+            );
+        }
+
         try {
             await this.userRepository.delete({ username: id });
 
@@ -434,15 +448,18 @@ export class UserService {
     async updateUniversitySettings(
         phonePrefix: string,
         emailSuffix: string,
+        creationDeleteWindow: string,
     ): Promise<void> {
         try {
             const setting = await this.userRepository.findAllSetting();
             const oldPhonePrefix = setting[0].phonePrefix;
             const oldEmailSuffix = setting[0].emailSuffix;
+            const oldCreationDeleteWindow = setting[0].creationDeleteWindow;
 
             if (
                 oldPhonePrefix === phonePrefix &&
-                oldEmailSuffix === emailSuffix
+                oldEmailSuffix === emailSuffix &&
+                oldCreationDeleteWindow === Number(creationDeleteWindow)
             ) {
                 throw new InternalServerErrorException(
                     'Settings are already up to date',
@@ -455,12 +472,13 @@ export class UserService {
                 {
                     emailSuffix: emailSuffix,
                     phonePrefix: formattedPhonePrefix,
+                    creationDeleteWindow: Number(creationDeleteWindow),
                 },
             );
 
             this.loggerService.logOperation(
                 'INFO',
-                `Updated university settings: ${oldEmailSuffix} -> ${emailSuffix}, ${oldPhonePrefix} -> ${phonePrefix}`,
+                `Updated university settings: ${oldEmailSuffix} -> ${emailSuffix}, ${oldPhonePrefix} -> ${phonePrefix}, ${oldCreationDeleteWindow} -> ${creationDeleteWindow}`,
             );
         } catch (error) {
             throw new InternalServerErrorException(error.message);
