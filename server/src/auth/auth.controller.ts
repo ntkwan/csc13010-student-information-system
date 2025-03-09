@@ -169,49 +169,4 @@ export class AuthController {
             message: 'Password has been reset successfully',
         });
     }
-
-    @ApiBearerAuth('access-token')
-    @ApiOperation({
-        summary:
-            'Change user role by ID [ADMIN]. There are 2 roles: teacher (TEACHER), student (STUDENT). Cannot change role to ADMIN',
-    })
-    @Put('change-role/:id')
-    @ApiBody({ type: ChangeRoleDto })
-    @ApiResponse({
-        status: 200,
-        description: 'User role changed successfully',
-    })
-    @HttpCode(200)
-    @UseGuards(ATAuthGuard, RolesGuard)
-    @Roles(Role.ADMIN)
-    async changeRole(
-        @Param('id') id: string,
-        @Request() req: any,
-        @Res() res: Response,
-    ): Promise<void> {
-        const role = req.body.role;
-        if (
-            role !== Role.ADMIN &&
-            role !== Role.STUDENT &&
-            role !== Role.TEACHER
-        ) {
-            res.send({
-                statusCode: 404,
-                message: 'Role is not valid',
-            });
-        }
-
-        if (role === Role.ADMIN) {
-            res.send({
-                statusCode: 404,
-                message: 'Cannot change role to ADMIN',
-            });
-        }
-
-        await this.authService.changeRole(req.user, id, role);
-        res.send({
-            statusCode: 200,
-            message: 'User role has been changed successfully',
-        });
-    }
 }

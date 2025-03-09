@@ -12,11 +12,13 @@ import {
 } from '@nestjs/common';
 import { Role } from './enums/roles.enum';
 import { User } from '../../src/user/entities/user.entity';
+import { UserRepository } from '../user/repositories/user.repository';
 
 describe('AuthService', () => {
     let authService: AuthService;
     let userService: UserService;
     let mailerService: MailerService;
+    let userRepository: UserRepository;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -54,12 +56,20 @@ describe('AuthService', () => {
                         sendMail: jest.fn(),
                     },
                 },
+                {
+                    provide: UserRepository,
+                    useValue: {
+                        find: jest.fn(),
+                        findOne: jest.fn(),
+                    },
+                },
             ],
         }).compile();
 
         authService = module.get<AuthService>(AuthService);
         userService = module.get<UserService>(UserService);
         mailerService = module.get<MailerService>(MailerService);
+        userRepository = module.get<UserRepository>(UserRepository);
     });
 
     describe('signIn', () => {
@@ -72,23 +82,22 @@ describe('AuthService', () => {
                 }),
             ).rejects.toThrow(NotFoundException);
         });
-
         it('should throw NotFoundException if user is not found', async () => {
-            jest.spyOn(userService, 'findByEmail').mockResolvedValue(null);
+            jest.spyOn(userRepository, 'findOne').mockResolvedValue(null);
 
             await expect(
                 authService.signIn({
-                    username: 'test',
-                    password: 'password',
-                    email: '',
+                    password: '123',
+                    username: 'ntquan222@clc.fitus.edu.vn',
+                    email: 'ntquan222@clc.fitus.edu.vn',
                 }),
             ).rejects.toThrow(NotFoundException);
         });
 
         it('should throw UnauthorizedException if password is invalid', async () => {
-            jest.spyOn(userService, 'findByEmail').mockResolvedValue({
-                username: '22127001',
-                email: 'ntquan222@clc.fitus.edu.vn',
+            jest.spyOn(userRepository, 'findOne').mockResolvedValue({
+                username: 'ntquan222@clc.fitus.edu.vn',
+                email: '',
                 password: '123',
             } as unknown as User);
 
@@ -106,7 +115,7 @@ describe('AuthService', () => {
         });
 
         it('should throw BadRequestException if user role is STUDENT or TEACHER', async () => {
-            jest.spyOn(userService, 'findByEmail').mockResolvedValue({
+            jest.spyOn(userRepository, 'findOne').mockResolvedValue({
                 username: '18125222',
                 email: 'tvf18@student.university.edu.vn',
                 role: Role.STUDENT, // Include role property
@@ -145,7 +154,7 @@ describe('AuthService', () => {
 
     describe('forgotPassword', () => {
         it('should throw NotFoundException if user is not found', async () => {
-            jest.spyOn(userService, 'findByEmail').mockResolvedValue(null);
+            jest.spyOn(userRepository, 'find').mockResolvedValue(null);
 
             await expect(
                 authService.forgotPassword('test@example.com'),
@@ -153,7 +162,7 @@ describe('AuthService', () => {
         });
 
         it('should send an email with OTP', async () => {
-            jest.spyOn(userService, 'findByEmail').mockResolvedValue({
+            jest.spyOn(userRepository, 'find').mockResolvedValue({
                 id: '1',
                 username: 'test',
                 email: 'test@example.com',
@@ -177,6 +186,7 @@ describe('AuthService', () => {
     describe('resetPassword', () => {
         let authService: AuthService;
         let userService: UserService;
+        let userRepository: UserRepository;
 
         beforeEach(async () => {
             const module: TestingModule = await Test.createTestingModule({
@@ -207,16 +217,23 @@ describe('AuthService', () => {
                             updatePassword: jest.fn(),
                         },
                     },
+                    {
+                        provide: UserRepository,
+                        useValue: {
+                            find: jest.fn(),
+                        },
+                    },
                 ],
             }).compile();
 
             authService = module.get<AuthService>(AuthService);
             userService = module.get<UserService>(UserService);
+            userRepository = module.get<UserRepository>(UserRepository);
         });
 
         it('should throw an error if OTP is invalid', async () => {
             // Simulate no user found for the given OTP
-            jest.spyOn(userService, 'findByOtpOnly').mockResolvedValue(null);
+            jest.spyOn(userRepository, 'find').mockResolvedValue(null);
 
             await expect(
                 authService.resetPassword(
@@ -233,9 +250,7 @@ describe('AuthService', () => {
             const validUser = {
                 otpExpiry: new Date(Date.now() + 10000),
             } as unknown as User;
-            jest.spyOn(userService, 'findByOtpOnly').mockResolvedValue(
-                validUser,
-            );
+            jest.spyOn(userRepository, 'find').mockResolvedValue(validUser);
 
             await expect(
                 authService.resetPassword(
@@ -252,9 +267,7 @@ describe('AuthService', () => {
             const expiredUser = {
                 otpExpiry: new Date(Date.now() - 10000),
             } as unknown as User;
-            jest.spyOn(userService, 'findByOtpOnly').mockResolvedValue(
-                expiredUser,
-            );
+            jest.spyOn(userRepository, 'find').mockResolvedValue(expiredUser);
 
             await expect(
                 authService.resetPassword(
@@ -271,9 +284,7 @@ describe('AuthService', () => {
             const validUser = {
                 otpExpiry: new Date(Date.now() + 10000),
             } as unknown as User;
-            jest.spyOn(userService, 'findByOtpOnly').mockResolvedValue(
-                validUser,
-            );
+            jest.spyOn(userRepository, 'find').mockResolvedValue(validUser);
             const updatePasswordSpy = jest
                 .spyOn(userService, 'updatePassword')
                 .mockResolvedValue(null);

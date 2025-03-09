@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
-import { MongooseModule } from '@nestjs/mongoose';
+import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './entities/user.entity';
 import { UserSignUpDto } from './dtos/user-signup.dto';
 import { AccessControlService } from '../shared/shared.service';
@@ -16,6 +16,7 @@ import {
     Status,
     StatusSchema,
 } from './entities/attributes.entity';
+import { UserRepository } from './repositories/user.repository';
 
 @Module({
     imports: [
@@ -26,10 +27,14 @@ import {
             { name: Program.name, schema: ProgramSchema },
             { name: Setting.name, schema: SettingSchema },
         ]),
-        UserSignUpDto,
     ],
     controllers: [UserController],
-    providers: [UserService, AccessControlService, LoggerService],
-    exports: [UserService, UserSignUpDto],
+    providers: [
+        UserService,
+        AccessControlService,
+        LoggerService,
+        UserRepository,
+    ],
+    exports: [UserService, UserRepository],
 })
 export class UserModule {}

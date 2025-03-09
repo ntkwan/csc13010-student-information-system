@@ -14,23 +14,26 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Role } from './enums/roles.enum';
+import { UserRepository } from '../user/repositories/user.repository';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly usersService: UserService,
+        private readonly userRepository: UserRepository,
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
         private readonly mailerService: MailerService,
     ) {}
 
     public async signIn(user: UserLoginDto): Promise<any> {
-        if (!user) {
-            throw new BadRequestException('Invalid credentials');
+        if (!user.username || !user.password) {
+            throw new NotFoundException('Invalid credentials');
         }
 
-        const foundUser = await this.usersService.findByEmail(user.email);
-
+        const foundUser = await this.userRepository.findOne({
+            email: user.username,
+        });
         if (!foundUser) {
             throw new NotFoundException('User not found');
         }
@@ -116,7 +119,7 @@ export class AuthService {
 
     public async getNewTokens(id: string, refreshToken: string): Promise<any> {
         try {
-            const user = await this.usersService.findById(id);
+            const user = await this.userRepository.findById(id);
             if (!user) {
                 throw new BadRequestException('User not found');
             }
@@ -161,7 +164,7 @@ export class AuthService {
 
     public async forgotPassword(email: string): Promise<void> {
         try {
-            const user = await this.usersService.findByEmail(email);
+            const user = await this.userRepository.find(email);
             if (!user) throw new NotFoundException('User not found');
 
             const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
@@ -199,7 +202,7 @@ export class AuthService {
 
     async verifyOtp(email: string, otp: string): Promise<void> {
         try {
-            const user = await this.usersService.findByOtpOnly(email, otp);
+            const user = await this.userRepository.find({ email, otp });
 
             if (!user) throw new BadRequestException('Invalid OTP');
 
@@ -223,7 +226,7 @@ export class AuthService {
         confirmPassword: string,
     ): Promise<void> {
         try {
-            const user = await this.usersService.findByOtpOnly(email, otp);
+            const user = await this.userRepository.find({ email, otp });
 
             if (!user) throw new BadRequestException('Invalid OTP');
 
@@ -240,19 +243,6 @@ export class AuthService {
             return;
         } catch (error) {
             throw new NotFoundException(error.message);
-        }
-    }
-
-    async changeRole(user: User, id: string, role: string): Promise<void> {
-        try {
-            if (user.id === id) {
-                throw new BadRequestException('Cannot change your own role');
-            }
-
-            await this.usersService.updateRole(id, role);
-        } catch (error) {
-            console.log(error.message);
-            throw new InternalServerErrorException(error.message);
         }
     }
 }
