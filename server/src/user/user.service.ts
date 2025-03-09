@@ -606,7 +606,6 @@ export class UserService {
                         name: user.faculty,
                     });
 
-                    console.log(user, foundStatus, foundProgram, foundFaculty);
                     return {
                         ...user,
                         faculty: foundFaculty._id.toString(),

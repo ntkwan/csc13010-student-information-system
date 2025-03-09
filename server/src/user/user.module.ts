@@ -1,9 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
-import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './entities/user.entity';
-import { UserSignUpDto } from './dtos/user-signup.dto';
 import { AccessControlService } from '../shared/shared.service';
 import { LoggerService } from '../logger/logger.service';
 import {

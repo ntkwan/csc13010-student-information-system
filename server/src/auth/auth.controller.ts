@@ -6,8 +6,6 @@ import {
     Request,
     Res,
     Get,
-    Param,
-    Put,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -26,10 +24,6 @@ import {
     ResetPasswordDto,
     VerifyOtpDto,
 } from './dtos/auth-psw-recovery.dto';
-import { ChangeRoleDto } from './dtos/change-role.dto';
-import { RolesGuard } from './guards/roles.guard';
-import { Roles } from './decorators/roles.decorator';
-import { Role } from './enums/roles.enum';
 
 @Controller('auth')
 export class AuthController {

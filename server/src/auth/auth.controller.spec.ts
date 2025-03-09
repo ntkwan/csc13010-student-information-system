@@ -4,7 +4,6 @@ import { AuthService } from './auth.service';
 import { ATAuthGuard } from './guards/at-auth.guard';
 import { RTAuthGuard } from './guards/rt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
-import { Role } from './enums/roles.enum';
 
 describe('AuthController', () => {
     let authController: AuthController;

@@ -8,7 +8,6 @@ import { PassportModule } from '@nestjs/passport';
 import { AccessTokenStrategy } from './strategies/at.strategy';
 import { RefreshTokenStrategy } from './strategies/rt.strategy';
 import { AccessControlService } from '../shared/shared.service';
-import { UserRepository } from 'src/user/repositories/user.repository';
 
 @Module({
     imports: [
