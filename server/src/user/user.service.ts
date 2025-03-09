@@ -219,6 +219,9 @@ export class UserService {
         }
 
         const setting = await this.userRepository.findAllSetting();
+        if (!setting || !setting.length) {
+            throw new NotFoundException('No settings found');
+        }
         const creationDeleteWindow = setting[0].creationDeleteWindow; // in minutes
         const currentDate = new Date();
         const creationDate = new Date(result.createdAt);
@@ -448,7 +451,7 @@ export class UserService {
     async updateUniversitySettings(
         phonePrefix: string,
         emailSuffix: string,
-        creationDeleteWindow: string,
+        creationDeleteWindow: number,
     ): Promise<void> {
         try {
             const setting = await this.userRepository.findAllSetting();
@@ -459,7 +462,7 @@ export class UserService {
             if (
                 oldPhonePrefix === phonePrefix &&
                 oldEmailSuffix === emailSuffix &&
-                oldCreationDeleteWindow === Number(creationDeleteWindow)
+                oldCreationDeleteWindow === creationDeleteWindow
             ) {
                 throw new InternalServerErrorException(
                     'Settings are already up to date',

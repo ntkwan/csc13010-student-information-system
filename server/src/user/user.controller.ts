@@ -267,7 +267,7 @@ export class UserController {
         @Res() res: Response,
         @Query('phonePrefix') phonePrefix?: string,
         @Query('emailSuffix') emailSuffix?: string,
-        @Query('creationDeleteWindow') creationDeleteWindow?: string,
+        @Query('creationDeleteWindow') creationDeleteWindow?: number,
     ) {
         await this.userService.updateUniversitySettings(
             phonePrefix,

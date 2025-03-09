@@ -272,12 +272,14 @@ describe('UserController', () => {
             };
             await userController.updateSettings(
                 res as Response,
-                '001',
+                '+84',
                 'example.com',
+                10,
             );
             expect(userService.updateUniversitySettings).toHaveBeenCalledWith(
-                '001',
+                '+84',
                 'example.com',
+                10,
             );
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.send).toHaveBeenCalledWith({
@@ -288,7 +290,11 @@ describe('UserController', () => {
 
     describe('getSettings', () => {
         it('should fetch and send university settings', async () => {
-            const settings = { phonePrefix: '001', emailSuffix: 'example.com' };
+            const settings = {
+                phonePrefix: '+84',
+                emailSuffix: 'example.com',
+                creationDeleteWindow: 10,
+            };
             userService.getUniversitySettings.mockResolvedValue(settings);
             const res: Partial<Response> = { send: jest.fn() };
             await userController.getSettings(res as Response);

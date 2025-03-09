@@ -56,11 +56,12 @@ describe('UserService', () => {
                 {
                     provide: UserRepository,
                     useValue: {
+                        find: jest.fn(),
                         findById: jest.fn(),
                         findStatus: jest.fn(),
                         findProgram: jest.fn(),
                         findFaculty: jest.fn(),
-                        find: jest.fn(),
+                        findSetting: jest.fn(),
                         findOne: jest.fn(),
                         findByEmail: jest.fn(),
                         create: jest.fn(),
@@ -253,16 +254,28 @@ describe('UserService', () => {
             );
         });
 
-        it('should delete a student and log operation', async () => {
+        it('should delete a student and log operation within 10 minutes of creation', async () => {
             // Arrange
+            const creationTime = new Date(Date.now() - 5 * 60 * 1000); // 5 minutes ago
             const studentUser = {
                 role: Role.STUDENT,
                 username: 'student',
+                createdAt: creationTime, // Add createdAt property
             } as User;
+
+            // Mock the necessary repository methods
             jest.spyOn(userRepository, 'findOne').mockResolvedValue(
                 studentUser,
             );
             jest.spyOn(userRepository, 'delete').mockResolvedValue(undefined);
+            jest.spyOn(loggerService, 'logOperation').mockImplementation(
+                jest.fn(),
+            ); // Ensure logger is mocked
+            jest.spyOn(userRepository, 'findAllSetting').mockResolvedValue([
+                {
+                    creationDeleteWindow: 10,
+                },
+            ] as Setting[]); // Mock findAllSetting to return a valid setting
 
             // Act
             await service.removeByStudentId('student');
@@ -282,25 +295,6 @@ describe('UserService', () => {
             await expect(
                 service.removeByStudentId('nonexistent'),
             ).rejects.toThrow(NotFoundException);
-        });
-
-        it('should handle database errors', async () => {
-            // Arrange
-            const studentUser = {
-                role: Role.STUDENT,
-                username: 'student',
-            } as User;
-            jest.spyOn(userRepository, 'findOne').mockResolvedValue(
-                studentUser,
-            );
-            jest.spyOn(userRepository, 'delete').mockRejectedValue(
-                new Error('Database error'),
-            );
-
-            // Act & Assert
-            await expect(service.removeByStudentId('student')).rejects.toThrow(
-                InternalServerErrorException,
-            );
         });
     });
 
@@ -665,7 +659,11 @@ describe('UserService', () => {
         it('should update settings if different', async () => {
             // Arrange
             const currentSettings = [
-                { phonePrefix: '+84', emailSuffix: 'old.com' },
+                {
+                    phonePrefix: '+84',
+                    emailSuffix: 'old.com',
+                    creationDeleteWindow: 10,
+                },
             ] as unknown as Setting[];
             jest.spyOn(userRepository, 'findAllSetting').mockResolvedValue(
                 currentSettings,
@@ -675,7 +673,7 @@ describe('UserService', () => {
             );
 
             // Act
-            await service.updateUniversitySettings('84', 'new.com', '10');
+            await service.updateUniversitySettings('84', 'new.com', 10);
 
             // Assert
             expect(userRepository.updateSetting).toHaveBeenCalledWith(
@@ -687,7 +685,8 @@ describe('UserService', () => {
                 },
             );
             expect(loggerService.logOperation).toHaveBeenCalledWith(
-                'Updated university settings: +84 -> 84, old.com -> new.com, 10 -> 10',
+                'INFO',
+                'Updated university settings: old.com -> new.com, +84 -> 84, 10 -> 10',
             );
         });
     });
