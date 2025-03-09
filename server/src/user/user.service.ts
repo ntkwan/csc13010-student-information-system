@@ -4,37 +4,24 @@ import {
     InternalServerErrorException,
     NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { Parser } from 'json2csv';
 import { User } from './entities/user.entity';
 import { UserSignUpDto } from './dtos/user-signup.dto';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Role } from '../auth/enums/roles.enum';
 import { UpdateUsersDto } from './dtos/user-update.dto';
 import csvParser from 'csv-parser';
 import { Readable } from 'stream';
 import { LoggerService } from '../logger/logger.service';
-import {
-    Faculty,
-    Status,
-    Program,
-    Setting,
-} from './entities/attributes.entity';
+import { UserRepository } from './user.repository';
+import { AttributesRepository } from './attributes.repository';
 @Injectable()
 export class UserService {
     constructor(
-        @InjectModel(User.name)
-        private readonly userModel: Model<User>,
-        @InjectModel(Faculty.name)
-        private readonly facultyModel: Model<Faculty>,
-        @InjectModel(Program.name)
-        private readonly programModel: Model<Program>,
-        @InjectModel(Status.name)
-        private readonly statusModel: Model<Status>,
-        @InjectModel(Setting.name)
-        private readonly settingModel: Model<Setting>,
+        private readonly attributesRepository: AttributesRepository,
+        private readonly userRepository: UserRepository,
 
         private readonly configService: ConfigService,
         private readonly loggerService: LoggerService,
@@ -43,21 +30,21 @@ export class UserService {
     async getMyProfile(profileUser: User): Promise<any> {
         try {
             const { id } = profileUser;
-            const user = await this.userModel.findById(id).exec();
+            const user = await this.userRepository.findById(id);
 
             if (!user) {
                 throw new BadRequestException('User not found');
             }
 
-            const foundStatus = await this.statusModel
-                .findById(user.status)
-                .exec();
-            const foundProgram = await this.programModel
-                .findById(user.program)
-                .exec();
-            const foundFaculty = await this.facultyModel
-                .findById(user.faculty)
-                .exec();
+            const foundStatus = await this.attributesRepository.findStatus({
+                _id: user.status,
+            });
+            const foundProgram = await this.attributesRepository.findProgram({
+                _id: user.program,
+            });
+            const foundFaculty = await this.attributesRepository.findFaculty({
+                _id: user.faculty,
+            });
             const userProfile = {
                 username: user.username,
                 fullname: user.fullname,
@@ -85,22 +72,24 @@ export class UserService {
     }
 
     async findAll() {
-        const users = await this.userModel.find().exec();
+        const users = await this.userRepository.findAll();
         if (!users.length) {
             throw new NotFoundException('No users found');
         }
 
         const newUsers = await Promise.all(
             users.map(async (user) => {
-                const foundStatus = await this.statusModel
-                    .findById(user.status)
-                    .exec();
-                const foundProgram = await this.programModel
-                    .findById(user.program)
-                    .exec();
-                const foundFaculty = await this.facultyModel
-                    .findById(user.faculty)
-                    .exec();
+                const foundStatus = await this.attributesRepository.findStatus({
+                    _id: user.status,
+                });
+                const foundProgram =
+                    await this.attributesRepository.findProgram({
+                        _id: user.program,
+                    });
+                const foundFaculty =
+                    await this.attributesRepository.findFaculty({
+                        _id: user.faculty,
+                    });
                 return {
                     username: user.username,
                     fullname: user.fullname,
@@ -126,10 +115,11 @@ export class UserService {
         otp: string,
         otpExpiry: Date,
     ): Promise<User> {
-        const user: User = await this.userModel
-            .findOne({ email, otp, otpExpiry })
-            .exec();
-
+        const user: User = await this.userRepository.findOne({
+            email,
+            otp,
+            otpExpiry,
+        });
         if (!user) {
             throw new InternalServerErrorException(
                 `User with email: ${email} not found`,
@@ -139,9 +129,10 @@ export class UserService {
     }
 
     async findByOtpOnly(email: string, otp: string): Promise<User> {
-        const user: User = await this.userModel
-            .findOne({ email: email, otp: otp })
-            .exec();
+        const user: User = await this.userRepository.findOne({
+            email: email,
+            otp: otp,
+        });
         if (!user) {
             throw new InternalServerErrorException(`User ${email} not found`);
         }
@@ -149,7 +140,7 @@ export class UserService {
     }
 
     async findByEmail(email: string): Promise<User> {
-        const user = await this.userModel.findOne({ email: email }).exec();
+        const user: User = await this.userRepository.findOne({ email: email });
         if (!user) {
             throw new InternalServerErrorException(`User ${email} not found`);
         }
@@ -157,7 +148,7 @@ export class UserService {
     }
 
     async findById(id: string): Promise<User> {
-        const user = await this.userModel.findById(id).exec();
+        const user: User = await this.userRepository.findById(id);
         if (!user) {
             throw new InternalServerErrorException(
                 `User with id ${id} not found`,
@@ -203,41 +194,42 @@ export class UserService {
                 password,
                 phone,
             } = userSignUpDto;
-            const defaultStatus = await this.statusModel
-                .findOne({
-                    name: 'Active',
-                })
-                .exec();
+            const defaultStatus = await this.attributesRepository.findStatus({
+                name: 'Active',
+            });
             const hashedPassword = await this.hashPassword(password);
-            const foundProgram = await this.programModel
-                .findOne({ name: program })
-                .exec();
-            const foundFaculty = await this.facultyModel
-                .findOne({ name: faculty })
-                .exec();
+            const foundProgram = await this.attributesRepository.findProgram({
+                name: program,
+            });
+            const foundFaculty = await this.attributesRepository.findFaculty({
+                name: faculty,
+            });
 
-            const user = await this.userModel.create({
+            const user = await this.userRepository.create({
                 username: username,
                 email: email,
                 password: hashedPassword,
                 birthday: new Date(birthday),
                 fullname: fullname,
                 gender: gender,
-                faculty:
+                faculty: new Types.ObjectId(
                     typeof foundFaculty._id !== 'string'
                         ? foundFaculty._id.toString()
                         : foundFaculty._id,
+                ),
                 classYear: classYear,
-                program:
+                program: new Types.ObjectId(
                     typeof foundProgram._id !== 'string'
                         ? foundProgram._id.toString()
                         : foundProgram._id,
+                ),
                 address: address,
                 phone: phone,
-                status:
+                status: new Types.ObjectId(
                     typeof defaultStatus._id !== 'string'
                         ? defaultStatus._id.toString()
                         : defaultStatus._id,
+                ),
                 otp: null,
                 otpExpiry: null,
                 role: Role.STUDENT,
@@ -265,9 +257,10 @@ export class UserService {
         refreshToken: string,
     ): Promise<void> {
         try {
-            await this.userModel
-                .findOneAndUpdate({ username: username }, { refreshToken })
-                .exec();
+            await this.userRepository.update(
+                { username: username },
+                { refreshToken },
+            );
         } catch (error) {
             throw new InternalServerErrorException(error.message);
         }
@@ -279,9 +272,7 @@ export class UserService {
         otpExpiry: Date,
     ): Promise<void> {
         try {
-            await this.userModel
-                .findOneAndUpdate({ email }, { otp, otpExpiry })
-                .exec();
+            await this.userRepository.update({ email }, { otp, otpExpiry });
         } catch (error) {
             throw new InternalServerErrorException(error.message);
         }
@@ -290,12 +281,10 @@ export class UserService {
     async updatePassword(email: string, password: string): Promise<void> {
         try {
             const hashedPassword = await this.hashPassword(password);
-            await this.userModel
-                .findOneAndUpdate(
-                    { email: email },
-                    { password: hashedPassword, otp: null, otpExpiry: null },
-                )
-                .exec();
+            await this.userRepository.update(
+                { email: email },
+                { password: hashedPassword, otp: null, otpExpiry: null },
+            );
         } catch (error) {
             throw new InternalServerErrorException(error.message);
         }
@@ -303,9 +292,7 @@ export class UserService {
 
     async removeByStudentId(id: string): Promise<void> {
         try {
-            const result = await this.userModel
-                .findOne({ username: id })
-                .exec();
+            const result = await this.userRepository.findOne({ username: id });
 
             if (result.role === Role.ADMIN) {
                 this.loggerService.logOperation(
@@ -315,7 +302,7 @@ export class UserService {
                 throw new BadRequestException('Cannot delete admin account');
             }
 
-            await this.userModel.deleteOne({ username: id }).exec();
+            await this.userRepository.delete({ username: id });
 
             this.loggerService.logOperation(
                 'INFO',
@@ -340,12 +327,15 @@ export class UserService {
 
             let isAllCreated = true;
             for (const faculty of faculties) {
-                const facultyExists = await this.facultyModel
-                    .findOne({ name: faculty })
-                    .exec();
+                const facultyExists =
+                    await this.attributesRepository.findFaculty({
+                        name: faculty,
+                    });
 
                 if (facultyExists === null) {
-                    await this.facultyModel.create({ name: faculty });
+                    await this.attributesRepository.createFaculty({
+                        name: faculty,
+                    });
                     console.log(`Faculty ${faculty} created`);
                     isAllCreated = false;
                 }
@@ -359,12 +349,15 @@ export class UserService {
             ];
 
             for (const program of programs) {
-                const programExists = await this.programModel
-                    .findOne({ name: program })
-                    .exec();
+                const programExists =
+                    await this.attributesRepository.findProgram({
+                        name: program,
+                    });
 
                 if (programExists === null) {
-                    await this.programModel.create({ name: program });
+                    await this.attributesRepository.createProgram({
+                        name: program,
+                    });
                     console.log(`Program ${program} created`);
                     isAllCreated = false;
                 }
@@ -394,12 +387,15 @@ export class UserService {
             ];
 
             for (const status of statuses) {
-                const statusExists = await this.statusModel
-                    .findOne({ name: status.name })
-                    .exec();
+                const statusExists = await this.attributesRepository.findStatus(
+                    { name: status.name },
+                );
 
                 if (statusExists === null) {
-                    await this.statusModel.create({ name: status });
+                    await this.attributesRepository.createStatus({
+                        name: status.name,
+                        order: status.order,
+                    });
                     console.log(`Status ${status.name} created`);
                     isAllCreated = false;
                 }
@@ -413,12 +409,13 @@ export class UserService {
             ];
 
             for (const setting of settings) {
-                const settingExists = await this.settingModel
-                    .findOne({ emailSuffix: setting.emailSuffix })
-                    .exec();
+                const settingExists =
+                    await this.attributesRepository.findSetting({
+                        emailSuffix: setting.emailSuffix,
+                    });
 
                 if (settingExists === null) {
-                    await this.settingModel.create(setting);
+                    await this.attributesRepository.createSetting(setting);
                     console.log(
                         `Setting ${setting.emailSuffix} & ${setting.phonePrefix} created`,
                     );
@@ -437,28 +434,29 @@ export class UserService {
 
     async createDefaultAdmin(): Promise<void> {
         try {
-            const adminExists = await this.userModel
-                .findOne({
-                    role: Role.ADMIN,
-                })
-                .exec();
+            const adminExists = await this.userRepository.findOne({
+                role: Role.ADMIN,
+            });
 
             if (adminExists === null) {
                 const adminPassword: string =
                     this.configService.get('ADMIN_PASSWORD');
                 const hashedPassword = await this.hashPassword(adminPassword);
 
-                const defaultStatus = await this.statusModel.findOne({
-                    name: 'Active',
-                });
-                const defaultProgram = await this.programModel.findOne({
-                    name: 'Unassigned',
-                });
-                const defaultFaculty = await this.facultyModel.findOne({
-                    name: 'Unassigned',
-                });
+                const defaultStatus =
+                    await this.attributesRepository.findStatus({
+                        name: 'Active',
+                    });
+                const defaultProgram =
+                    await this.attributesRepository.findProgram({
+                        name: 'Unassigned',
+                    });
+                const defaultFaculty =
+                    await this.attributesRepository.findFaculty({
+                        name: 'Unassigned',
+                    });
 
-                const admin = await this.userModel.create({
+                const admin = await this.userRepository.create({
                     username: this.configService.get('ADMIN_USERNAME'),
                     email: this.configService.get('ADMIN_EMAIL'),
                     password: hashedPassword,
@@ -467,9 +465,21 @@ export class UserService {
                     fullname: this.configService.get('ADMIN_FULLNAME'),
                     address: 'address',
                     phone: '0123456789',
-                    program: defaultProgram._id.toString(),
-                    faculty: defaultFaculty._id.toString(),
-                    status: defaultStatus._id.toString(),
+                    program: new Types.ObjectId(
+                        typeof defaultProgram._id !== 'string'
+                            ? defaultProgram._id.toString()
+                            : defaultProgram._id,
+                    ),
+                    faculty: new Types.ObjectId(
+                        typeof defaultFaculty._id !== 'string'
+                            ? defaultFaculty._id.toString()
+                            : defaultFaculty._id,
+                    ),
+                    status: new Types.ObjectId(
+                        typeof defaultStatus._id !== 'string'
+                            ? defaultStatus._id.toString()
+                            : defaultStatus._id,
+                    ),
                     otp: null,
                     otpExpiry: null,
                 });
@@ -493,7 +503,7 @@ export class UserService {
         };
 
         if (faculty) {
-            const foundFaculty = await this.facultyModel.find({
+            const foundFaculty = await this.attributesRepository.findFaculty({
                 name: new RegExp(faculty, 'i'),
             });
             query = {
@@ -502,22 +512,24 @@ export class UserService {
             };
         }
 
-        const users = await this.userModel.find(query);
+        const users = await this.userRepository.find(query);
         if (!users.length) {
             throw new NotFoundException('No users found matching the criteria');
         }
 
         const newUsers = await Promise.all(
             users.map(async (user) => {
-                const foundStatus = await this.statusModel
-                    .findById(user.status)
-                    .exec();
-                const foundProgram = await this.programModel
-                    .findById(user.program)
-                    .exec();
-                const foundFaculty = await this.facultyModel
-                    .findById(user.faculty)
-                    .exec();
+                const foundStatus = await this.attributesRepository.findStatus({
+                    _id: user.status,
+                });
+                const foundProgram =
+                    await this.attributesRepository.findProgram({
+                        _id: user.program,
+                    });
+                const foundFaculty =
+                    await this.attributesRepository.findFaculty({
+                        _id: user.faculty,
+                    });
                 return {
                     ...user.toObject(),
                     faculty: foundFaculty.name,
@@ -531,7 +543,7 @@ export class UserService {
 
     async updateRole(id: string, role: string): Promise<void> {
         try {
-            const user = await this.userModel.findById(id).exec();
+            const user = await this.userRepository.findById(id);
 
             if (user.role === role) {
                 throw new InternalServerErrorException(
@@ -539,7 +551,7 @@ export class UserService {
                 );
             }
 
-            await this.userModel.findOneAndUpdate({ _id: id }, { role }).exec();
+            await this.userRepository.update({ _id: id }, { role });
         } catch (error) {
             throw new InternalServerErrorException(error.message);
         }
@@ -550,7 +562,7 @@ export class UserService {
         emailSuffix: string,
     ): Promise<void> {
         try {
-            const setting = await this.settingModel.find().exec();
+            const setting = await this.attributesRepository.findAllSetting();
             const oldPhonePrefix = setting[0].phonePrefix;
             const oldEmailSuffix = setting[0].emailSuffix;
 
@@ -564,15 +576,13 @@ export class UserService {
             }
 
             const formattedPhonePrefix = `+${phonePrefix.trim()}`;
-            await this.settingModel
-                .findOneAndUpdate(
-                    {},
-                    {
-                        emailSuffix: emailSuffix,
-                        phonePrefix: formattedPhonePrefix,
-                    },
-                )
-                .exec();
+            await this.attributesRepository.updateSetting(
+                {},
+                {
+                    emailSuffix: emailSuffix,
+                    phonePrefix: formattedPhonePrefix,
+                },
+            );
 
             this.loggerService.logOperation(
                 'INFO',
@@ -585,7 +595,7 @@ export class UserService {
 
     async getUniversitySettings() {
         try {
-            const setting = await this.settingModel.find().exec();
+            const setting = await this.attributesRepository.findAllSetting();
             return setting[0];
         } catch (error) {
             throw new InternalServerErrorException(error.message);
@@ -595,16 +605,16 @@ export class UserService {
     async updateMultipleUsersByStudentID(records: UpdateUsersDto[]) {
         const results = [];
         for (const { id, updates } of records) {
-            const user = await this.userModel.findOne({ _id: id }).exec();
+            const user = await this.userRepository.findById(id);
             if (!user) {
                 throw new NotFoundException(
                     `Student with objectID ${id} not found`,
                 );
             }
 
-            const existedUsername = await this.userModel
-                .findOne({ username: updates.username })
-                .exec();
+            const existedUsername = await this.userRepository.findOne({
+                username: updates.username,
+            });
 
             if (existedUsername && existedUsername._id.toString() !== id) {
                 this.loggerService.logOperation(
@@ -620,15 +630,17 @@ export class UserService {
             }
 
             try {
-                const foundStatus = await this.statusModel
-                    .findOne({ name: updates.status })
-                    .exec();
-                const foundProgram = await this.programModel
-                    .findOne({ name: updates.program })
-                    .exec();
-                const foundFaculty = await this.facultyModel
-                    .findOne({ name: updates.faculty })
-                    .exec();
+                const foundStatus = await this.attributesRepository.findStatus({
+                    name: updates.status,
+                });
+                const foundProgram =
+                    await this.attributesRepository.findProgram({
+                        name: updates.program,
+                    });
+                const foundFaculty =
+                    await this.attributesRepository.findFaculty({
+                        name: updates.faculty,
+                    });
                 const newUpdates = {
                     ...updates,
                     faculty: foundFaculty._id.toString(),
@@ -701,15 +713,18 @@ export class UserService {
         try {
             const newUsers = await Promise.all(
                 users.map(async (user) => {
-                    const foundStatus = await this.statusModel
-                        .findOne({ name: user.status })
-                        .exec();
-                    const foundProgram = await this.programModel
-                        .findOne({ name: user.program })
-                        .exec();
-                    const foundFaculty = await this.facultyModel
-                        .findOne({ name: user.faculty })
-                        .exec();
+                    const foundStatus =
+                        await this.attributesRepository.findStatus({
+                            name: user.status,
+                        });
+                    const foundProgram =
+                        await this.attributesRepository.findProgram({
+                            name: user.program,
+                        });
+                    const foundFaculty =
+                        await this.attributesRepository.findFaculty({
+                            name: user.faculty,
+                        });
 
                     return {
                         ...user,
@@ -720,7 +735,7 @@ export class UserService {
                 }),
             );
 
-            await this.userModel.insertMany(newUsers);
+            await this.userRepository.insertMany(newUsers);
             this.loggerService.logOperation(
                 'INFO',
                 'Imported users from file',
@@ -793,9 +808,9 @@ export class UserService {
 
     async fetchAttributeSchema(attribute: string): Promise<any> {
         const schemaModels: Record<string, Model<any>> = {
-            faculty: this.facultyModel,
-            status: this.statusModel,
-            program: this.programModel,
+            faculty: this.attributesRepository.facultyModel,
+            status: this.attributesRepository.statusModel,
+            program: this.attributesRepository.programModel,
         };
 
         if (!schemaModels[attribute]) {
@@ -811,9 +826,9 @@ export class UserService {
         newName: string,
     ): Promise<void> {
         const schemaModels: Record<string, Model<any>> = {
-            faculty: this.facultyModel,
-            status: this.statusModel,
-            program: this.programModel,
+            faculty: this.attributesRepository.facultyModel,
+            status: this.attributesRepository.statusModel,
+            program: this.attributesRepository.programModel,
         };
 
         if (!schemaModels[attribute]) {
@@ -853,8 +868,8 @@ export class UserService {
 
     async addAttribute(attribute: string, name: string) {
         const schemaModels: Record<string, Model<any>> = {
-            faculty: this.facultyModel,
-            program: this.programModel,
+            faculty: this.attributesRepository.facultyModel,
+            program: this.attributesRepository.programModel,
         };
 
         if (!schemaModels[attribute]) {
@@ -884,7 +899,7 @@ export class UserService {
 
     async changeStatusOrder(name, order) {
         try {
-            const status = await this.statusModel.findOne({ name }).exec();
+            const status = await this.attributesRepository.findStatus({ name });
             if (!status) {
                 throw new NotFoundException(
                     `Status with name '${name}' not found`,
@@ -897,7 +912,7 @@ export class UserService {
                 );
             }
 
-            await this.statusModel.findOneAndUpdate({ name }, { order }).exec();
+            await this.attributesRepository.updateStatus({ name }, { order });
             this.loggerService.logOperation(
                 'INFO',
                 `Changed status order for ${name} from ${oldOrder} to ${order}`,
@@ -910,14 +925,14 @@ export class UserService {
 
     async addStatusAttribute(name, order) {
         try {
-            const status = await this.statusModel.findOne({ name }).exec();
+            const status = await this.attributesRepository.findStatus({ name });
             if (status) {
                 throw new BadRequestException(
                     `Status with name '${name}' already exists`,
                 );
             }
 
-            await this.statusModel.create({ name, order });
+            await this.attributesRepository.createStatus({ name, order });
             this.loggerService.logOperation(
                 'INFO',
                 `Added new status with name ${name} and order ${order}`,
