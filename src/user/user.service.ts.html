@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">59.22% </span>
+                <span class="strong">59.34% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>199/336</span>
+                <span class='fraction'>200/337</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">44.73% </span>
+                <span class="strong">44.15% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>34/76</span>
+                <span class='fraction'>34/77</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">59.03% </span>
+                <span class="strong">59.15% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>196/332</span>
+                <span class='fraction'>197/333</span>
             </div>
         
             
@@ -1184,7 +1184,13 @@
 <a name='L1119'></a><a href='#L1119'>1119</a>
 <a name='L1120'></a><a href='#L1120'>1120</a>
 <a name='L1121'></a><a href='#L1121'>1121</a>
-<a name='L1122'></a><a href='#L1122'>1122</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">5x</span>
+<a name='L1122'></a><a href='#L1122'>1122</a>
+<a name='L1123'></a><a href='#L1123'>1123</a>
+<a name='L1124'></a><a href='#L1124'>1124</a>
+<a name='L1125'></a><a href='#L1125'>1125</a>
+<a name='L1126'></a><a href='#L1126'>1126</a>
+<a name='L1127'></a><a href='#L1127'>1127</a>
+<a name='L1128'></a><a href='#L1128'>1128</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1533,6 +1539,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1861,6 +1869,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -1868,6 +1878,7 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1879,6 +1890,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2651,6 +2663,8 @@ export class UserService {
                 {
                     emailSuffix: '@student.university.edu.vn',
                     phonePrefix: '+84',
+                    enableValidation: true,
+                    creationDeleteWindow: 10,
                 },
             ];
 &nbsp;
@@ -2662,7 +2676,7 @@ export class UserService {
 <span class="cstat-no" title="statement not covered" >                <span class="missing-if-branch" title="if path not taken" >I</span>if (settingExists === null) {</span>
 <span class="cstat-no" title="statement not covered" >                    await this.userRepository.createSetting(setting);</span>
 <span class="cstat-no" title="statement not covered" >                    console.log(</span>
-                        `Setting ${setting.emailSuffix} &amp; ${setting.phonePrefix} created`,
+                        `Setting ${setting.emailSuffix} &amp; ${setting.phonePrefix} &amp; ${setting.enableValidation} &amp; ${setting.creationDeleteWindow} created`,
                     );
 <span class="cstat-no" title="statement not covered" >                    isAllCreated = false;</span>
                 }
@@ -2981,17 +2995,20 @@ export class UserService {
         phonePrefix: string,
         emailSuffix: string,
         creationDeleteWindow: number,
+        enableValidation: boolean,
     ): Promise&lt;void&gt; {
         try {
             const setting = await this.userRepository.findAllSetting();
             const oldPhonePrefix = setting[0].phonePrefix;
             const oldEmailSuffix = setting[0].emailSuffix;
             const oldCreationDeleteWindow = setting[0].creationDeleteWindow;
+            const oldEnableValidation = setting[0].enableValidation;
 &nbsp;
             <span class="missing-if-branch" title="if path not taken" >I</span>if (
                 oldPhonePrefix === phonePrefix &amp;&amp;
 <span class="branch-1 cbranch-no" title="branch not covered" >                oldEmailSuffix === emailSuffix </span>&amp;&amp;
-<span class="branch-2 cbranch-no" title="branch not covered" >                oldCreationDeleteWindow === creationDeleteWindow</span>
+<span class="branch-2 cbranch-no" title="branch not covered" >                oldCreationDeleteWindow === creationDeleteWindow </span>&amp;&amp;
+<span class="branch-3 cbranch-no" title="branch not covered" >                oldEnableValidation === enableValidation</span>
             ) {
 <span class="cstat-no" title="statement not covered" >                throw new InternalServerErrorException(</span>
                     'Settings are already up to date',
@@ -3004,13 +3021,14 @@ export class UserService {
                 {
                     emailSuffix: emailSuffix,
                     phonePrefix: formattedPhonePrefix,
-                    creationDeleteWindow: Number(creationDeleteWindow),
+                    creationDeleteWindow: creationDeleteWindow,
+                    enableValidation: enableValidation,
                 },
             );
 &nbsp;
             this.loggerService.logOperation(
                 'INFO',
-                `Updated university settings: ${oldEmailSuffix} -&gt; ${emailSuffix}, ${oldPhonePrefix} -&gt; ${phonePrefix}, ${oldCreationDeleteWindow} -&gt; ${creationDeleteWindow}`,
+                `Updated university settings: ${oldEmailSuffix} -&gt; ${emailSuffix}, ${oldPhonePrefix} -&gt; ${phonePrefix}, ${oldCreationDeleteWindow} -&gt; ${creationDeleteWindow}, ${oldEnableValidation} -&gt; ${enableValidation}`,
             );
         } catch (error) {
 <span class="cstat-no" title="statement not covered" >            throw new InternalServerErrorException(error.message);</span>
@@ -3433,7 +3451,7 @@ export class UserService {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-03-10T08:51:00.728Z
+                at 2025-03-10T09:47:17.721Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
