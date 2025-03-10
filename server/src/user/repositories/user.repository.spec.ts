@@ -27,7 +27,6 @@ describe('UserRepository', () => {
     let facultyModel: any;
     let statusModel: any;
     let programModel: any;
-    let settingModel: any;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -46,7 +45,6 @@ describe('UserRepository', () => {
         facultyModel = module.get(getModelToken(Faculty.name));
         statusModel = module.get(getModelToken(Status.name));
         programModel = module.get(getModelToken(Program.name));
-        settingModel = module.get(getModelToken(Setting.name));
     });
 
     it('should be defined', () => {

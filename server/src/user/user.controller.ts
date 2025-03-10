@@ -358,6 +358,53 @@ export class UserController {
         res.send(csvData);
     }
 
+    @ApiOperation({ summary: 'Export student certificate [ADMIN]' })
+    @ApiBearerAuth('access-token')
+    @Get('export/certificate/:id')
+    @ApiResponse({
+        status: 200,
+        description: 'Student certificate exported successfully',
+    })
+    @ApiQuery({
+        name: 'format',
+        required: true,
+        description: 'Format of the certificate (pdf or docx)',
+    })
+    @ApiQuery({
+        name: 'purpose',
+        required: true,
+        enum: ['loan', 'military', 'job', 'other'],
+        description: 'Purpose of the certificate',
+    })
+    @ApiQuery({
+        name: 'otherReason',
+        required: false,
+        description:
+            'Custom reason if purpose is "other" (URL-encoded for long text)',
+    })
+    @UseGuards(ATAuthGuard)
+    @Roles(Role.ADMIN)
+    async exportStudentCertificate(
+        @Query('format') format: 'pdf' | 'docx',
+        @Query('purpose') purpose: 'loan' | 'military' | 'job' | 'other',
+        @Query('otherReason') otherReason: string,
+        @Param('id') id: string,
+        @Res() res: Response,
+    ) {
+        const certificateData = await this.userService.exportStudentCertificate(
+            format,
+            id,
+            purpose,
+            otherReason,
+        );
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename=certificate.${format}`,
+        );
+        res.setHeader('Content-Type', `application/${format}`);
+        res.send(certificateData);
+    }
+
     @ApiOperation({ summary: 'Get the specific attribute [ADMIN]' })
     @ApiBearerAuth('access-token')
     @Get('attributes')

@@ -13,6 +13,11 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    TextField,
 } from '@mui/material';
 import axios from 'axios';
 import { useState } from 'react';
@@ -45,6 +50,12 @@ const StudentDashboard = (props: StudentDashboardProps) => {
     const [selectedRecord, setSelectedRecord] = useState<any>(null);
     const [isOpenRecord, setIsOpenRecord] = useState(false);
     const [open, setOpen] = useState(false);
+    const [exportDialogOpen, setExportDialogOpen] = useState(false);
+    const [format, setFormat] = useState<'pdf' | 'docx'>('pdf');
+    const [purpose, setPurpose] = useState<
+        'loan' | 'military' | 'job' | 'other'
+    >('job');
+    const [otherReason, setOtherReason] = useState<string>('');
 
     const handleEditClick = (record: any) => {
         setUpdatedRecord({ ...record });
@@ -80,16 +91,58 @@ const StudentDashboard = (props: StudentDashboardProps) => {
                     },
                 },
             );
-            fetchRecords({ searchQuery: '', faculty: '' }); // Re-fetch records after deletion
+            fetchRecords({ searchQuery: '', faculty: '' });
             setOpen(false);
         } catch (error: any) {
             console.error('Error deleting record:', error);
             setErrorMessage(
-                error.response.data.message ||
+                error.response?.data?.message ||
                     'An error occurred while deleting the record.',
             );
             setOpen(false);
         }
+    };
+
+    const handleOpenExportDialog = (record: any) => {
+        setSelectedRecord(record);
+        setExportDialogOpen(true);
+    };
+
+    const handleExport = async () => {
+        if (!selectedRecord) return;
+        try {
+            console.log(selectedRecord);
+            const response = await axios.get(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/export/certificate/${selectedRecord.id}?format=${format}&purpose=${purpose}&otherReason=${otherReason}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json',
+                    },
+                    data: {
+                        purpose,
+                        otherReason:
+                            purpose === 'other' ? otherReason : undefined,
+                    },
+                    responseType: 'blob',
+                },
+            );
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `certificate.${format}`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error: any) {
+            console.error('Error exporting record:', error);
+            setErrorMessage(
+                error.response?.data?.message ||
+                    'An error occurred while exporting the record.',
+            );
+        }
+        setExportDialogOpen(false);
     };
 
     return (
@@ -150,9 +203,7 @@ const StudentDashboard = (props: StudentDashboardProps) => {
                                             onClick={() =>
                                                 handleViewDetails(record)
                                             }
-                                            style={{
-                                                marginLeft: '10px',
-                                            }}
+                                            style={{ marginLeft: '10px' }}
                                         >
                                             Details
                                         </Button>
@@ -162,9 +213,7 @@ const StudentDashboard = (props: StudentDashboardProps) => {
                                             onClick={() =>
                                                 handleClickOpen(record)
                                             }
-                                            style={{
-                                                marginLeft: '10px',
-                                            }}
+                                            style={{ marginLeft: '10px' }}
                                         >
                                             Delete
                                         </Button>
@@ -172,11 +221,9 @@ const StudentDashboard = (props: StudentDashboardProps) => {
                                             variant="outlined"
                                             color="success"
                                             onClick={() =>
-                                                handleClickOpen(record)
+                                                handleOpenExportDialog(record)
                                             }
-                                            style={{
-                                                marginLeft: '10px',
-                                            }}
+                                            style={{ marginLeft: '10px' }}
                                         >
                                             Export
                                         </Button>
@@ -214,6 +261,64 @@ const StudentDashboard = (props: StudentDashboardProps) => {
                     </DialogActions>
                 </Dialog>
             )}
+
+            <Dialog
+                open={exportDialogOpen}
+                onClose={() => setExportDialogOpen(false)}
+            >
+                <DialogTitle>Export Certificate</DialogTitle>
+                <DialogContent>
+                    <FormControl fullWidth margin="dense">
+                        <InputLabel>Format</InputLabel>
+                        <Select
+                            value={format}
+                            onChange={(e) =>
+                                setFormat(e.target.value as 'pdf' | 'docx')
+                            }
+                        >
+                            <MenuItem value="pdf">PDF</MenuItem>
+                            <MenuItem value="docx">DOCX</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <FormControl fullWidth margin="dense">
+                        <InputLabel>Purpose</InputLabel>
+                        <Select
+                            value={purpose}
+                            onChange={(e) =>
+                                setPurpose(
+                                    e.target.value as
+                                        | 'loan'
+                                        | 'military'
+                                        | 'job'
+                                        | 'other',
+                                )
+                            }
+                        >
+                            <MenuItem value="loan">Loan</MenuItem>
+                            <MenuItem value="military">Military</MenuItem>
+                            <MenuItem value="job">Job</MenuItem>
+                            <MenuItem value="other">Other</MenuItem>
+                        </Select>
+                    </FormControl>
+                    {purpose === 'other' && (
+                        <TextField
+                            fullWidth
+                            margin="dense"
+                            label="Other Reason"
+                            value={otherReason}
+                            onChange={(e) => setOtherReason(e.target.value)}
+                        />
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setExportDialogOpen(false)}>
+                        Cancel
+                    </Button>
+                    <Button onClick={handleExport} color="primary">
+                        Export
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </>
     );
 };

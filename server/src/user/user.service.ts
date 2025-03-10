@@ -16,11 +16,17 @@ import csvParser from 'csv-parser';
 import { Readable } from 'stream';
 import { LoggerService } from '../logger/logger.service';
 import { UserRepository } from './repositories/user.repository';
+import PDFDocument from 'pdfkit';
+import * as fs from 'fs';
+import * as path from 'path';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
+
+type CertificatePurpose = 'loan' | 'military' | 'job' | 'other';
+
 @Injectable()
 export class UserService {
     constructor(
         private readonly userRepository: UserRepository,
-
         private readonly configService: ConfigService,
         private readonly loggerService: LoggerService,
     ) {}
@@ -446,6 +452,221 @@ export class UserService {
         }
 
         return users;
+    }
+
+    async exportStudentCertificate(
+        format: 'pdf' | 'docx' = 'pdf',
+        id: string,
+        purpose: CertificatePurpose,
+        otherReason?: string,
+    ): Promise<Buffer> {
+        const student = await this.userRepository.findById(id);
+        if (!student) {
+            throw new NotFoundException('Student not found');
+        }
+
+        // TBD: Configurable validUntil
+        const purposeMapping: Record<
+            CertificatePurpose,
+            { description: string; validUntil: string }
+        > = {
+            loan: {
+                description: 'Xác nhận đang học để vay vốn ngân hàng',
+                validUntil: '31/12/2025',
+            },
+            military: {
+                description: 'Xác nhận làm thủ tục tạm hoãn nghĩa vụ quân sự',
+                validUntil: '04/06/2025',
+            },
+            job: {
+                description: 'Xác nhận làm hồ sơ xin việc / thực tập',
+                validUntil: '31/12/2025',
+            },
+            other: {
+                description: `Xác nhận lý do khác - ${otherReason || 'Không xác định'}`,
+                validUntil: '31/12/2025',
+            },
+        };
+        const foundStatus = await this.userRepository.findStatus({
+            _id: student.status,
+        });
+        const foundProgram = await this.userRepository.findProgram({
+            _id: student.program,
+        });
+        const foundFaculty = await this.userRepository.findFaculty({
+            _id: student.faculty,
+        });
+
+        const studentData = {
+            university: 'Trường Đại học Khoa học tự nhiên',
+            address: '227 Nguyễn Văn Cừ, Phường 4, Quận 3, TP. Hồ Chí Minh',
+            phone: '0123-456-789',
+            email: 'contact@abc.edu.vn',
+            name: student.fullname,
+            studentId: student.username,
+            birthDate: new Date(student.birthday).toLocaleDateString('vi-VN'),
+            gender: student.gender,
+            faculty: foundFaculty.name,
+            program: foundProgram.name,
+            classYear: student.classYear,
+            status: foundStatus.name,
+            purpose: purposeMapping[purpose].description,
+            validUntil: purposeMapping[purpose].validUntil,
+            issueDate: new Date().toLocaleDateString('vi-VN'),
+            signatory: 'Trần Văn B (Trưởng phòng Đào tạo)',
+        };
+
+        if (format === 'pdf') {
+            return this.generatePDF(studentData);
+        } else {
+            return this.generateDOCX(studentData);
+        }
+    }
+
+    private async generatePDF(data): Promise<Buffer> {
+        return new Promise((resolve, reject) => {
+            const doc = new PDFDocument();
+            const buffers = [];
+
+            doc.on('data', buffers.push.bind(buffers));
+            doc.on('end', () => resolve(Buffer.concat(buffers)));
+
+            // Load Vietnamese-supported font
+            const fontPath = path.join(
+                __dirname,
+                '../..',
+                'fonts',
+                'Roboto.ttf',
+            );
+            if (!fs.existsSync(fontPath)) {
+                return reject(new Error('Font file not found'));
+            }
+
+            doc.font(fontPath);
+
+            doc.fontSize(14).text(`${data.university}`, { align: 'center' });
+            doc.fontSize(12)
+                .text(`PHÒNG ĐÀO TẠO`, { align: 'center' })
+                .moveDown();
+            doc.text(`Địa chỉ: ${data.address}`).moveDown();
+            doc.text(`Điện thoại: ${data.phone}`).moveDown();
+            doc.text(`Email: ${data.email}`).moveDown();
+
+            doc.fontSize(16)
+                .text('GIẤY XÁC NHẬN TÌNH TRẠNG SINH VIÊN', {
+                    align: 'center',
+                    underline: true,
+                })
+                .moveDown();
+
+            doc.text(`Trường ${data.university} xác nhận:`).moveDown();
+            doc.text(`Họ và tên: ${data.name}`);
+            doc.text(`Mã số sinh viên: ${data.studentId}`);
+            doc.text(`Ngày sinh: ${data.birthDate}`);
+            doc.text(`Giới tính: ${data.gender}`);
+            doc.text(`Khoa: ${data.faculty}`);
+            doc.text(`Chương trình đào tạo: ${data.program}`);
+            doc.text(`Khóa: ${data.classYear}`).moveDown();
+
+            doc.text(
+                `Tình trạng sinh viên hiện tại: ${data.status}`,
+            ).moveDown();
+            doc.text(`Mục đích xác nhận: ${data.purpose}`).moveDown();
+            doc.text(
+                `Giấy xác nhận có hiệu lực đến ngày: ${data.validUntil}`,
+            ).moveDown();
+
+            doc.text(`Ngày cấp: ${data.issueDate}`).moveDown(2);
+            doc.text(`${data.signatory}`, { align: 'right' }).moveDown();
+            doc.text(`(Ký, ghi rõ họ tên, đóng dấu)`, { align: 'right' });
+
+            doc.end();
+        });
+    }
+
+    private async generateDOCX(data): Promise<Buffer> {
+        const doc = new Document({
+            sections: [
+                {
+                    children: [
+                        new Paragraph({
+                            alignment: 'center',
+                            children: [
+                                new TextRun({
+                                    text: `TRƯỜNG ĐẠI HỌC ${data.university}`,
+                                    bold: true,
+                                }),
+                            ],
+                        }),
+                        new Paragraph({
+                            alignment: 'center',
+                            children: [
+                                new TextRun({
+                                    text: `PHÒNG ĐÀO TẠO`,
+                                    bold: true,
+                                }),
+                            ],
+                        }),
+                        new Paragraph(''),
+                        new Paragraph(`📍 Địa chỉ: ${data.address}`),
+                        new Paragraph(
+                            `📞 Điện thoại: ${data.phone} | 📧 Email: ${data.email}`,
+                        ),
+                        new Paragraph(''),
+                        new Paragraph({
+                            alignment: 'center',
+                            children: [
+                                new TextRun({
+                                    text: 'GIẤY XÁC NHẬN TÌNH TRẠNG SINH VIÊN',
+                                    bold: true,
+                                }),
+                            ],
+                        }),
+                        new Paragraph(''),
+                        new Paragraph(
+                            `Trường Đại học ${data.university} xác nhận:`,
+                        ),
+                        new Paragraph(`- Họ và tên: ${data.name}`),
+                        new Paragraph(`- Mã số sinh viên: ${data.studentId}`),
+                        new Paragraph(`- Ngày sinh: ${data.birthDate}`),
+                        new Paragraph(`- Giới tính: ${data.gender}`),
+                        new Paragraph(`- Khoa: ${data.faculty}`),
+                        new Paragraph(
+                            `- Chương trình đào tạo: ${data.program}`,
+                        ),
+                        new Paragraph(`- Khóa: ${data.course}`),
+                        new Paragraph(''),
+                        new Paragraph(
+                            `Tình trạng sinh viên hiện tại: ${data.status}`,
+                        ),
+                        new Paragraph(`Mục đích xác nhận: ${data.purpose}`),
+                        new Paragraph(
+                            `Giấy xác nhận có hiệu lực đến ngày: ${data.validUntil}`,
+                        ),
+                        new Paragraph(''),
+                        new Paragraph(`📅 Ngày cấp: ${data.issueDate}`),
+                        new Paragraph(''),
+                        new Paragraph({
+                            alignment: 'right',
+                            children: [
+                                new TextRun({
+                                    text: `🖋 ${data.signatory}`,
+                                    bold: true,
+                                }),
+                            ],
+                        }),
+                        new Paragraph({
+                            alignment: 'right',
+                            children: [
+                                new TextRun(`(Ký, ghi rõ họ tên, đóng dấu)`),
+                            ],
+                        }),
+                    ],
+                },
+            ],
+        });
+
+        return Packer.toBuffer(doc);
     }
 
     async updateUniversitySettings(
