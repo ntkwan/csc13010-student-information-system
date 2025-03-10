@@ -8,18 +8,22 @@ import axios from 'axios';
 interface AttributesManagerProps {
     selectedCategory: string;
     categoryRecords: any[];
+    setCategoryRecords: (records: any[]) => void;
     fetchFacultyOptions: () => void;
     fetchProgramOptions: () => void;
     fetchStatusOptions: () => void;
+    setErrorMessage: (message: string) => void;
 }
 
 const AttributesManager = (props: AttributesManagerProps) => {
     const {
         selectedCategory,
         categoryRecords,
+        setCategoryRecords,
         fetchFacultyOptions,
         fetchProgramOptions,
         fetchStatusOptions,
+        setErrorMessage,
     } = props;
 
     const [updatedCategoryRecord, setUpdatedCategoryRecord] =
@@ -101,8 +105,10 @@ const AttributesManager = (props: AttributesManagerProps) => {
         <>
             <AttributesDashboard
                 categoryRecords={categoryRecords}
+                setCategoryRecords={setCategoryRecords}
                 selectedCategory={selectedCategory}
                 handleCategoryEditClick={handleCategoryEditClick}
+                setErrorMessage={setErrorMessage}
             ></AttributesDashboard>
             <AttributesEditForm
                 editingCategoryRecord={editingCategoryRecord}

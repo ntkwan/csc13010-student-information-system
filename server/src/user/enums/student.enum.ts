@@ -1,5 +1,5 @@
 export enum Gender {
-    MALE = 'Male',
-    FEMALE = 'Female',
-    NULL = 'Unassigned',
+    MALE = 'Nam',
+    FEMALE = 'Nữ',
+    NULL = 'Không xác định',
 }

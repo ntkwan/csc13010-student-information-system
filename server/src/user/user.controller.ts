@@ -494,6 +494,36 @@ export class UserController {
         });
     }
 
+    @ApiOperation({ summary: 'Delete an attribute [ADMIN]' })
+    @ApiBearerAuth('access-token')
+    @ApiResponse({
+        status: 200,
+        description: 'Attribute deleted successfully',
+    })
+    @Delete('attribute')
+    @ApiQuery({
+        name: 'attribute',
+        required: true,
+        description: 'Type of attribute to delete',
+    })
+    @ApiQuery({
+        name: 'name',
+        required: true,
+        description: 'Name of the attribute to delete',
+    })
+    @UseGuards(ATAuthGuard)
+    @Roles(Role.ADMIN)
+    async deleteAttribute(
+        @Query('attribute') attribute: string,
+        @Query('name') name: string,
+        @Res() res: Response,
+    ) {
+        await this.userService.deleteAttribute(attribute, name);
+        res.status(200).send({
+            message: `Attribute '${name}' deleted successfully from '${attribute}'`,
+        });
+    }
+
     @ApiOperation({ summary: 'Change order of status attribute [ADMIN]' })
     @ApiBearerAuth('access-token')
     @Put('attribute/status')

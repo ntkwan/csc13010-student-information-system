@@ -12,24 +12,89 @@ import {
     Box,
 } from '@mui/material';
 import ItemViewDetails from './itemViewDetails';
+import DeleteButton from '@/buttons/delete';
+import axios from 'axios';
 
 interface AttributesDashboardProps {
     categoryRecords: any[];
+    setCategoryRecords: (records: any[]) => void;
     selectedCategory: string;
     handleCategoryEditClick: (record: any) => void;
+    setErrorMessage: (message: string) => void;
 }
 
 const AttributesDashboard = (props: AttributesDashboardProps) => {
-    const { categoryRecords, selectedCategory, handleCategoryEditClick } =
-        props;
+    const {
+        categoryRecords,
+        setCategoryRecords,
+        selectedCategory,
+        handleCategoryEditClick,
+        setErrorMessage,
+    } = props;
     const [isOpenRecord, setIsOpenRecord] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState<any>(null);
-
+    const [open, setOpen] = useState(false);
     const handleViewDetails = (record: any) => {
         setSelectedRecord(record);
         setIsOpenRecord(true);
     };
 
+    const handleCloseDelete = () => {
+        setSelectedRecord(null);
+        setOpen(false);
+    };
+
+    const handleClickOpen = (record: any) => {
+        setSelectedRecord(record);
+        setOpen(true);
+    };
+
+    const handleDelete = async (record: any) => {
+        try {
+            const response = await axios.delete(
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/attribute?attribute=${selectedCategory.toLowerCase()}&name=${record.value}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                    },
+                },
+            );
+            setOpen(false);
+            if (response.status === 200) {
+                switch (selectedCategory) {
+                    case 'Status':
+                        setCategoryRecords(
+                            categoryRecords.filter(
+                                (item) => item.value !== record.value,
+                            ),
+                        );
+                        break;
+                    case 'Faculty':
+                        setCategoryRecords(
+                            categoryRecords.filter(
+                                (item) => item.value !== record.value,
+                            ),
+                        );
+                        break;
+                    case 'Program':
+                        setCategoryRecords(
+                            categoryRecords.filter(
+                                (item) => item.value !== record.value,
+                            ),
+                        );
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } catch (error: any) {
+            setErrorMessage(
+                error.response?.data?.message ||
+                    'An error occurred while deleting the record.',
+            );
+            setOpen(false);
+        }
+    };
     return (
         <>
             <Box
@@ -92,16 +157,16 @@ const AttributesDashboard = (props: AttributesDashboardProps) => {
                                         >
                                             Details
                                         </Button>
-                                        {/*
-                                    <Button
-                                    variant="outlined"
-                                    color="error"
-                                    onClick={() => handleClickOpen(record)}
-                                    style={{ marginLeft: "10px" }}
-                                    >
-                                    Delete
-                                    </Button>
-                                    */}
+                                        <Button
+                                            variant="outlined"
+                                            color="error"
+                                            onClick={() =>
+                                                handleClickOpen(record)
+                                            }
+                                            style={{ marginLeft: '10px' }}
+                                        >
+                                            Delete
+                                        </Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -115,6 +180,12 @@ const AttributesDashboard = (props: AttributesDashboardProps) => {
                 setSelectedRecord={setSelectedRecord}
                 setIsOpenRecord={setIsOpenRecord}
             ></ItemViewDetails>
+            <DeleteButton
+                open={open}
+                handleCloseDelete={handleCloseDelete}
+                handleDelete={handleDelete}
+                selectedRecord={selectedRecord}
+            />
         </>
     );
 };

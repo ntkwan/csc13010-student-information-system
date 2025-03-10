@@ -31,9 +31,9 @@ const classYearOptions = Array.from({ length: 2025 - 2000 + 1 }, (_, i) => ({
 }));
 
 const genderOptions = [
-    { value: 'Male', label: 'Male' },
-    { value: 'Female', label: 'Female' },
-    { value: 'Unassigned', label: 'Unassigned' },
+    { value: 'Nam', label: 'Nam' },
+    { value: 'Nữ', label: 'Nữ' },
+    { value: 'Không xác định', label: 'Không xác định' },
 ];
 
 const UsersPage = () => {
@@ -351,9 +351,11 @@ const UsersPage = () => {
                         <AttributesManager
                             selectedCategory={selectedCategory}
                             categoryRecords={categoryRecords}
+                            setCategoryRecords={setCategoryRecords}
                             fetchFacultyOptions={fetchFacultyOptions}
                             fetchProgramOptions={fetchProgramOptions}
                             fetchStatusOptions={fetchStatusOptions}
+                            setErrorMessage={setErrorMessage}
                         ></AttributesManager>
                     )}
                     {selectedCategory === 'Settings' && (

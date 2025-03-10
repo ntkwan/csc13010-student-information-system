@@ -258,11 +258,11 @@ export class UserService {
     async createDefaultAttributes(): Promise<void> {
         try {
             const faculties = [
-                'Faculty of Law',
-                'Faculty of Business English',
-                'Faculty of Japanese',
-                'Faculty of French',
-                'Unassigned',
+                'Khoa Luật',
+                'Khoa Tiếng Anh Thương mại',
+                'Khoa Tiếng Nhật',
+                'Khoa Tiếng Pháp',
+                'Không',
             ];
 
             let isAllCreated = true;
@@ -281,10 +281,11 @@ export class UserService {
             }
 
             const programs = [
-                'Formal Program',
-                'High-Quality Program',
-                'Advanced Program',
-                'Unassigned',
+                'Cử nhân Tài năng',
+                'Cử nhân Chính quy',
+                'Thạc sĩ',
+                'Không',
+                'Trao đổi',
             ];
 
             for (const program of programs) {
@@ -303,23 +304,23 @@ export class UserService {
 
             const statuses = [
                 {
-                    name: 'Active',
+                    name: 'Đang theo học',
                     order: 2,
                 },
                 {
-                    name: 'Graduated',
+                    name: 'Đã tốt nghiệp',
                     order: 3,
                 },
                 {
-                    name: 'Leave',
+                    name: 'Bỏ học',
+                    order: 4,
+                },
+                {
+                    name: 'Bảo lưu',
                     order: 3,
                 },
                 {
-                    name: 'Absent',
-                    order: 3,
-                },
-                {
-                    name: 'Unassigned',
+                    name: 'Tình trạng khác',
                     order: 1,
                 },
             ];
@@ -1012,6 +1013,55 @@ export class UserService {
             this.loggerService.logOperation(
                 'INFO',
                 `Added new ${attribute} with name ${name}`,
+            );
+        } catch (error) {
+            this.loggerService.logOperation('ERROR', error.message);
+            throw new InternalServerErrorException(error.message);
+        }
+    }
+
+    async deleteAttribute(attribute: string, name: string) {
+        const schemaModels: Record<string, Model<any>> = {
+            faculty: this.userRepository.facultyModel,
+            program: this.userRepository.programModel,
+            status: this.userRepository.statusModel,
+        };
+
+        if (!schemaModels[attribute]) {
+            throw new Error(`Schema for '${attribute}' not found.`);
+        }
+
+        try {
+            const foundName = await schemaModels[attribute]
+                .findOne({ name: name })
+                .exec();
+            if (!foundName) {
+                throw new NotFoundException(
+                    `Attribute with name '${name}' does not exist.`,
+                );
+            }
+
+            const userExists = await this.userRepository.userModel
+                .exists({ [attribute]: foundName._id.toString() })
+                .exec();
+            if (userExists) {
+                throw new BadRequestException(
+                    `Cannot delete '${name}' from '${attribute}' as it is in use by users.`,
+                );
+            }
+
+            const deletedRecord = await schemaModels[attribute]
+                .findOneAndDelete({ name: name })
+                .exec();
+            if (!deletedRecord) {
+                throw new BadRequestException(
+                    `Attribute with name '${name}' does not exist.`,
+                );
+            }
+
+            this.loggerService.logOperation(
+                'INFO',
+                `Deleted ${attribute} with name ${name}`,
             );
         } catch (error) {
             this.loggerService.logOperation('ERROR', error.message);

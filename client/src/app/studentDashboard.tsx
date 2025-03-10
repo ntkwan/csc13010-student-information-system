@@ -22,7 +22,7 @@ import {
 import axios from 'axios';
 import { useState } from 'react';
 import ItemViewDetails from './itemViewDetails';
-
+import DeleteButton from '@/buttons/delete';
 interface StudentDashboardProps {
     records: any;
     setUpdatedRecord: (record: any) => void;
@@ -242,25 +242,12 @@ const StudentDashboard = (props: StudentDashboardProps) => {
                 selectedRecord={selectedRecord}
             />
 
-            {open && (
-                <Dialog open={open} onClose={handleCloseDelete}>
-                    <DialogTitle>Confirm deletion</DialogTitle>
-                    <DialogContent>
-                        Are you sure you want to delete?
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleCloseDelete} color="primary">
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={() => handleDelete(selectedRecord)}
-                            color="error"
-                        >
-                            Delete
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            )}
+            <DeleteButton
+                open={open}
+                handleCloseDelete={handleCloseDelete}
+                handleDelete={handleDelete}
+                selectedRecord={selectedRecord}
+            />
 
             <Dialog
                 open={exportDialogOpen}

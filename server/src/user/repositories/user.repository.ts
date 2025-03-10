@@ -13,8 +13,7 @@ import {
 export class UserRepository {
     constructor(
         @InjectModel(User.name)
-        private readonly userModel: Model<User>,
-
+        readonly userModel: Model<User>,
         @InjectModel(Faculty.name)
         readonly facultyModel: Model<Faculty>,
         @InjectModel(Status.name)
