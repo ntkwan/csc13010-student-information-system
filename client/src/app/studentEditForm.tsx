@@ -37,10 +37,12 @@ interface StudentEditFormProps {
     genderOptions: any[];
     isEditDialogOpen: boolean;
     setEditDialogOpen: (open: boolean) => void;
+    enableValidation: boolean;
 }
 
 const StudentEditForm = (props: StudentEditFormProps) => {
     const {
+        enableValidation,
         isEditDialogOpen,
         setEditDialogOpen,
         setUpdatedRecord,
@@ -65,11 +67,13 @@ const StudentEditForm = (props: StudentEditFormProps) => {
     } = props;
 
     const handleInputChange = (field: string, value: any) => {
-        if (field === 'email') {
-            setEmailError(!validateEmail(value));
-        }
-        if (field === 'phone') {
-            setPhoneError(!validatePhone(value));
+        if (enableValidation) {
+            if (field === 'email') {
+                setEmailError(!validateEmail(value));
+            }
+            if (field === 'phone') {
+                setPhoneError(!validatePhone(value));
+            }
         }
 
         setUpdatedRecord((prev: any) => ({

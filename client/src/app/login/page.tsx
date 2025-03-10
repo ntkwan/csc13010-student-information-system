@@ -125,13 +125,7 @@ const LoginPage = () => {
                                             setShowPassword(!showPassword)
                                         }
                                         edge="end"
-                                    >
-                                        {showPassword ? (
-                                            <VisibilityOff />
-                                        ) : (
-                                            <Visibility />
-                                        )}
-                                    </IconButton>
+                                    ></IconButton>
                                 </InputAdornment>
                             ),
                         }}

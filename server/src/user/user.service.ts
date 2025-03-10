@@ -344,6 +344,8 @@ export class UserService {
                 {
                     emailSuffix: '@student.university.edu.vn',
                     phonePrefix: '+84',
+                    enableValidation: true,
+                    creationDeleteWindow: 10,
                 },
             ];
 
@@ -355,7 +357,7 @@ export class UserService {
                 if (settingExists === null) {
                     await this.userRepository.createSetting(setting);
                     console.log(
-                        `Setting ${setting.emailSuffix} & ${setting.phonePrefix} created`,
+                        `Setting ${setting.emailSuffix} & ${setting.phonePrefix} & ${setting.enableValidation} & ${setting.creationDeleteWindow} created`,
                     );
                     isAllCreated = false;
                 }
@@ -674,17 +676,20 @@ export class UserService {
         phonePrefix: string,
         emailSuffix: string,
         creationDeleteWindow: number,
+        enableValidation: boolean,
     ): Promise<void> {
         try {
             const setting = await this.userRepository.findAllSetting();
             const oldPhonePrefix = setting[0].phonePrefix;
             const oldEmailSuffix = setting[0].emailSuffix;
             const oldCreationDeleteWindow = setting[0].creationDeleteWindow;
+            const oldEnableValidation = setting[0].enableValidation;
 
             if (
                 oldPhonePrefix === phonePrefix &&
                 oldEmailSuffix === emailSuffix &&
-                oldCreationDeleteWindow === creationDeleteWindow
+                oldCreationDeleteWindow === creationDeleteWindow &&
+                oldEnableValidation === enableValidation
             ) {
                 throw new InternalServerErrorException(
                     'Settings are already up to date',
@@ -697,13 +702,14 @@ export class UserService {
                 {
                     emailSuffix: emailSuffix,
                     phonePrefix: formattedPhonePrefix,
-                    creationDeleteWindow: Number(creationDeleteWindow),
+                    creationDeleteWindow: creationDeleteWindow,
+                    enableValidation: enableValidation,
                 },
             );
 
             this.loggerService.logOperation(
                 'INFO',
-                `Updated university settings: ${oldEmailSuffix} -> ${emailSuffix}, ${oldPhonePrefix} -> ${phonePrefix}, ${oldCreationDeleteWindow} -> ${creationDeleteWindow}`,
+                `Updated university settings: ${oldEmailSuffix} -> ${emailSuffix}, ${oldPhonePrefix} -> ${phonePrefix}, ${oldCreationDeleteWindow} -> ${creationDeleteWindow}, ${oldEnableValidation} -> ${enableValidation}`,
             );
         } catch (error) {
             throw new InternalServerErrorException(error.message);

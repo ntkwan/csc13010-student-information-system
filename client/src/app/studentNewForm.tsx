@@ -33,11 +33,13 @@ interface StudentNewFormProps {
     setValidationErrorMessage: (message: string) => void;
     validateEmail: (email: string) => boolean;
     validatePhone: (phone: string) => boolean;
+    enableValidation: boolean;
     fetchAllProfiles: () => void;
 }
 
 const StudentNewForm = (props: StudentNewFormProps) => {
     const {
+        enableValidation,
         emailError,
         setEmailError,
         phoneError,
@@ -72,14 +74,16 @@ const StudentNewForm = (props: StudentNewFormProps) => {
     const handleAddNewRecord = async () => {
         setValidationErrorMessage('');
         try {
-            if (
-                !validateEmail(newRecord.email) ||
-                !validatePhone(newRecord.phone)
-            ) {
-                setValidationErrorMessage(
-                    'Invalid email or phone number format',
-                );
-                return;
+            if (enableValidation) {
+                if (
+                    !validateEmail(newRecord.email) ||
+                    !validatePhone(newRecord.phone)
+                ) {
+                    setValidationErrorMessage(
+                        'Invalid email or phone number format',
+                    );
+                    return;
+                }
             }
 
             await axios.post(
@@ -295,11 +299,13 @@ const StudentNewForm = (props: StudentNewFormProps) => {
     };
 
     const handleValidation = (field: string, value: string) => {
-        if (field === 'email') {
-            setEmailError(!validateEmail(value));
-        }
-        if (field === 'phone') {
-            setPhoneError(!validatePhone(value));
+        if (enableValidation) {
+            if (field === 'email') {
+                setEmailError(!validateEmail(value));
+            }
+            if (field === 'phone') {
+                setPhoneError(!validatePhone(value));
+            }
         }
 
         setNewRecord((prev) => ({

@@ -27,6 +27,7 @@ interface StudentManagerProps {
     validatePhone: (phone: string) => boolean;
     genderOptions: any[];
     setErrorMessage: (message: string) => void;
+    enableValidation: boolean;
 }
 
 const StudentManager = (props: StudentManagerProps) => {
@@ -49,6 +50,7 @@ const StudentManager = (props: StudentManagerProps) => {
         classYearOptions,
         programOptions,
         statusOptions,
+        enableValidation,
     } = props;
     const [updatedRecord, setUpdatedRecord] = useState<any>(null);
     const [editingRecord, setEditingRecord] = useState<any>(null);
@@ -56,21 +58,18 @@ const StudentManager = (props: StudentManagerProps) => {
 
     const handleSaveChanges = async () => {
         setValidationErrorMessage('');
-        console.log(
-            validateEmail(updatedRecord.email),
-            validatePhone(updatedRecord.phone),
-            updatedRecord.email,
-            updatedRecord.phone,
-        );
+
         try {
-            if (
-                !validateEmail(updatedRecord.email) ||
-                !validatePhone(updatedRecord.phone)
-            ) {
-                setValidationErrorMessage(
-                    'Invalid email or phone number format',
-                );
-                return;
+            if (enableValidation) {
+                if (
+                    !validateEmail(updatedRecord.email) ||
+                    !validatePhone(updatedRecord.phone)
+                ) {
+                    setValidationErrorMessage(
+                        'Invalid email or phone number format',
+                    );
+                    return;
+                }
             }
 
             const recordToUpdate = {
@@ -124,6 +123,7 @@ const StudentManager = (props: StudentManagerProps) => {
                 fetchRecords={fetchRecords}
             ></StudentDashboard>
             <StudentEditForm
+                enableValidation={enableValidation}
                 isEditDialogOpen={isEditDialogOpen}
                 setEditDialogOpen={setEditDialogOpen}
                 validateEmail={validateEmail}

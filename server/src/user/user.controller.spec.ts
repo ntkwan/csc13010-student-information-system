@@ -275,11 +275,13 @@ describe('UserController', () => {
                 '+84',
                 'example.com',
                 10,
+                true,
             );
             expect(userService.updateUniversitySettings).toHaveBeenCalledWith(
                 '+84',
                 'example.com',
                 10,
+                true,
             );
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.send).toHaveBeenCalledWith({

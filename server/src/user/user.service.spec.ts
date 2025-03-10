@@ -663,6 +663,7 @@ describe('UserService', () => {
                     phonePrefix: '+84',
                     emailSuffix: 'old.com',
                     creationDeleteWindow: 10,
+                    enableValidation: false,
                 },
             ] as unknown as Setting[];
             jest.spyOn(userRepository, 'findAllSetting').mockResolvedValue(
@@ -673,7 +674,7 @@ describe('UserService', () => {
             );
 
             // Act
-            await service.updateUniversitySettings('84', 'new.com', 10);
+            await service.updateUniversitySettings('84', 'new.com', 10, true);
 
             // Assert
             expect(userRepository.updateSetting).toHaveBeenCalledWith(
@@ -682,11 +683,12 @@ describe('UserService', () => {
                     phonePrefix: '+84',
                     emailSuffix: 'new.com',
                     creationDeleteWindow: 10,
+                    enableValidation: true,
                 },
             );
             expect(loggerService.logOperation).toHaveBeenCalledWith(
                 'INFO',
-                'Updated university settings: old.com -> new.com, +84 -> 84, 10 -> 10',
+                'Updated university settings: old.com -> new.com, +84 -> 84, 10 -> 10, false -> true',
             );
         });
     });

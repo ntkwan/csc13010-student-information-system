@@ -52,6 +52,7 @@ const UsersPage = () => {
         username: string;
         avatar: string;
     } | null>(null);
+    const [enableValidation, setEnableValidation] = useState(true);
 
     useEffect(() => {
         switch (selectedCategory) {
@@ -276,6 +277,7 @@ const UsersPage = () => {
             setEmailSuffix(data.emailSuffix);
             setPhonePrefix(data.phonePrefix);
             setCreationDeleteWindow(data.creationDeleteWindow);
+            setEnableValidation(data.enableValidation);
         } catch (error) {
             console.error('Error fetching university settings:', error);
         }
@@ -343,6 +345,7 @@ const UsersPage = () => {
                             validatePhone={validatePhone}
                             genderOptions={genderOptions}
                             setErrorMessage={setErrorMessage}
+                            enableValidation={enableValidation}
                         ></StudentManager>
                     )}
                     {(selectedCategory === 'Faculty' ||
@@ -366,11 +369,14 @@ const UsersPage = () => {
                             setPhonePrefix={setPhonePrefix}
                             creationDeleteWindow={creationDeleteWindow}
                             setCreationDeleteWindow={setCreationDeleteWindow}
+                            setEnableValidation={setEnableValidation}
+                            enableValidation={enableValidation}
                         ></SettingDashboard>
                     )}
 
                     {selectedCategory === 'Student' && (
                         <StudentNewForm
+                            enableValidation={enableValidation}
                             emailError={emailError}
                             setEmailError={setEmailError}
                             phoneError={phoneError}

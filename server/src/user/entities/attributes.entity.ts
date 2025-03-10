@@ -50,5 +50,8 @@ export class Setting extends Document {
 
     @Prop({ type: Number, required: true, unique: true })
     creationDeleteWindow: number;
+
+    @Prop({ type: Boolean, required: true, unique: false })
+    enableValidation: boolean;
 }
 export const SettingSchema = SchemaFactory.createForClass(Setting);

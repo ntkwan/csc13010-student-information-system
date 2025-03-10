@@ -1,7 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography } from '@mui/material';
+import {
+    TextField,
+    Button,
+    Box,
+    Typography,
+    Switch,
+    FormControlLabel,
+} from '@mui/material';
 import axios from 'axios';
 
 interface SettingDashboardProps {
@@ -11,6 +18,8 @@ interface SettingDashboardProps {
     setEmailSuffix: (emailSuffix: string) => void;
     setPhonePrefix: (phonePrefix: string) => void;
     setCreationDeleteWindow: (creationDeleteWindow: number) => void;
+    setEnableValidation: (enableValidation: boolean) => void;
+    enableValidation: boolean;
 }
 
 const SettingDashboard = (props: SettingDashboardProps) => {
@@ -21,6 +30,8 @@ const SettingDashboard = (props: SettingDashboardProps) => {
         setEmailSuffix,
         setPhonePrefix,
         setCreationDeleteWindow,
+        setEnableValidation,
+        enableValidation,
     } = props;
 
     const [error, setError] = useState('');
@@ -36,7 +47,7 @@ const SettingDashboard = (props: SettingDashboardProps) => {
         return regex.test(suffix);
     };
 
-    const handleSaveSettings = () => {
+    const handleSaveSettings = (enableValidation?: boolean) => {
         if (!validatePhoneNumberPrefix(phonePrefix)) {
             setError("Invalid prefix. Must start with '+' followed by digits.");
             return;
@@ -44,17 +55,17 @@ const SettingDashboard = (props: SettingDashboardProps) => {
 
         if (!validateEmailSuffix(emailSuffix)) {
             setError(
-                "Invalid suffix. Must start with '@' followed by domain name.",
+                "Invalid suffix. Must start with '@' followed by a domain name.",
             );
             return;
         }
+
         setError('');
-        // Clear previous success message
         setSuccessMessage('');
 
         axios
             .put(
-                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/settings?emailSuffix=${emailSuffix}&phonePrefix=${phonePrefix}&creationDeleteWindow=${creationDeleteWindow}`,
+                `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/settings?emailSuffix=${emailSuffix}&phonePrefix=${phonePrefix}&creationDeleteWindow=${creationDeleteWindow}&enableValidation=${enableValidation}`,
                 {},
                 {
                     headers: {
@@ -92,8 +103,30 @@ const SettingDashboard = (props: SettingDashboardProps) => {
                 }}
             >
                 <Typography variant="h6" gutterBottom>
-                    University settings
+                    University Settings
                 </Typography>
+
+                {/* Toggle Switch for Enabling/Disabling Settings */}
+                <FormControlLabel
+                    control={
+                        <Switch
+                            checked={enableValidation}
+                            onChange={() => {
+                                setEnableValidation(!enableValidation);
+                                handleSaveSettings(!enableValidation);
+                            }}
+                            color="primary"
+                        />
+                    }
+                    label={
+                        enableValidation
+                            ? 'Settings Enabled'
+                            : 'Settings Disabled'
+                    }
+                    sx={{ mb: 2 }}
+                />
+
+                {/* Email Suffix */}
                 <TextField
                     fullWidth
                     label="Email Suffix"
@@ -101,11 +134,13 @@ const SettingDashboard = (props: SettingDashboardProps) => {
                     value={emailSuffix}
                     onChange={(e) => {
                         setEmailSuffix(e.target.value);
-                        // Clear success message when user edits input
                         setSuccessMessage('');
                     }}
                     sx={{ mb: 2 }}
+                    disabled={!enableValidation}
                 />
+
+                {/* Phone Number Prefix */}
                 <TextField
                     fullWidth
                     label="Phone Number Prefix"
@@ -121,31 +156,39 @@ const SettingDashboard = (props: SettingDashboardProps) => {
                                 "Invalid prefix. Must start with '+' followed by digits.",
                             );
                         }
-                        // Clear success message when user edits input
                         setSuccessMessage('');
                     }}
                     error={Boolean(error)}
                     helperText={error}
                     sx={{ mb: 2 }}
+                    disabled={!enableValidation}
                 />
+
+                {/* Creation Delete Window */}
                 <TextField
                     fullWidth
                     label="Creation Delete Window"
                     variant="outlined"
+                    type="number"
                     value={creationDeleteWindow}
-                    onChange={(e) => {
-                        setCreationDeleteWindow(Number(e.target.value));
-                    }}
+                    onChange={(e) =>
+                        setCreationDeleteWindow(Number(e.target.value))
+                    }
                     sx={{ mb: 2 }}
+                    disabled={!enableValidation}
                 />
+
+                {/* Save Button */}
                 <Button
                     variant="contained"
                     color="primary"
                     fullWidth
-                    onClick={handleSaveSettings}
+                    onClick={() => handleSaveSettings(enableValidation)}
+                    disabled={!enableValidation}
                 >
                     Save Settings
                 </Button>
+
                 {successMessage && (
                     <Typography
                         variant="body2"

@@ -261,6 +261,11 @@ export class UserController {
         required: false,
         description: 'Creation delete window',
     })
+    @ApiQuery({
+        name: 'enableValidation',
+        required: false,
+        description: 'Enable validation',
+    })
     @UseGuards(ATAuthGuard)
     @Roles(Role.ADMIN)
     async updateSettings(
@@ -268,11 +273,13 @@ export class UserController {
         @Query('phonePrefix') phonePrefix?: string,
         @Query('emailSuffix') emailSuffix?: string,
         @Query('creationDeleteWindow') creationDeleteWindow?: number,
+        @Query('enableValidation') enableValidation?: boolean,
     ) {
         await this.userService.updateUniversitySettings(
             phonePrefix,
             emailSuffix,
             creationDeleteWindow,
+            enableValidation,
         );
         res.status(200).send({
             message: 'Settings updated successfully',
