@@ -312,7 +312,10 @@ The CI/CD besides auto-deployed the test coverage results. It is also fully auto
 
 #### Student certificate generation
 
-![screenshot](docs/screenshots/screen34.png)
+<div align="center">
+    <img src="docs/screenshots/screen34.png" width="45%">
+    <img src="docs/screenshots/screen35.png" width="45%">
+</div>
 
 ## Code convention
 
