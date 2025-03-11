@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains the code for a very basic student information system (SIS) as web application. The application separates the user interface (client) from the data management and business logic (server). This repository is weekly updated following lecturer's requirements of the course CSC13010 - Software and Desin Analysis.
+This repository contains the source code for a very basic student information system (SIS) as web application. The application separates the user interface (client) from the data management and business logic (server). This repository is weekly updated following lecturer's requirements of the course CSC13010 - Software and Desin Analysis.
 
 The system manages student data, including information such as:
 
@@ -42,7 +42,17 @@ The system manages student data, including information such as:
 - **Configurable phone number prefix:** Refer to **Validation rules**.
 - **Configurable email suffix:** Refer to **Validation rules**.
 - **Unique student ID:** Refer to **Validation rules**.
-- **Unit testing:** Refer to **Unit testing** and [Testing documentation](./docs/test/).
+- **Unit testing:** Refer to **Unit testing** and [Testing documentation](./docs/guidelines/testing/).
+
+### v4.0
+
+- **University branding:** Display university logo/headlines at the website header.
+- **Configurable time policy for deleting after account creation:** Add a new field in University settings to specify the time policy for deleting after account creation.
+- **Enable/Disable university settings:** Add a button in University settings to specify whether the university settings are enabled or disabled by `ADMIN` role.
+- **Allow to delete attributes (Faculty, Program, Status) in case of no accounts are associated with that attribute:** Allow `ADMIN` role to delete attributes in case of no accounts are associated with that attribute.
+- **Student certificate generation:** Add a new button in Student Dashboard to generate a certificate for the student for the purpose of job, postgraduate with full information of the student and the university.
+- **Unit testing:** Refer to **Unit testing** and [Testing documentation](./docs/guidelines/testing/).
+- **Refactor code:** Refer to **Refactoring guidelines** and [Refactoring documentation](./docs/guidelines/refactoring/).
 
 ## Validation rules (Backend)
 
@@ -177,7 +187,8 @@ The project follows a structured testing approach:
 - **Unit Tests:** Validate individual functions and services.
 - **Controller Tests:** Ensure API endpoints behave as expected.
 - **Module Tests:** Verify module configurations and dependencies.
-  ![screenshot](docs/screenshots/screen27.png)
+
+![screenshot](docs/screenshots/screen27.png)
 
 The CI/CD besides auto-deployed the test coverage results. It is also fully automated Jest tests in the CI/CD pipeline and required at least 70\% of test coverage to pass the check.
 
@@ -211,18 +222,22 @@ The CI/CD besides auto-deployed the test coverage results. It is also fully auto
 
 #### Add a record
 
-![screenshot](docs/screenshots/screen7.png)
-![screenshot](docs/screenshots/screen8.png)
-![screenshot](docs/screenshots/screen9.png)
+<div align="center">
+  <img src="docs/screenshots/screen7.png" width="45%">
+  <img src="docs/screenshots/screen8.png" width="45%">
+  <img src="docs/screenshots/screen9.png" width="45%">
+</div>
 
 ### v2.0
 
 #### Dynamic attributes
 
-![screenshot](docs/screenshots/screen10.png)
-![screenshot](docs/screenshots/screen11.png)
-![screenshot](docs/screenshots/screen12.png)
-![screenshot](docs/screenshots/screen13.png)
+<div align="center">
+  <img src="docs/screenshots/screen10.png" width="45%">
+  <img src="docs/screenshots/screen11.png" width="45%">
+  <img src="docs/screenshots/screen12.png" width="45%">
+  <img src="docs/screenshots/screen13.png" width="45%">
+</div>
 
 #### Development build information
 
@@ -234,35 +249,70 @@ The CI/CD besides auto-deployed the test coverage results. It is also fully auto
 
 #### Advanced search
 
-![screenshot](docs/screenshots/screen15.png)
-![screenshot](docs/screenshots/screen16.png)
+<div align="center">
+  <img src="docs/screenshots/screen15.png" width="45%">
+  <img src="docs/screenshots/screen16.png" width="45%">
+</div>
 
 #### Import/export records
 
-![screenshot](docs/screenshots/screen17.png)
-![screenshot](docs/screenshots/screen18.png)
-![screenshot](docs/screenshots/screen19.png)
+<div align="center">
+  <img src="docs/screenshots/screen17.png" width="45%">
+  <img src="docs/screenshots/screen18.png" width="45%">
+  <img src="docs/screenshots/screen19.png" width="45%">
+</div>
 
 ### v3.0
 
 #### Configurable status rules
 
-![screenshot](docs/screenshots/screen21.png)
-![screenshot](docs/screenshots/screen22.png)
+<div align="center">
+  <img src="docs/screenshots/screen21.png" width="45%">
+  <img src="docs/screenshots/screen22.png" width="45%">
+</div>
 
 #### Configurable phone number prefix
 
-![screenshot](docs/screenshots/screen24.png)
-![screenshot](docs/screenshots/screen23.png)
+<div align="center">
+  <img src="docs/screenshots/screen23.png" width="40%">
+  <img src="docs/screenshots/screen24.png" width="60%">
+</div>
 
 #### Configurable email suffix
 
-![screenshot](docs/screenshots/screen24.png)
-![screenshot](docs/screenshots/screen25.png)
+<div align="center">
+    <img src="docs/screenshots/screen25.png" width="40%">
+    <img src="docs/screenshots/screen24.png" width="60%">
+</div>
 
 #### Unique student ID
 
 ![screenshot](docs/screenshots/screen26.png)
+
+### v4.0
+
+#### University branding
+
+![screenshot](docs/screenshots/screen30.png)
+
+#### Configurable time policy for deleting after account creation
+
+<div align="center">
+    <img src="docs/screenshots/screen29.png" width="40%">
+    <img src="docs/screenshots/screen31.png" width="60%">
+</div>
+
+#### Enable/Disable university settings
+
+![screenshot](docs/screenshots/screen32.png)
+
+#### Allow to delete attributes (Faculty, Program, Status) in case of no accounts are associated with that attribute
+
+![screenshot](docs/screenshots/screen33.png)
+
+#### Student certificate generation
+
+![screenshot](docs/screenshots/screen34.png)
 
 ## Code convention
 
