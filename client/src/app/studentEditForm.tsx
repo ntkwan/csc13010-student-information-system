@@ -16,7 +16,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 
 interface StudentEditFormProps {
-    editingRecord: boolean;
+    editingRecord: any;
     updatedRecord: any;
     handleSaveChanges: () => void;
     setValidationErrorMessage: (message: string) => void;

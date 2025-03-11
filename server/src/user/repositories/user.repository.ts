@@ -95,6 +95,7 @@ export class UserRepository {
                     _id: user.faculty,
                 });
                 return {
+                    _id: user._id,
                     username: user.username,
                     fullname: user.fullname,
                     birthday: user.birthday,
